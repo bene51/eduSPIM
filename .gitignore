@@ -1,0 +1,15 @@
+.classpath
+.project
+.settings
+*.swp
+*~
+*.obj
+*.exe
+*.dll
+*.lib
+*.pdb
+*.ilk
+*.exp
+target
+jars
+plugins
