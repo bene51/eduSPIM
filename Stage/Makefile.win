@@ -1,0 +1,29 @@
+.SUFFIXES: .cpp .obj
+
+CC = cl
+INCL = /I "$(JAVA_HOME)/include" /I "$(JAVA_HOME)/include/win32" /I "include"
+COMPILE_FLAGS = /c /O2 /EHsc /W3 /nologo /O2 /Zi /MT
+LIBS = lib/PI_GCS2_DLL_x64.lib
+
+CPP_OBJS = stage_NativeMotor.obj \
+           Stage.obj
+
+all: stage_NativeMotor.dll \
+     stage_NativeMotor.exe
+
+clean:
+	del stage_NativeMotor.dll stage_NativeMotor.exe $(CPP_OBJS)
+
+.cpp.obj:
+	@echo Building $@ from $<
+	$(CC) $(COMPILE_FLAGS) $(INCL) /Fe$@ $< >nul
+
+stage_NativeMotor.dll: $(CPP_OBJS)
+	@echo linking...
+	$(CC) /LD /Fe$@ $(LIBS) $** >nul
+	copy /Y $@ ..
+	copy /Y bin\PI_GCS2_DLL_x64.dll ..
+
+stage_NativeMotor.exe: $(CPP_OBJS)
+	@echo No exe to build yet, since main is not yet implemented.
+
