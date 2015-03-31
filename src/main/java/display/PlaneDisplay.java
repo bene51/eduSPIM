@@ -16,14 +16,11 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.IndexColorModel;
-import java.awt.image.VolatileImage;
 
 import cam.ICamera;
 
 @SuppressWarnings("serial")
 public class PlaneDisplay extends Canvas {
-
-	private VolatileImage volatileImg;
 
 	private static final int WIDTH  = 800;
 	private static final int HEIGHT = 600;
@@ -197,22 +194,30 @@ public class PlaneDisplay extends Canvas {
 		if(drawCoordSys)
 			drawCoordSysInt(g, scale);
 
-		double zScale = 1 + (relativeScaleAtZEnd - 1) * relativeScaleAtZEnd * z / ICamera.DEPTH;
+		double zScale = 1 + (relativeScaleAtZEnd - 1) * z / ICamera.DEPTH;
 
-		int imageWidth  = (int)Math.round(ICamera.WIDTH  * scale * zScale / 2.0);
-		int imageHeight = (int)Math.round(ICamera.HEIGHT * scale * zScale / 2.0);
-		imageWidth *= 2;
-		imageHeight *= 2;
+		int imageWidth  = 2 * (int)Math.round(ICamera.WIDTH  * scale * zScale / 2.0);
+		int imageHeight = 2 * (int)Math.round(ICamera.HEIGHT * scale * zScale / 2.0);
 
 		int xOffs = (int)Math.round((w - imageWidth) / 2.0);
 		int yOffs = (int)Math.round((h - imageHeight) / 2.0);
 
 		g.setColor(Color.WHITE);
 		g2d.setStroke(new BasicStroke(1.0f));
-		if(data != null) {
+		if(data != null)
 			g.drawImage(getImage(), xOffs, yOffs, imageWidth, imageHeight, null);
-//			if(!composite)
-//				g.drawRect(xOffs + 1, yOffs + 1, imageWidth - 3, imageHeight - 3);
+		if(!composite) {
+			zScale = 1 + (relativeScaleAtZEnd - 1) * z / ICamera.DEPTH;
+
+			imageWidth  = 2 * (int)Math.round(ICamera.WIDTH  * scale * zScale / 2.0);
+			imageHeight = 2 * (int)Math.round(ICamera.HEIGHT * scale * zScale / 2.0);
+
+			xOffs = (int)Math.round((w - imageWidth) / 2.0);
+			yOffs = (int)Math.round((h - imageHeight) / 2.0);
+
+			g.setColor(Color.red);
+			g2d.setStroke(new BasicStroke(1.0f));
+			g.drawRect(xOffs + 1, yOffs + 1, imageWidth - 2, imageHeight - 2);
 		}
 	}
 
@@ -234,7 +239,6 @@ public class PlaneDisplay extends Canvas {
 		for (int j = 0; j < 256; j++) {
 			// newA[j] = (byte)j;
 			newA[j] = (byte) Math.round(255 * Math.pow(j / 255.0, 2));
-			System.out.println(j + ": " + newA[j]);
 		}
 
 		for (int i = 0; i < nlayers; i++) {

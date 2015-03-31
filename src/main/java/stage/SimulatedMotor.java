@@ -11,12 +11,6 @@ public class SimulatedMotor implements IMotor {
 
 	public static final int DIMS = 2;
 
-	private static final double[] POS_MIN = new double[] { 0, 0 };
-	private static final double[] POS_MAX = new double[] { 15, 15 };
-
-	private static final double[] VEL_MIN = new double[] { 0, 0 };
-	private static final double[] VEL_MAX = new double[] { 0.5, 0.5 };
-
 	private double[] pos = new double[2];
 	private double[] vel = new double[2];
 	private double[] tar = new double[2];
@@ -32,20 +26,27 @@ public class SimulatedMotor implements IMotor {
 		movingThread.start();
 	}
 
-	public int getNDimensions() {
-		return DIMS;
-	}
-
-	public void getPosition(double[] pos) {
+	public double getPosition(int axis) {
+		double ret = 0;
 		synchronized(lock) {
-			System.arraycopy(this.pos, 0, pos, 0, DIMS);
+			ret = pos[axis];
 		}
-		sleep(100);
+		sleep(50);
+		return ret;
 	}
 
-	public void getVelocity(double[] vel) {
-		System.arraycopy(this.vel, 0, vel, 0, DIMS);
-		sleep(100);
+	public double getVelocity(int axis) {
+		sleep(50);
+		return vel[axis];
+	}
+
+	public boolean isMoving(int axis) {
+		boolean moving = false;
+		synchronized(lock) {
+			moving = Math.abs(tar[axis] - pos[axis]) > epsilon;
+		}
+		sleep(50);
+		return moving;
 	}
 
 	public boolean isMoving() {
@@ -63,39 +64,14 @@ public class SimulatedMotor implements IMotor {
 		return moving;
 	}
 
-	public void getTarget(double[] target) {
-		System.arraycopy(this.tar, 0, target, 0, DIMS);
-		sleep(100);
+	public void setVelocity(int axis, double vel) {
+		this.vel[axis] = vel;
+		sleep(50);
 	}
 
-	public void getPosMin(double[] pos) {
-		System.arraycopy(POS_MIN, 0, pos, 0, DIMS);
-		sleep(100);
-	}
-
-	public void getPosMax(double[] pos) {
-		System.arraycopy(POS_MAX, 0, pos, 0, DIMS);
-		sleep(100);
-	}
-
-	public void getVelMin(double[] vel) {
-		System.arraycopy(VEL_MIN, 0, vel, 0, DIMS);
-		sleep(100);
-	}
-
-	public void getVelMax(double[] vel) {
-		System.arraycopy(VEL_MAX, 0, vel, 0, DIMS);
-		sleep(100);
-	}
-
-	public void setVelocity(double[] vel) {
-		System.arraycopy(vel, 0, this.vel, 0, DIMS);
-		sleep(100);
-	}
-
-	public void setTarget(double[] target) {
-		System.arraycopy(target, 0, this.tar, 0, DIMS);
-		sleep(100);
+	public void setTarget(int axis, double target) {
+		this.tar[axis] = target;
+		sleep(50);
 	}
 
 	private void sleep(long millis) {
@@ -163,9 +139,9 @@ public class SimulatedMotor implements IMotor {
 					}
 					prevTimestamp = timestamp;
 				}
-				if(moving && !wasMoving) {
+				if(moving && !wasMoving && clip != null) {
 					clip.loop(Clip.LOOP_CONTINUOUSLY);
-				} else if(!moving && wasMoving) {
+				} else if(!moving && wasMoving && clip != null) {
 					clip.stop();
 					clip.setFramePosition(0);
 				}
@@ -182,20 +158,14 @@ public class SimulatedMotor implements IMotor {
 
 	public static void main1(String[] args) {
 		SimulatedMotor motor = new SimulatedMotor();
-		double[] d = new double[2];
-		motor.getVelMax(d);
-		motor.setVelocity(d);
-		d[0] = 2.5;
-		d[1] = 1;
-		motor.setTarget(d);
+		motor.setVelocity(IMotor.Y_AXIS, IMotor.POS_MAX_Y);
+		motor.setVelocity(IMotor.Z_AXIS, IMotor.POS_MAX_Z);
+		motor.setTarget(IMotor.Y_AXIS, 2.5);
+		motor.setTarget(IMotor.Z_AXIS, 1);
 		while(motor.isMoving()) {
-			motor.getPosition(d);
-			System.out.println("[" + d[0] + ", " + d[1] + "]");
-			try {
-				Thread.sleep(10);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+			double y = motor.getPosition(IMotor.Y_AXIS);
+			double z = motor.getPosition(IMotor.Z_AXIS);
+			System.out.println("[" + y + ", " + z + "]");
 		}
 		motor.close();
 	}
