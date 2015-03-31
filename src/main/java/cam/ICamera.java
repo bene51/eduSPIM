@@ -32,7 +32,7 @@ package cam;
  */
 public interface ICamera {
 
-	public final int DEPTH  = 400;
+	public final int DEPTH  = 100;
 	public final int WIDTH  = 1280;
 	public final int HEIGHT = 1024;
 
