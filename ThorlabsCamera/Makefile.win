@@ -1,0 +1,33 @@
+# cl -O2 -Zi -EHsc -I "%JAVA_HOME%\include" -I "%JAVA_HOME%\include\win32" -I. -LD orca.cpp camera.cpp tiffencoder.cpp dcamapi.lib -Feorca.dll
+# JAVA_HOME = c:/Program Files/Java/jdk1.7.0_60
+# CL_VERSION = 2010
+
+.SUFFIXES: .cpp .obj
+
+CC = cl
+INCL = /I "$(JAVA_HOME)/include" /I "$(JAVA_HOME)/include/win32" /I "include"
+COMPILE_FLAGS = /c /O2 /EHsc /W3 /nologo /O2 /Zi /MT
+LIBS = lib/uc480_64.lib lib/uc480_tools.lib
+
+CPP_OBJS = cam_NativeCamera.obj \
+           ThorlabsCamera.obj
+
+all: cam_NativeCamera.dll \
+     cam_NativeCamera.exe
+
+clean:
+	del cam_NativeCamera.dll cam_NativeCamera.exe $(CPP_OBJS)
+
+.cpp.obj:
+	@echo Building $@ from $<
+	$(CC) $(COMPILE_FLAGS) $(INCL) /Fe$@ $< >nul
+
+cam_NativeCamera.dll: $(CPP_OBJS)
+	@echo linking...
+	$(CC) /LD /Fe$@ $(LIBS) $** >nul
+	copy /Y cam_NativeCamera.dll ..
+
+cam_NativeCamera.exe: $(CPP_OBJS)
+	@echo linking...
+	$(CC) /Fe$@ $(LIBS) $** >nul
+

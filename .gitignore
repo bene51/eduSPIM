@@ -6,10 +6,10 @@
 *.obj
 *.exe
 *.dll
-*.lib
 *.pdb
 *.ilk
 *.exp
 target
 jars
 plugins
+ThorlabsCamera/cam_NativeCamera.lib
