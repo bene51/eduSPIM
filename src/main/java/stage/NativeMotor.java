@@ -1,5 +1,9 @@
 package stage;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
 public class NativeMotor implements IMotor {
 
 	static {
@@ -53,8 +57,25 @@ public class NativeMotor implements IMotor {
 		stageClose();
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws NumberFormatException, IOException {
+		NativeMotor motor = new NativeMotor(7, 38400);
+		System.out.println("motor initialized");
+		double y = motor.getPosition(Y_AXIS);
+		double z = motor.getPosition(Z_AXIS);
+		System.out.println("y = " + y + ", z = " + z);
 
+		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+		String line;
+		while (!(line = in.readLine()).equals("quit")) {
+			String[] toks = line.split(" ");
+			motor.setTarget(Y_AXIS, Double.parseDouble(toks[0]));
+			motor.setTarget(Z_AXIS, Double.parseDouble(toks[1]));
+			while(motor.isMoving()) {
+				y = motor.getPosition(Y_AXIS);
+				z = motor.getPosition(Z_AXIS);
+				System.out.println("y = " + y + ", z = " + z);
+			}
+		}
+		motor.close();
 	}
-
 }
