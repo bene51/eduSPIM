@@ -2,6 +2,8 @@ package main;
 
 import static stage.IMotor.Y_AXIS;
 import static stage.IMotor.Z_AXIS;
+import ij.IJ;
+import ij.ImagePlus;
 import ij.plugin.LutLoader;
 
 import java.awt.BorderLayout;
@@ -15,11 +17,14 @@ import slider.SliderListener;
 import stage.IMotor;
 import stage.SimulatedMotor;
 import cam.ICamera;
-import cam.NativeCamera;
+import cam.SimulatedCamera;
 import display.DisplayFrame;
 import display.PlaneDisplay;
 
 public class Main {
+
+	private static final int COM_PORT = 7;
+	private static final int BAUD_RATE = 38400;
 
 	private static final double STACK_START_Z = 5;
 	private static final double STACK_END_Z   = 6;
@@ -30,6 +35,7 @@ public class Main {
 
 	public Main() throws IOException { // TODO catch exception
 		final IMotor motor = new SimulatedMotor();
+		// final IMotor motor = new NativeMotor(COM_PORT, BAUD_RATE);
 		// TODO close motor at some point
 		motor.setVelocity(Y_AXIS, IMotor.VEL_MAX_Y);
 		motor.setVelocity(Z_AXIS, IMotor.VEL_MAX_Z);
@@ -44,8 +50,9 @@ public class Main {
 			}
 		}
 
-		// ImagePlus imp = IJ.openImage("/Users/bschmid/flybrain_big.tif");
-		final ICamera camera = new NativeCamera(0); // new SimulatedCamera(imp);
+		ImagePlus imp = IJ.openImage(System.getProperty("user.home") + "/flybrain_big.tif");
+		final ICamera camera = new SimulatedCamera(imp);
+		// final ICamera camera = new NativeCamera(0);
 		// TODO close camera at some point
 
 		URL url = getClass().getResource("/fire.lut");
