@@ -2,6 +2,10 @@ package stage;
 
 public class NativeMotor implements IMotor {
 
+	static {
+		System.loadLibrary("stage_NativeMotor");
+	}
+
 	public NativeMotor(int comPort, int baudRate) {
 		stageConnect(comPort, baudRate);
 		if(stageIsReferenceNeeded()) {
