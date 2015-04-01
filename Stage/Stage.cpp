@@ -222,9 +222,9 @@ double stageGetVelocity(int axis)
 
 bool stageIsMoving(int axis)
 {
-	int ont;
-	SAVE_CALL(PI_IsMoving(ID[axis], AXIS, &ont), ID[axis]);
-	return !ont;
+	int moving;
+	SAVE_CALL(PI_IsMoving(ID[axis], AXIS, &moving), ID[axis]);
+	return moving;
 }
 
 void main(void)
