@@ -4,6 +4,7 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.plugin.LutLoader;
 
+import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Canvas;
 import java.awt.Color;
@@ -147,18 +148,21 @@ public class PlaneDisplay extends Canvas {
 		g.dispose();
 	}
 
-	private Image offscreenImage;
-	private Graphics offscreenGraphics;
+	private Image offscreenImage, renderedImage;
+	private Graphics offscreenGraphics, renderedGraphics;
 	private Dimension offscreenDimension;
 
 	@Override
 	public void paint(Graphics g) {
 		Dimension currentSize = getSize();
-		if (offscreenImage == null || !currentSize.equals(offscreenDimension)) {
+		if (offscreenImage == null || renderedImage == null || !currentSize.equals(offscreenDimension)) {
 			// call the 'java.awt.Component.createImage(...)' method to get an
 			// image
 			offscreenImage = createImage(currentSize.width, currentSize.height);
 			offscreenGraphics = offscreenImage.getGraphics();
+//			renderedImage = new BufferedImage(currentSize.width, currentSize.height, BufferedImage.TYPE_INT_ARGB);
+			renderedImage = createImage(currentSize.width, currentSize.height);
+			renderedGraphics = renderedImage.getGraphics();
 			offscreenDimension = currentSize;
 		}
 
@@ -181,9 +185,13 @@ public class PlaneDisplay extends Canvas {
 		int h = getHeight();
 
 		if(clearGraphics) {
-			g.setColor(Color.black);
-			g.fillRect(0, 0, w, h);
+			((Graphics2D)renderedGraphics).setComposite(AlphaComposite.getInstance(AlphaComposite.CLEAR));
+			renderedGraphics.fillRect(0, 0, w, h);
+			((Graphics2D)renderedGraphics).setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER));
 		}
+
+		g.setColor(Color.black);
+		g.fillRect(0, 0, w, h);
 
 		double sx = (double)w / ICamera.WIDTH;
 		double sy = (double)h / ICamera.HEIGHT;
@@ -192,7 +200,8 @@ public class PlaneDisplay extends Canvas {
 		scale *= 0.8;
 
 		if(drawCoordSys)
-			drawCoordSysInt(g, scale);
+			drawCoordSysInt(renderedGraphics, scale);
+
 
 		double zScale = 1 + (relativeScaleAtZEnd - 1) * z / ICamera.DEPTH;
 
@@ -203,23 +212,13 @@ public class PlaneDisplay extends Canvas {
 		int yOffs = (int)Math.round((h - imageHeight) / 2.0);
 
 		if(data != null)
-			g.drawImage(getImage(), xOffs, yOffs, imageWidth, imageHeight, null);
+			renderedGraphics.drawImage(getImage(), xOffs, yOffs, imageWidth, imageHeight, null);
 
-		zScale = 1 + (relativeScaleAtZEnd - 1) * z / ICamera.DEPTH;
-
-		imageWidth  = 2 * (int)Math.round(ICamera.WIDTH  * scale * zScale / 2.0);
-		imageHeight = 2 * (int)Math.round(ICamera.HEIGHT * scale * zScale / 2.0);
-
-		xOffs = (int)Math.round((w - imageWidth) / 2.0);
-		yOffs = (int)Math.round((h - imageHeight) / 2.0);
+		g.drawImage(renderedImage, 0, 0, null);
 
 		g.setColor(Color.red);
 		g2d.setStroke(new BasicStroke(1.0f));
-		if(!composite) {
-			g.drawRect(xOffs + 1, yOffs + 1, imageWidth - 2, imageHeight - 2);
-		} else {
-			g.drawRect(xOffs + 4, yOffs + 4, imageWidth - 8, imageHeight - 8);
-		}
+		g.drawRect(xOffs, yOffs, imageWidth - 1, imageHeight - 1);
 	}
 
 	private static IndexColorModel[] prepareColorcode(int nlayers, IndexColorModel lut) {
