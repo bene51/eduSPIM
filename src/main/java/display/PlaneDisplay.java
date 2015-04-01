@@ -33,7 +33,7 @@ public class PlaneDisplay extends Canvas {
 	private boolean drawCoordSys = true;
 	private boolean composite = true;
 
-	private double relativeScaleAtZEnd = 0.7;
+	private final double relativeScaleAtZEnd = 0.7;
 
 	public PlaneDisplay(IndexColorModel lut) {
 		setBackground(Color.black);
@@ -202,22 +202,23 @@ public class PlaneDisplay extends Canvas {
 		int xOffs = (int)Math.round((w - imageWidth) / 2.0);
 		int yOffs = (int)Math.round((h - imageHeight) / 2.0);
 
-		g.setColor(Color.WHITE);
-		g2d.setStroke(new BasicStroke(1.0f));
 		if(data != null)
 			g.drawImage(getImage(), xOffs, yOffs, imageWidth, imageHeight, null);
+
+		zScale = 1 + (relativeScaleAtZEnd - 1) * z / ICamera.DEPTH;
+
+		imageWidth  = 2 * (int)Math.round(ICamera.WIDTH  * scale * zScale / 2.0);
+		imageHeight = 2 * (int)Math.round(ICamera.HEIGHT * scale * zScale / 2.0);
+
+		xOffs = (int)Math.round((w - imageWidth) / 2.0);
+		yOffs = (int)Math.round((h - imageHeight) / 2.0);
+
+		g.setColor(Color.red);
+		g2d.setStroke(new BasicStroke(1.0f));
 		if(!composite) {
-			zScale = 1 + (relativeScaleAtZEnd - 1) * z / ICamera.DEPTH;
-
-			imageWidth  = 2 * (int)Math.round(ICamera.WIDTH  * scale * zScale / 2.0);
-			imageHeight = 2 * (int)Math.round(ICamera.HEIGHT * scale * zScale / 2.0);
-
-			xOffs = (int)Math.round((w - imageWidth) / 2.0);
-			yOffs = (int)Math.round((h - imageHeight) / 2.0);
-
-			g.setColor(Color.red);
-			g2d.setStroke(new BasicStroke(1.0f));
 			g.drawRect(xOffs + 1, yOffs + 1, imageWidth - 2, imageHeight - 2);
+		} else {
+			g.drawRect(xOffs + 4, yOffs + 4, imageWidth - 8, imageHeight - 8);
 		}
 	}
 
