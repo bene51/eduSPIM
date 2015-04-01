@@ -227,3 +227,9 @@ bool stageIsMoving(int axis)
 	return !ont;
 }
 
+void main(void)
+{
+	stageConnect(7, 38400);
+	stageClose();
+}
+

@@ -25,5 +25,6 @@ stage_NativeMotor.dll: $(CPP_OBJS)
 	copy /Y bin\PI_GCS2_DLL_x64.dll ..
 
 stage_NativeMotor.exe: $(CPP_OBJS)
-	@echo No exe to build yet, since main is not yet implemented.
+	@echo linking...
+	$(CC) /Fe$@ $(LIBS) $** >nul
 
