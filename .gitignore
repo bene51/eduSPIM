@@ -13,6 +13,5 @@ jars
 plugins
 ThorlabsCamera/cam_NativeCamera.lib
 Stage/stage_NativeMotor.lib
-PI_GCS2_DLL_x64.dll
 stage_NativeMotor.dll
 cam_NativeCamera.dll
