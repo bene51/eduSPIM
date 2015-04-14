@@ -17,11 +17,11 @@ import slider.SliderListener;
 import stage.IMotor;
 import stage.SimulatedMotor;
 import cam.ICamera;
-import cam.SimulatedCamera;
+import cam.NativeCamera;
 import display.DisplayFrame;
 import display.PlaneDisplay;
 
-public class Main {
+public class Microscope {
 
 	private static final int COM_PORT = 7;
 	private static final int BAUD_RATE = 38400;
@@ -33,7 +33,7 @@ public class Main {
 
 	private boolean acquiringStack = false;
 
-	public Main() throws IOException { // TODO catch exception
+	public Microscope() throws IOException { // TODO catch exception
 		final IMotor motor = new SimulatedMotor();
 		// final IMotor motor = new NativeMotor(COM_PORT, BAUD_RATE);
 		// TODO close motor at some point
@@ -51,8 +51,8 @@ public class Main {
 		}
 
 		ImagePlus imp = IJ.openImage(System.getProperty("user.home") + "/flybrain_big.tif");
-		final ICamera camera = new SimulatedCamera(imp);
-		// final ICamera camera = new NativeCamera(0);
+		// final ICamera camera = new SimulatedCamera(imp);
+		final ICamera camera = new NativeCamera(0);
 		// TODO close camera at some point
 
 		URL url = getClass().getResource("/fire.lut");
@@ -99,9 +99,9 @@ public class Main {
 						} else {
 							System.out.println("preview not running");
 						}
-						synchronized(Main.this) {
+						synchronized(Microscope.this) {
 							try {
-								Main.this.wait();
+								Microscope.this.wait();
 							} catch (InterruptedException e) {
 								e.printStackTrace();
 							}
@@ -124,8 +124,8 @@ public class Main {
 						disp.setStackMode(false);
 						motor.setTarget(Y_AXIS, STACK_START_Y + pos * (STACK_END_Y - STACK_START_Y));
 						motor.setTarget(Z_AXIS, STACK_START_Z + pos * (STACK_END_Z - STACK_START_Z));
-						synchronized(Main.this) {
-							Main.this.notifyAll();
+						synchronized(Microscope.this) {
+							Microscope.this.notifyAll();
 						}
 						System.out.println("sliderPositionChanged(" + pos + ")");
 					}
@@ -183,6 +183,6 @@ public class Main {
 	}
 
 	public static void main(String... args) throws IOException {
-		new Main();
+		new Microscope();
 	}
 }
