@@ -171,6 +171,7 @@ public class Microscope {
 							displayPanel.display(null, plane);
 						}
 
+						// set the speed of the motor according to the frame rate
 						double framerate = camera.getFramerate();
 						motor.setVelocity(Y_AXIS, STACK_DY * framerate);
 						motor.setVelocity(Y_AXIS, STACK_DZ * framerate);
@@ -187,6 +188,10 @@ public class Microscope {
 						camera.stopSequence();
 						acquiringStack = false;
 						slider.setPosition(0);
+
+						// reset the motor speed
+						motor.setVelocity(Y_AXIS, IMotor.VEL_MAX_Y);
+						motor.setVelocity(Z_AXIS, IMotor.VEL_MAX_Z);
 					}
 				});
 				displayPanel.requestFocusInWindow();
