@@ -37,7 +37,23 @@ public class SimulatedCamera implements ICamera {
 		currentSequenceIndex = 0;
 	}
 
+	private long sequenceStartTime = 0;
+
 	public void getNextSequenceImage(byte[] ret) {
+		long time = System.currentTimeMillis();
+		if(currentSequenceIndex == 0) {
+			sequenceStartTime = time;
+		} else {
+			long targetTime = (long)(sequenceStartTime + currentSequenceIndex * 1000 / FRAMERATE);
+			if(targetTime > time) {
+				try {
+					Thread.sleep(targetTime - time);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
 		System.arraycopy(image.getStack().getPixels(currentSequenceIndex + 1), 0, ret, 0, WIDTH * HEIGHT);
 		currentSequenceIndex++;
 	}
