@@ -1,6 +1,7 @@
 package stage;
 
-import java.io.File;
+import java.io.InputStream;
+import java.net.URL;
 
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -99,12 +100,10 @@ public class SimulatedMotor implements IMotor {
 
 		public MovingThread() {
 			try {
-				File file = new File(
-		        		"/Users/bschmid/Downloads/Electric Motor 2-SoundBible.com-352105994.wav");
+				URL url = getClass().getResource("/MotorSound.wav");
+				InputStream stream = url.openStream();
 		        clip = AudioSystem.getClip();
-		        // getAudioInputStream() also accepts a File or InputStream
-		        AudioInputStream ais = AudioSystem.
-		            getAudioInputStream( file );
+		        AudioInputStream ais = AudioSystem.getAudioInputStream(stream);
 		        clip.open(ais);
 		        clip.loop(Clip.LOOP_CONTINUOUSLY);
 		        clip.stop();
@@ -172,12 +171,10 @@ public class SimulatedMotor implements IMotor {
 	}
 
 	public static void main(String[] args) throws Exception {
-        File file = new File(
-        		"/Users/bschmid/Downloads/Electric Motor 2-SoundBible.com-352105994.wav");
+		URL url = SimulatedMotor.class.getResource("/MotorSound.wav");
+		InputStream stream = url.openStream();
         Clip clip = AudioSystem.getClip();
-        // getAudioInputStream() also accepts a File or InputStream
-        AudioInputStream ais = AudioSystem.
-            getAudioInputStream( file );
+        AudioInputStream ais = AudioSystem.getAudioInputStream(stream);
         clip.open(ais);
         System.out.println("nFrames: " + clip.getFrameLength());
         clip.loop(Clip.LOOP_CONTINUOUSLY);
