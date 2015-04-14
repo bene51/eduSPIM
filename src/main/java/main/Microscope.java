@@ -73,8 +73,15 @@ public class Microscope {
 		displayPanel.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
-				if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_Q)
+				if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_Q) {
 					shutdown();
+				} else if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_F) {
+					boolean fs = !displayWindow.isFullscreen();
+					System.out.println("put window to fullscreen: " + fs);
+					displayWindow.setFullscreen(fs);
+					displayPanel.requestFocus();
+					displayWindow.repaint();
+				}
 			}
 		});
 		displayWindow = new DisplayFrame(displayPanel);
