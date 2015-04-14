@@ -30,7 +30,7 @@ public class Microscope {
 
 	private static final double STACK_START_Z = 5;
 	private static final double STACK_END_Z   = 6;
-	private static final double STACK_DZ      = 0.002; // in motor units (i.e. mm)
+	private static final double STACK_DZ      = 0.01; // in motor units (i.e. mm)
 	private static final double STACK_START_Y = 0;
 	private static final double STACK_END_Y   = 0;
 	private static final double STACK_DY      = 0;
