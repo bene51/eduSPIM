@@ -10,6 +10,8 @@ public abstract class AbstractSlider {
 	 */
 	public abstract void setPosition(double pos);
 
+	public abstract void close();
+
 	private ArrayList<SliderListener> listeners = new ArrayList<SliderListener>();
 
 	public void addSliderListener(SliderListener l) {

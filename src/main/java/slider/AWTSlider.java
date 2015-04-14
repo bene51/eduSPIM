@@ -25,6 +25,10 @@ public class AWTSlider extends AbstractSlider implements AdjustmentListener {
 		});
 	}
 
+	@Override
+	public void close() {
+	}
+
 	public Scrollbar getScrollbar() {
 		return scroll;
 	}
