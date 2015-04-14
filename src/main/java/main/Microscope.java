@@ -89,6 +89,7 @@ public class Microscope {
 		displayWindow.add(slider.getScrollbar(), BorderLayout.SOUTH);
 		displayWindow.pack();
 		displayWindow.setVisible(true);
+		displayWindow.setFullscreen(true);
 		displayPanel.requestFocusInWindow();
 		sliderQueue = new SingleElementThreadQueue();
 		final byte[] frame = new byte[ICamera.WIDTH * ICamera.HEIGHT];
