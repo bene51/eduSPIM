@@ -130,7 +130,7 @@ public class SimulatedMotor implements IMotor {
 						if(diff != 0) {
 							moving = true;
 							double s = vel[d] * dt;
-							if(s >= diff) {
+							if(s >= Math.abs(diff)) {
 								pos[d] = tar[d];
 							} else {
 								pos[d] += Math.signum(diff) * s;
@@ -139,6 +139,7 @@ public class SimulatedMotor implements IMotor {
 					}
 					prevTimestamp = timestamp;
 				}
+
 				if(moving && !wasMoving && clip != null) {
 					clip.loop(Clip.LOOP_CONTINUOUSLY);
 				} else if(!moving && wasMoving && clip != null) {
