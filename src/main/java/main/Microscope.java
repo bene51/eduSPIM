@@ -182,7 +182,7 @@ public class Microscope {
 						// set the speed of the motor according to the frame rate
 						double framerate = camera.getFramerate();
 						motor.setVelocity(Y_AXIS, STACK_DY * framerate);
-						motor.setVelocity(Y_AXIS, STACK_DZ * framerate);
+						motor.setVelocity(Z_AXIS, STACK_DZ * framerate);
 
 						displayPanel.setStackMode(true);
 						displayPanel.display(null, ICamera.DEPTH - 1);
