@@ -57,5 +57,7 @@ public interface ICamera {
 
 	public void stopSequence();
 
+	public double getFramerate();
+
 	public void close();
 }

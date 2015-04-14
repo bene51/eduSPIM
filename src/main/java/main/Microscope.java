@@ -30,8 +30,10 @@ public class Microscope {
 
 	private static final double STACK_START_Z = 5;
 	private static final double STACK_END_Z   = 6;
+	private static final double STACK_DZ      = 0.002; // in motor units (i.e. mm)
 	private static final double STACK_START_Y = 0;
 	private static final double STACK_END_Y   = 0;
+	private static final double STACK_DY      = 0;
 
 	private boolean acquiringStack = false;
 	private boolean shutdown = false;
@@ -169,7 +171,10 @@ public class Microscope {
 							displayPanel.display(null, plane);
 						}
 
-						// TODO set motor velocity according to frame rate
+						double framerate = camera.getFramerate();
+						motor.setVelocity(Y_AXIS, STACK_DY * framerate);
+						motor.setVelocity(Y_AXIS, STACK_DZ * framerate);
+
 						displayPanel.setStackMode(true);
 						displayPanel.display(null, ICamera.DEPTH - 1);
 						motor.setTarget(Y_AXIS, STACK_START_Y);

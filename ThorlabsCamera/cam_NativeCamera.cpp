@@ -63,6 +63,12 @@ JNIEXPORT void JNICALL Java_cam_NativeCamera_camStopSequence
     camStopSequence(camIdx);
 }
 
+JNIEXPORT jdouble JNICALL Java_cam_NativeCamera_camGetFramerate
+  (JNIEnv *, jclass, jint camIdx)
+{
+    return camGetFramerate(camIdx);
+}
+
 JNIEXPORT void JNICALL Java_cam_NativeCamera_camClose
   (JNIEnv *, jclass, jint camIdx)
 {

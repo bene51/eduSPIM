@@ -287,6 +287,14 @@ camStopSequence(int camIdx)
 	SAVE_CALL(is_ExitImageQueue(cam), camIdx);
 }
 
+double
+camGetFramerate(int camIdx)
+{
+	double fps;
+	SAVE_CALL(is_GetFramesPerSecond(cameras[camIdx], &fps), camIdx);
+	return fps;
+}
+
 void
 camClose(int camIdx)
 {

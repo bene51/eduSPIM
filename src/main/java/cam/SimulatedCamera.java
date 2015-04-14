@@ -4,6 +4,8 @@ import ij.ImagePlus;
 
 public class SimulatedCamera implements ICamera {
 
+	private final double FRAMERATE = 30;
+
 	private ImagePlus image;
 	private boolean previewOn = false;
 
@@ -41,6 +43,10 @@ public class SimulatedCamera implements ICamera {
 	}
 
 	public void stopSequence() {}
+
+	public double getFramerate() {
+		return FRAMERATE;
+	}
 
 	public void close() {}
 }

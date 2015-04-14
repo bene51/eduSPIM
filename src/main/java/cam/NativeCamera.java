@@ -13,15 +13,16 @@ public class NativeCamera implements ICamera {
 	private static native void camStartSequence(int camIdx);
 	private static native void camGetNextSequenceImage(int camIdx, byte[] ret);
 	private static native void camStopSequence(int camIdx);
+	private static native double camGetFramerate(int camIdx);
 	private static native void camClose(int camIdx);
 
 	private boolean previewRunning = false;
 	private int camIdx;
-	
+
 	static {
 		System.loadLibrary("cam_NativeCamera");
 	}
-	
+
 	public NativeCamera(int camIdx) {
 		System.out.println("NativeCamera: constructor");
 		camSetup(camIdx);
@@ -57,10 +58,14 @@ public class NativeCamera implements ICamera {
 		camStopSequence(camIdx);
 	}
 
+	public double getFramerate() {
+		return camGetFramerate(camIdx);
+	}
+
 	public void close() {
 		camClose(camIdx);
 	}
-	
+
 	public static void main(String... args) throws IOException {
 		NativeCamera cam = new NativeCamera(0);
 
@@ -87,7 +92,7 @@ public class NativeCamera implements ICamera {
 		while (!(line = in.readLine()).equals("quit")) {
 			System.out.println("echo: " + line);
 			cam.getPreviewImage(0, frame);
-			System.out.println(Integer.toString((int) frame[0]));
+			System.out.println(Integer.toString(frame[0]));
 		}
 		System.out.println("echo: " + line);
 		cam.stopPreview();

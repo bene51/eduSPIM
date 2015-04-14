@@ -27,6 +27,9 @@ camStopSequence(int camIdx);
 void
 camAcquireSequence(int camIdx);
 
+double
+camGetFramerate(int camIdx);
+
 void
 camClose(int camIdx);
 
