@@ -95,7 +95,7 @@ void
 camSetup(int camIdx)
 {
     if(cameras == NULL) {
-        printf("initializing camras\n");
+        printf("initializing cameras\n");
         nCameras = 0;
         SAVE_CALL(is_GetNumberOfCameras(&nCameras), camIdx);
         printf("%d camera(s) connected\n", nCameras);
@@ -116,16 +116,32 @@ camSetup(int camIdx)
 	print_cam_info(camIdx);
 	print_format_list(camIdx);
 
+	printf("Setting shutter mode to rolling shutter\n");
+	INT shutterMode = IS_DEVICE_FEATURE_CAP_SHUTTER_MODE_ROLLING;
+	if(!SAVE_CALL(is_DeviceFeature(cam,
+			IS_DEVICE_FEATURE_CMD_SET_SHUTTER_MODE,
+			(void *)&shutterMode,
+			sizeof(shutterMode)), camIdx))
+		return;
+
+
 	int cm = is_SetColorMode(cam, IS_GET_COLOR_MODE);
 	printf("Found previous color mode: %d\n", cm);
 
 	UINT nRange[3];
 	ZeroMemory(nRange, sizeof(nRange));
-	if(!SAVE_CALL(is_PixelClock(cam, IS_PIXELCLOCK_CMD_GET_RANGE, (void *)nRange, sizeof(nRange)), camIdx))
-        return;
+	if(!SAVE_CALL(is_PixelClock(cam,
+			IS_PIXELCLOCK_CMD_GET_RANGE,
+			(void *)nRange,
+			sizeof(nRange)), camIdx))
+		return;
+
 	printf("Setting maximum pixel range: %d\n", nRange[1]);
-	if(!SAVE_CALL(is_PixelClock(cam, IS_PIXELCLOCK_CMD_SET, &nRange[1], sizeof(nRange[2])), camIdx))
-        return;
+	if(!SAVE_CALL(is_PixelClock(cam,
+			IS_PIXELCLOCK_CMD_SET,
+			&nRange[1],
+			sizeof(nRange[2])), camIdx))
+		return;
 
 	double min, max, interval;
 	if(!SAVE_CALL(is_GetFrameTimeRange(cam, &min, &max, &interval), camIdx))
@@ -156,6 +172,27 @@ camSetup(int camIdx)
 	if(!SAVE_CALL(is_AOI(cam, IS_AOI_IMAGE_SET_AOI, (void *)&aoi, sizeof(aoi)), camIdx))
         return;
     printf("Setting AOI to fullframe\n");
+
+	printf("Setting flash mode to 'freerun high active'\n");
+	UINT nMode = IO_FLASH_MODE_FREERUN_HI_ACTIVE;
+	if(!SAVE_CALL(is_IO(cam,
+			IS_IO_CMD_FLASH_SET_MODE,
+			(void *)&nMode,
+			sizeof(nMode)), camIdx))
+		return;
+
+	printf("Setting automatic flash parameters\n");
+	IO_FLASH_PARAMS flashParams;
+	if(!SAVE_CALL(is_IO(cam,
+			IS_IO_CMD_FLASH_APPLY_GLOBAL_PARAMS,
+			(void *)&flashParams, sizeof(flashParams)), camIdx))
+		return;
+	if(!SAVE_CALL(is_IO(cam,
+			IS_IO_CMD_FLASH_GET_PARAMS,
+			(void *)&flashParams, sizeof(flashParams)), camIdx))
+		return;
+	printf("    flash delay: %d\n", flashParams.s32Delay);
+	printf("    flash duration: %d\n", flashParams.u32Duration);
 
     int bid;
 
