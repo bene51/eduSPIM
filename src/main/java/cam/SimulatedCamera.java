@@ -54,7 +54,7 @@ public class SimulatedCamera implements ICamera {
 			}
 		}
 
-		System.arraycopy(image.getStack().getPixels(currentSequenceIndex + 1), 0, ret, 0, WIDTH * HEIGHT);
+		System.arraycopy(image.getStack().getPixels(DEPTH - currentSequenceIndex), 0, ret, 0, WIDTH * HEIGHT);
 		currentSequenceIndex++;
 	}
 
