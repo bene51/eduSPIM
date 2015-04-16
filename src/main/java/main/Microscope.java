@@ -23,6 +23,27 @@ import cam.NativeCamera;
 import display.DisplayFrame;
 import display.PlaneDisplay;
 
+/*
+ * - 6 buttons for y+, y-, z+, z-, laser, stack
+ *   software simulation/ with arduino
+ *
+ * - 2nd camera for fluorescence, overlay for scroll mode,
+ *   only fluorescence for stack mode
+ *
+ * - y scrolling
+ *
+ * - mail on exception
+ *
+ * - automatic image upload once per day
+ *
+ * - panel for 'motor moving', etc.
+ *
+ * - mode 'change sample'
+ *     - new positions for y/z start and end
+ *     - new reference image/histogram
+ *
+ * - mode 'calibrate mirror'
+ */
 public class Microscope {
 
 	private static final int COM_PORT = 7;
