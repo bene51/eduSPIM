@@ -66,6 +66,12 @@ JNIEXPORT void JNICALL Java_stage_NativeMotor_stageSetTarget
 	stageSetTarget(axis, pos);
 }
 
+JNIEXPORT void JNICALL Java_stage_NativeMotor_stageStopMoving
+  (JNIEnv *, jclass)
+{
+	stageStopMoving();
+}
+
 JNIEXPORT void JNICALL Java_stage_NativeMotor_stageClose
   (JNIEnv *, jclass)
 {

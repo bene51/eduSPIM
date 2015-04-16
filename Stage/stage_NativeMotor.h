@@ -71,6 +71,9 @@ JNIEXPORT void JNICALL Java_stage_NativeMotor_stageSetVelocity
 JNIEXPORT void JNICALL Java_stage_NativeMotor_stageSetTarget
   (JNIEnv *, jclass, jint, jdouble);
 
+JNIEXPORT void JNICALL Java_stage_NativeMotor_stageStopMoving
+  (JNIEnv *, jclass);
+
 /*
  * Class:     stage_NativeMotor
  * Method:    stageClose

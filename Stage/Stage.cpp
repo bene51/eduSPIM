@@ -123,10 +123,16 @@ bool stageIsReferenceNeeded()
 	return FALSE;
 }
 
+void stageStopMoving()
+{
+	for (int axis = 0; axis < NSTAGES; axis++)
+		SAVE_CALL(PI_HLT(ID[axis], AXIS), ID[axis]);
+}
+
 void stageClose()
 {
 	for (int axis = 0; axis < NSTAGES; axis++)
-		PI_CloseConnection(ID[axis]), ID[axis];
+		PI_CloseConnection(ID[axis]);
 	PI_CloseDaisyChain(daisyChain);
 }
 

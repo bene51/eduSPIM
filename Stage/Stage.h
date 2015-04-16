@@ -21,5 +21,7 @@ double stageGetVelocity(int axis);
 
 bool stageIsMoving(int axis);
 
+void stageStopMoving();
+
 #endif // _STAGE_H_
 
