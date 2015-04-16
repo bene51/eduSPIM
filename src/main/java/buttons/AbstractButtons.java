@@ -1,8 +1,6 @@
 package buttons;
 
 import java.util.ArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public abstract class AbstractButtons {
 
@@ -12,8 +10,6 @@ public abstract class AbstractButtons {
 	public static final int BUTTON_Z_UP   = 3;
 	public static final int BUTTON_STACK  = 4;
 	public static final int BUTTON_LASER  = 5;
-
-	private ExecutorService exec = Executors.newSingleThreadExecutor();
 
 	private int buttonDown = -1;
 
@@ -34,34 +30,36 @@ public abstract class AbstractButtons {
 	public void close() {}
 
 	protected void fireButtonPressed(final int button) {
-		System.out.println("button pressed");
+		System.out.println("button pressed: " + button);
 		// any button is already down, don't fire additional events before it's released
 		synchronized(this) {
 			if(buttonDown != -1)
 				return;
 			buttonDown = button;
 		}
-		exec.submit(new Runnable() {
+		new Thread() {
+			@Override
 			public void run() {
 				for(ButtonsListener l : listeners)
 					l.buttonPressed(button);
 			}
-		});
+		}.start();
 	}
 
 	protected void fireButtonReleased(final int button) {
-		System.out.println("Button released");
+		System.out.println("button released: " + button);
 		// This should not happen, let's just be sure
 		synchronized(this) {
 			if(button != buttonDown)
 				System.out.println("Button " + button + " was released but button " + buttonDown + " was pressed before");
 			buttonDown = -1;
 		}
-		exec.submit(new Runnable() {
+		new Thread() {
+			@Override
 			public void run() {
 				for(ButtonsListener l : listeners)
 					l.buttonReleased(button);
 			}
-		});
+		}.start();
 	}
 }

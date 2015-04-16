@@ -119,8 +119,15 @@ public class Microscope {
 
 		buttons.addButtonsListener(new ButtonsListener() {
 			public void buttonPressed(int button) {
-				if(acquiringStack)
-					return;
+				System.out.println("mic: button pressed " + button);
+				synchronized(Microscope.this) {
+					if(acquiringStack) {
+						System.out.println("already acquiring... returning");
+						return;
+					} else {
+						System.out.println("Not acquiring stack");
+					}
+				}
 
 				switch(button) {
 				case AbstractButtons.BUTTON_LASER:
@@ -165,6 +172,9 @@ public class Microscope {
 	}
 
 	void startPreview(int button, int axis, double target, byte[] frame) {
+		synchronized(this) {
+			acquiringStack = true;
+		}
 		System.out.println("startPreview: axis = " + axis + " target = " + target);
 		// get current plane
 		double zpos = motor.getPosition(Z_AXIS);
@@ -205,11 +215,15 @@ public class Microscope {
 		motor.setVelocity(Y_AXIS, IMotor.VEL_MAX_Y);
 		motor.setVelocity(Z_AXIS, IMotor.VEL_MAX_Z);
 
-		acquiringStack = false;
+		synchronized(this) {
+			acquiringStack = false;
+		}
 	}
 
 	void acquireStack(byte[] frame) {
-		acquiringStack = true;
+		synchronized(this) {
+			acquiringStack = true;
+		}
 		// make sure the other thread is not doing anything now
 		while(camera.isPreviewRunning())
 			sleep(100);
@@ -239,11 +253,13 @@ public class Microscope {
 			displayPanel.display(frame, i);
 		}
 		camera.stopSequence();
-		acquiringStack = false;
 
 		// reset the motor speed
 		motor.setVelocity(Y_AXIS, IMotor.VEL_MAX_Y);
 		motor.setVelocity(Z_AXIS, IMotor.VEL_MAX_Z);
+		synchronized(this) {
+			acquiringStack = false;
+		}
 	}
 
 	private static void sleep(long ms) {
