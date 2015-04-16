@@ -58,11 +58,9 @@ public class Microscope {
 	private static final double STACK_DY      = 0;
 
 	private boolean acquiringStack = false;
-//	private boolean shutdown = false;
 
 	private final IMotor motor;
 	private final ICamera camera;
-	// private final AWTSlider slider;
 	private final AbstractButtons buttons;
 
 	private final SingleElementThreadQueue sliderQueue;
@@ -109,8 +107,6 @@ public class Microscope {
 			}
 		});
 		displayWindow = new DisplayFrame(displayPanel);
-		// slider = new AWTSlider();
-		// displayWindow.add(slider.getScrollbar(), BorderLayout.SOUTH);
 		buttons = new AWTButtons();
 		if(buttons instanceof AWTButtons)
 			displayWindow.add(((AWTButtons)buttons).getPanel(), BorderLayout.EAST);
@@ -120,50 +116,6 @@ public class Microscope {
 		displayPanel.requestFocusInWindow();
 		sliderQueue = new SingleElementThreadQueue();
 		final byte[] frame = new byte[ICamera.WIDTH * ICamera.HEIGHT];
-
-
-//		new Thread() {
-//			@Override
-//			public void run() {
-//
-//				int lastPreviewPlane = -1;
-//
-//				while(!shutdown) {
-//					double pos = motor.getPosition(Z_AXIS);
-//					double rel = (pos - STACK_START_Z) / (STACK_END_Z - STACK_START_Z);
-//					System.out.println("rel = " + rel);
-//					int plane = (int)Math.round(rel * ICamera.DEPTH);
-//					if(plane != lastPreviewPlane)  {
-//						System.out.println("plane = " + plane);
-//						if(!camera.isPreviewRunning())
-//							camera.startPreview();
-//						System.out.println("before getPreviewImage");
-//						camera.getPreviewImage(plane, frame);
-//						System.out.println("after getPreviewImage");
-//						System.out.println("About to draw new preview image");
-//						displayPanel.display(frame, plane);
-//						lastPreviewPlane = plane;
-//					}
-//
-//					if(!motor.isMoving() && sliderQueue.isIdle() || acquiringStack) {
-//						if(camera.isPreviewRunning()) {
-//							camera.stopPreview();
-//						} else {
-//							System.out.println("preview not running");
-//						}
-//						synchronized(Microscope.this) {
-//							try {
-//								Microscope.this.wait();
-//							} catch (InterruptedException e) {
-//								e.printStackTrace();
-//							}
-//						}
-//					} else {
-//						System.out.println("sliderQueue not idle");
-//					}
-//				}
-//			}
-//		}.start();
 
 		buttons.addButtonsListener(new ButtonsListener() {
 			public void buttonPressed(int button) {
@@ -210,42 +162,6 @@ public class Microscope {
 				}
 			}
 		});
-
-//		slider.addSliderListener(new SliderListener() {
-//			public int sliderPositionChanged(final double pos) {
-//				// only push if not acquiring a stack
-//				if(acquiringStack)
-//					return 0;
-//				sliderQueue.push(new Runnable() {
-//					public void run() {
-//						displayPanel.setStackMode(false);
-//						motor.setTarget(Y_AXIS, STACK_START_Y + pos * (STACK_END_Y - STACK_START_Y));
-//						motor.setTarget(Z_AXIS, STACK_START_Z + pos * (STACK_END_Z - STACK_START_Z));
-//						synchronized(Microscope.this) {
-//							Microscope.this.notifyAll();
-//						}
-//						System.out.println("sliderPositionChanged(" + pos + ")");
-//					}
-//				});
-//				displayPanel.requestFocusInWindow();
-//				return 0;
-//			}
-//
-//			public int sliderReleased(double startPos) {
-//				System.out.println("sliderPositionReleased(" + startPos + ")");
-//				// only push if not acquiring a stack
-//				if(acquiringStack)
-//					return 0;
-//				sliderQueue.push(new Runnable() {
-//					public void run() {
-//						acquireStack(frame);
-//						slider.setPosition(0);
-//					}
-//				});
-//				displayPanel.requestFocusInWindow();
-//				return 0;
-//			}
-//		});
 	}
 
 	void startPreview(int button, int axis, double target, byte[] frame) {
@@ -339,12 +255,10 @@ public class Microscope {
 	}
 
 	public void shutdown() {
-//		shutdown = true;
 		while(!sliderQueue.isIdle())
 			sleep(100);
 		motor.close();
 		camera.close();
-//		slider.close();
 		buttons.close();
 
 		sliderQueue.shutdown();
