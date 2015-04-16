@@ -20,6 +20,7 @@ public class SimulatedMotor implements IMotor {
 	private final Object lock = new Object();
 	private double epsilon = 1e-7;
 	private Thread movingThread;
+	private boolean stopMoving = false;
 
 	public SimulatedMotor() {
 		movingThread = new Thread(new MovingThread());
@@ -60,7 +61,7 @@ public class SimulatedMotor implements IMotor {
 				}
 			}
 		}
-		System.out.println("motor.moving? " + moving);
+		System.out.println("motor.moving? " + moving + " (" + pos[0] + ", " + pos[1] + ")");
 		sleep(100);
 		return moving;
 	}
@@ -81,6 +82,10 @@ public class SimulatedMotor implements IMotor {
 		} catch(InterruptedException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public void stop() {
+		stopMoving = true;
 	}
 
 	public void close() {
@@ -122,8 +127,15 @@ public class SimulatedMotor implements IMotor {
 			while(!closed) {
 				long timestamp = System.currentTimeMillis();
 				double dt = (timestamp - prevTimestamp) / 1000.0;
+				prevTimestamp = timestamp;
 				boolean moving = false;
 				synchronized(lock) {
+					if(stopMoving) {
+						for(int d = 0; d < DIMS; d++)
+							tar[d] = pos[d];
+						stopMoving = false;
+					}
+
 					for(int d = 0; d < DIMS; d++) {
 						double diff = tar[d] - pos[d];
 						if(diff != 0) {
@@ -136,7 +148,6 @@ public class SimulatedMotor implements IMotor {
 							}
 						}
 					}
-					prevTimestamp = timestamp;
 				}
 
 				if(moving && !wasMoving && clip != null) {

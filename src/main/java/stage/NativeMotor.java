@@ -27,6 +27,7 @@ public class NativeMotor implements IMotor {
 	private static native boolean stageIsMoving(int axis);
 	private static native void stageSetVelocity(int axis, double vel);
 	private static native void stageSetTarget(int axis, double pos);
+	private static native void stageStopMoving();
 	private static native void stageClose();
 
 	public double getPosition(int axis) {
@@ -51,6 +52,10 @@ public class NativeMotor implements IMotor {
 
 	public void setTarget(int axis, double pos) {
 		stageSetTarget(axis, pos);
+	}
+
+	public void stop() {
+		stageStopMoving();
 	}
 
 	public void close() {

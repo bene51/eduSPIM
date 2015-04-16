@@ -27,5 +27,7 @@ public interface IMotor {
 
 	public void setTarget(int axis, double pos);
 
+	public void stop();
+
 	public void close();
 }
