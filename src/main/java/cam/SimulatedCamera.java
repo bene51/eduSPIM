@@ -20,6 +20,8 @@ public class SimulatedCamera implements ICamera {
 	}
 
 	public void getPreviewImage(int z, byte[] ret) {
+		if(z < 0) z = 0;
+		if(z > DEPTH - 1) z = DEPTH - 1;
 		System.arraycopy(image.getStack().getPixels(z + 1), 0, ret, 0, WIDTH * HEIGHT);
 	}
 
