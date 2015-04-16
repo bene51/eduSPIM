@@ -14,12 +14,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
-import slider.AWTSlider;
-import slider.SliderListener;
 import stage.IMotor;
 import stage.SimulatedMotor;
+import buttons.AWTButtons;
+import buttons.AbstractButtons;
+import buttons.ButtonsListener;
 import cam.ICamera;
-import cam.NativeCamera;
+import cam.SimulatedCamera;
 import display.DisplayFrame;
 import display.PlaneDisplay;
 
@@ -57,11 +58,12 @@ public class Microscope {
 	private static final double STACK_DY      = 0;
 
 	private boolean acquiringStack = false;
-	private boolean shutdown = false;
+//	private boolean shutdown = false;
 
 	private final IMotor motor;
 	private final ICamera camera;
-	private final AWTSlider slider;
+	// private final AWTSlider slider;
+	private final AbstractButtons buttons;
 
 	private final SingleElementThreadQueue sliderQueue;
 
@@ -102,12 +104,16 @@ public class Microscope {
 					displayWindow.setFullscreen(fs);
 					displayPanel.requestFocus();
 					displayWindow.repaint();
+					displayPanel.render();
 				}
 			}
 		});
 		displayWindow = new DisplayFrame(displayPanel);
-		slider = new AWTSlider();
-		displayWindow.add(slider.getScrollbar(), BorderLayout.SOUTH);
+		// slider = new AWTSlider();
+		// displayWindow.add(slider.getScrollbar(), BorderLayout.SOUTH);
+		buttons = new AWTButtons();
+		if(buttons instanceof AWTButtons)
+			displayWindow.add(((AWTButtons)buttons).getPanel(), BorderLayout.EAST);
 		displayWindow.pack();
 		displayWindow.setVisible(true);
 		displayWindow.setFullscreen(true);
@@ -116,117 +122,212 @@ public class Microscope {
 		final byte[] frame = new byte[ICamera.WIDTH * ICamera.HEIGHT];
 
 
-		new Thread() {
-			@Override
-			public void run() {
+//		new Thread() {
+//			@Override
+//			public void run() {
+//
+//				int lastPreviewPlane = -1;
+//
+//				while(!shutdown) {
+//					double pos = motor.getPosition(Z_AXIS);
+//					double rel = (pos - STACK_START_Z) / (STACK_END_Z - STACK_START_Z);
+//					System.out.println("rel = " + rel);
+//					int plane = (int)Math.round(rel * ICamera.DEPTH);
+//					if(plane != lastPreviewPlane)  {
+//						System.out.println("plane = " + plane);
+//						if(!camera.isPreviewRunning())
+//							camera.startPreview();
+//						System.out.println("before getPreviewImage");
+//						camera.getPreviewImage(plane, frame);
+//						System.out.println("after getPreviewImage");
+//						System.out.println("About to draw new preview image");
+//						displayPanel.display(frame, plane);
+//						lastPreviewPlane = plane;
+//					}
+//
+//					if(!motor.isMoving() && sliderQueue.isIdle() || acquiringStack) {
+//						if(camera.isPreviewRunning()) {
+//							camera.stopPreview();
+//						} else {
+//							System.out.println("preview not running");
+//						}
+//						synchronized(Microscope.this) {
+//							try {
+//								Microscope.this.wait();
+//							} catch (InterruptedException e) {
+//								e.printStackTrace();
+//							}
+//						}
+//					} else {
+//						System.out.println("sliderQueue not idle");
+//					}
+//				}
+//			}
+//		}.start();
 
-				int lastPreviewPlane = -1;
+		buttons.addButtonsListener(new ButtonsListener() {
+			public void buttonPressed(int button) {
+				if(acquiringStack)
+					return;
 
-				while(!shutdown) {
-					double pos = motor.getPosition(Z_AXIS);
-					double rel = (pos - STACK_START_Z) / (STACK_END_Z - STACK_START_Z);
-					System.out.println("rel = " + rel);
-					int plane = (int)Math.round(rel * ICamera.DEPTH);
-					if(plane != lastPreviewPlane)  {
-						System.out.println("plane = " + plane);
-						if(!camera.isPreviewRunning())
-							camera.startPreview();
-						System.out.println("before getPreviewImage");
-						camera.getPreviewImage(plane, frame);
-						System.out.println("after getPreviewImage");
-						System.out.println("About to draw new preview image");
-						displayPanel.display(frame, plane);
-						lastPreviewPlane = plane;
-					}
-
-					if(!motor.isMoving() && sliderQueue.isIdle() || acquiringStack) {
-						if(camera.isPreviewRunning()) {
-							camera.stopPreview();
-						} else {
-							System.out.println("preview not running");
-						}
-						synchronized(Microscope.this) {
-							try {
-								Microscope.this.wait();
-							} catch (InterruptedException e) {
-								e.printStackTrace();
-							}
-						}
-					} else {
-						System.out.println("sliderQueue not idle");
-					}
+				switch(button) {
+				case AbstractButtons.BUTTON_LASER:
+					// TODO move mirror away and switch laser on
+					break;
+				case AbstractButtons.BUTTON_STACK:
+					acquireStack(frame);
+					break;
+				case AbstractButtons.BUTTON_Y_DOWN:
+					startPreview(button, Y_AXIS, STACK_START_Y, frame);
+					break;
+				case AbstractButtons.BUTTON_Y_UP:
+					startPreview(button, Y_AXIS, STACK_END_Y, frame);
+					break;
+				case AbstractButtons.BUTTON_Z_DOWN:
+					startPreview(button, Z_AXIS, STACK_START_Z, frame);
+					break;
+				case AbstractButtons.BUTTON_Z_UP:
+					startPreview(button, Z_AXIS, STACK_END_Z, frame);
+					break;
 				}
 			}
-		}.start();
 
-		slider.addSliderListener(new SliderListener() {
-			public int sliderPositionChanged(final double pos) {
-				// only push if not acquiring a stack
-				if(acquiringStack)
-					return 0;
-				sliderQueue.push(new Runnable() {
-					public void run() {
-						displayPanel.setStackMode(false);
-						motor.setTarget(Y_AXIS, STACK_START_Y + pos * (STACK_END_Y - STACK_START_Y));
-						motor.setTarget(Z_AXIS, STACK_START_Z + pos * (STACK_END_Z - STACK_START_Z));
-						synchronized(Microscope.this) {
-							Microscope.this.notifyAll();
-						}
-						System.out.println("sliderPositionChanged(" + pos + ")");
-					}
-				});
-				displayPanel.requestFocusInWindow();
-				return 0;
-			}
-
-			public int sliderReleased(double startPos) {
-				System.out.println("sliderPositionReleased(" + startPos + ")");
-				// only push if not acquiring a stack
-				if(acquiringStack)
-					return 0;
-				sliderQueue.push(new Runnable() {
-					public void run() {
-						acquiringStack = true;
-						// make sure the other thread is not doing anything now
-						while(camera.isPreviewRunning())
-							sleep(100);
-
-						motor.setTarget(Y_AXIS, STACK_END_Y);
-						motor.setTarget(Z_AXIS, STACK_END_Z);
-						while(motor.isMoving()) {
-							double pos = motor.getPosition(Z_AXIS);
-							double rel = (pos - STACK_START_Z) / (STACK_END_Z - STACK_START_Z);
-							int plane = (int)Math.round(rel * ICamera.DEPTH);
-							displayPanel.display(null, plane);
-						}
-
-						// set the speed of the motor according to the frame rate
-						double framerate = camera.getFramerate();
-						motor.setVelocity(Y_AXIS, STACK_DY * framerate);
-						motor.setVelocity(Z_AXIS, STACK_DZ * framerate);
-
-						displayPanel.setStackMode(true);
-						displayPanel.display(null, ICamera.DEPTH - 1);
-						motor.setTarget(Y_AXIS, STACK_START_Y);
-						motor.setTarget(Z_AXIS, STACK_START_Z);
-						camera.startSequence();
-						for(int i = ICamera.DEPTH - 1; i >= 0; i--) {
-							camera.getNextSequenceImage(frame);
-							displayPanel.display(frame, i);
-						}
-						camera.stopSequence();
-						acquiringStack = false;
-						slider.setPosition(0);
-
-						// reset the motor speed
-						motor.setVelocity(Y_AXIS, IMotor.VEL_MAX_Y);
-						motor.setVelocity(Z_AXIS, IMotor.VEL_MAX_Z);
-					}
-				});
-				displayPanel.requestFocusInWindow();
-				return 0;
+			public void buttonReleased(int button) {
+				switch(button) {
+				case AbstractButtons.BUTTON_LASER:
+					// TODO move mirror back and switch laser to triggered
+					break;
+				case AbstractButtons.BUTTON_STACK:
+					break;
+				case AbstractButtons.BUTTON_Y_DOWN:
+					break;
+				case AbstractButtons.BUTTON_Y_UP:
+					break;
+				case AbstractButtons.BUTTON_Z_DOWN:
+					break;
+				case AbstractButtons.BUTTON_Z_UP:
+					break;
+				}
 			}
 		});
+
+//		slider.addSliderListener(new SliderListener() {
+//			public int sliderPositionChanged(final double pos) {
+//				// only push if not acquiring a stack
+//				if(acquiringStack)
+//					return 0;
+//				sliderQueue.push(new Runnable() {
+//					public void run() {
+//						displayPanel.setStackMode(false);
+//						motor.setTarget(Y_AXIS, STACK_START_Y + pos * (STACK_END_Y - STACK_START_Y));
+//						motor.setTarget(Z_AXIS, STACK_START_Z + pos * (STACK_END_Z - STACK_START_Z));
+//						synchronized(Microscope.this) {
+//							Microscope.this.notifyAll();
+//						}
+//						System.out.println("sliderPositionChanged(" + pos + ")");
+//					}
+//				});
+//				displayPanel.requestFocusInWindow();
+//				return 0;
+//			}
+//
+//			public int sliderReleased(double startPos) {
+//				System.out.println("sliderPositionReleased(" + startPos + ")");
+//				// only push if not acquiring a stack
+//				if(acquiringStack)
+//					return 0;
+//				sliderQueue.push(new Runnable() {
+//					public void run() {
+//						acquireStack(frame);
+//						slider.setPosition(0);
+//					}
+//				});
+//				displayPanel.requestFocusInWindow();
+//				return 0;
+//			}
+//		});
+	}
+
+	void startPreview(int button, int axis, double target, byte[] frame) {
+		System.out.println("startPreview: axis = " + axis + " target = " + target);
+		// get current plane
+		double zpos = motor.getPosition(Z_AXIS);
+		double zrel = (zpos - STACK_START_Z) / (STACK_END_Z - STACK_START_Z);
+		int plane = (int)Math.round(zrel * ICamera.DEPTH);
+		System.out.println("start plane = " + plane);
+
+		// set the speed of the motor according to the frame rate
+		double framerate = camera.getFramerate();
+		motor.setVelocity(Y_AXIS, STACK_DY * framerate);
+		motor.setVelocity(Z_AXIS, STACK_DZ * framerate);
+
+		displayPanel.setStackMode(false);
+		motor.setTarget(axis, target);
+		camera.startPreview();
+
+		while(motor.isMoving(axis)) {
+			// stop if button was released
+			if(buttons.getButtonDown() != button) {
+				motor.stop();
+				while(motor.isMoving())
+					sleep(50);
+				System.out.println("stopped motor");
+				break;
+			}
+			if(axis == Z_AXIS) {
+				zpos = motor.getPosition(Z_AXIS);
+				zrel = (zpos - STACK_START_Z) / (STACK_END_Z - STACK_START_Z);
+				plane = (int)Math.round(zrel * ICamera.DEPTH);
+			}
+			camera.getPreviewImage(plane, frame);
+			displayPanel.display(frame, plane);
+			System.out.println("display z = " + plane);
+		}
+		camera.stopPreview();
+
+		// reset the motor speed
+		motor.setVelocity(Y_AXIS, IMotor.VEL_MAX_Y);
+		motor.setVelocity(Z_AXIS, IMotor.VEL_MAX_Z);
+
+		acquiringStack = false;
+	}
+
+	void acquireStack(byte[] frame) {
+		acquiringStack = true;
+		// make sure the other thread is not doing anything now
+		while(camera.isPreviewRunning())
+			sleep(100);
+
+		motor.setTarget(Y_AXIS, STACK_END_Y);
+		motor.setTarget(Z_AXIS, STACK_END_Z);
+		displayPanel.setStackMode(false);
+		while(motor.isMoving()) {
+			double pos = motor.getPosition(Z_AXIS);
+			double rel = (pos - STACK_START_Z) / (STACK_END_Z - STACK_START_Z);
+			int plane = (int)Math.round(rel * ICamera.DEPTH);
+			displayPanel.display(null, plane);
+		}
+
+		// set the speed of the motor according to the frame rate
+		double framerate = camera.getFramerate();
+		motor.setVelocity(Y_AXIS, STACK_DY * framerate);
+		motor.setVelocity(Z_AXIS, STACK_DZ * framerate);
+
+		displayPanel.setStackMode(true);
+		displayPanel.display(null, ICamera.DEPTH - 1);
+		motor.setTarget(Y_AXIS, STACK_START_Y);
+		motor.setTarget(Z_AXIS, STACK_START_Z);
+		camera.startSequence();
+		for(int i = ICamera.DEPTH - 1; i >= 0; i--) {
+			camera.getNextSequenceImage(frame);
+			displayPanel.display(frame, i);
+		}
+		camera.stopSequence();
+		acquiringStack = false;
+
+		// reset the motor speed
+		motor.setVelocity(Y_AXIS, IMotor.VEL_MAX_Y);
+		motor.setVelocity(Z_AXIS, IMotor.VEL_MAX_Z);
 	}
 
 	private static void sleep(long ms) {
@@ -238,12 +339,13 @@ public class Microscope {
 	}
 
 	public void shutdown() {
-		shutdown = true;
+//		shutdown = true;
 		while(!sliderQueue.isIdle())
 			sleep(100);
 		motor.close();
 		camera.close();
-		slider.close();
+//		slider.close();
+		buttons.close();
 
 		sliderQueue.shutdown();
 		displayWindow.dispose();
