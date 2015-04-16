@@ -82,9 +82,9 @@ public class Microscope {
 		while(motor.isMoving())
 			sleep(100);
 
-		ImagePlus imp = IJ.openImage(System.getProperty("user.home") + "/flybrain_big.tif");
-		// final ICamera camera = new SimulatedCamera(imp);
-		camera = new NativeCamera(0);
+		ImagePlus imp = IJ.openImage(System.getProperty("user.home") + "/HeadBack030_010um_2.tif");
+		camera = new SimulatedCamera(imp);
+		// camera = new NativeCamera(0);
 
 		URL url = getClass().getResource("/fire.lut");
 		InputStream stream = url.openStream();
