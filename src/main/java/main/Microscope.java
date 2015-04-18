@@ -50,6 +50,13 @@ public class Microscope {
 	private static final int COM_PORT = 7;
 	private static final int BAUD_RATE = 38400;
 
+	private static enum Mode {
+		NORMAL,
+		DEFINE_VOLUME_START,
+		DEFINE_VOLUME_END
+	}
+
+	private Mode mode = Mode.NORMAL;
 
 	private boolean acquiringStack = false;
 
@@ -97,6 +104,37 @@ public class Microscope {
 					displayPanel.requestFocus();
 					displayWindow.repaint();
 					displayPanel.render();
+				} else if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_C) {
+//					displayWindow.add(new CalibrationPanel(), BorderLayout.WEST);
+//					displayWindow.doLayout();
+//					displayWindow.repaint();
+//					displayPanel.render();
+					// TODO set stack limits to motor limits
+					mode = Mode.DEFINE_VOLUME_START;
+					displayWindow.showMessage("Go to the y/z beginning of the volume and press <Enter>");
+				} else if(e.getKeyCode() == KeyEvent.VK_ENTER) {
+					if(mode == Mode.NORMAL)
+						return;
+					if(mode == Mode.DEFINE_VOLUME_START) {
+						Preferences.setStackYStart(motor.getPosition(Y_AXIS));
+						Preferences.setStackZStart(motor.getPosition(Z_AXIS));
+						mode = Mode.DEFINE_VOLUME_END;
+						displayWindow.showMessage("Go to the y/z end of the volume and press <Enter>");
+						return;
+					}
+					if(mode == Mode.DEFINE_VOLUME_END) {
+						Preferences.setStackYEnd(motor.getPosition(Y_AXIS));
+						Preferences.setStackZEnd(motor.getPosition(Z_AXIS));
+						mode = Mode.NORMAL;
+						displayWindow.showMessage("Start: (" +
+								Preferences.getStackYStart() + ", " +
+								Preferences.getStackYEnd() + ")    Stop: (" +
+								Preferences.getStackZStart() + ", " +
+								Preferences.getStackZEnd() + ")");
+						sleep(5000);
+						displayWindow.clearMessage();
+						return;
+					}
 				}
 			}
 		});
