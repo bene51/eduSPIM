@@ -95,6 +95,8 @@ public class Microscope {
 		displayPanel.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
+				if(acquiringStack)
+					return;
 				if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_Q) {
 					shutdown();
 				} else if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_F) {
