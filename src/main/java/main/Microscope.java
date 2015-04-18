@@ -154,6 +154,7 @@ public class Microscope {
 
 		buttons.addButtonsListener(new ButtonsListener() {
 			public void buttonPressed(int button) {
+				displayPanel.requestFocus();
 				System.out.println("mic: button pressed " + button);
 				synchronized(Microscope.this) {
 					if(acquiringStack) {
@@ -187,6 +188,7 @@ public class Microscope {
 			}
 
 			public void buttonReleased(int button) {
+				displayPanel.requestFocus();
 				switch(button) {
 				case AbstractButtons.BUTTON_LASER:
 					// TODO move mirror back and switch laser to triggered
