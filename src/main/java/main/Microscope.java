@@ -72,6 +72,7 @@ public class Microscope {
 	// TODO whenever there occurs an exception with the camera, switch to artificial camera.
 	// TODO whenever there occurs an exception with the stage, switch to artificial camera and stage.
 	// TODO same for mirror once it's implemented
+	// TODO acquireStack should not move the motor in y direction
 	public Microscope() throws IOException { // TODO catch exception
 		motor = new SimulatedMotor();
 		// final IMotor motor = new NativeMotor(COM_PORT, BAUD_RATE);
