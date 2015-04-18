@@ -50,12 +50,6 @@ public class Microscope {
 	private static final int COM_PORT = 7;
 	private static final int BAUD_RATE = 38400;
 
-	private static final double STACK_START_Z = 5;
-	private static final double STACK_END_Z   = 6;
-	private static final double STACK_DZ      = 0.01; // in motor units (i.e. mm)
-	private static final double STACK_START_Y = 0;
-	private static final double STACK_END_Y   = 0;
-	private static final double STACK_DY      = 0;
 
 	private boolean acquiringStack = false;
 
@@ -76,8 +70,8 @@ public class Microscope {
 		// final IMotor motor = new NativeMotor(COM_PORT, BAUD_RATE);
 		motor.setVelocity(Y_AXIS, IMotor.VEL_MAX_Y);
 		motor.setVelocity(Z_AXIS, IMotor.VEL_MAX_Z);
-		motor.setTarget(Y_AXIS, STACK_START_Y);
-		motor.setTarget(Z_AXIS, STACK_START_Z);
+		motor.setTarget(Y_AXIS, Preferences.getStackYStart());
+		motor.setTarget(Z_AXIS, Preferences.getStackZStart());
 
 		while(motor.isMoving())
 			sleep(100);
@@ -138,16 +132,16 @@ public class Microscope {
 					acquireStack(frame);
 					break;
 				case AbstractButtons.BUTTON_Y_DOWN:
-					startPreview(button, Y_AXIS, STACK_START_Y, frame);
+					startPreview(button, Y_AXIS, Preferences.getStackYStart(), frame);
 					break;
 				case AbstractButtons.BUTTON_Y_UP:
-					startPreview(button, Y_AXIS, STACK_END_Y, frame);
+					startPreview(button, Y_AXIS, Preferences.getStackYEnd(), frame);
 					break;
 				case AbstractButtons.BUTTON_Z_DOWN:
-					startPreview(button, Z_AXIS, STACK_START_Z, frame);
+					startPreview(button, Z_AXIS, Preferences.getStackZStart(), frame);
 					break;
 				case AbstractButtons.BUTTON_Z_UP:
-					startPreview(button, Z_AXIS, STACK_END_Z, frame);
+					startPreview(button, Z_AXIS, Preferences.getStackZEnd(), frame);
 					break;
 				}
 			}
@@ -172,21 +166,28 @@ public class Microscope {
 		});
 	}
 
+	int getCurrentPlane() {
+		double zpos = motor.getPosition(Z_AXIS);
+		double zrel = (zpos - Preferences.getStackZStart()) / (Preferences.getStackZEnd() - Preferences.getStackZStart());
+		return (int)Math.round(zrel * ICamera.DEPTH);
+	}
+
 	void startPreview(int button, int axis, double target, byte[] frame) {
 		synchronized(this) {
 			acquiringStack = true;
 		}
 		System.out.println("startPreview: axis = " + axis + " target = " + target);
 		// get current plane
-		double zpos = motor.getPosition(Z_AXIS);
-		double zrel = (zpos - STACK_START_Z) / (STACK_END_Z - STACK_START_Z);
-		int plane = (int)Math.round(zrel * ICamera.DEPTH);
+		int plane = getCurrentPlane();
 		System.out.println("start plane = " + plane);
 
 		// set the speed of the motor according to the frame rate
 		double framerate = camera.getFramerate();
-		motor.setVelocity(Y_AXIS, STACK_DY * framerate);
-		motor.setVelocity(Z_AXIS, STACK_DZ * framerate);
+		double dy = (Preferences.getStackYEnd() - Preferences.getStackYStart()) / ICamera.DEPTH;
+		double dz = (Preferences.getStackZEnd() - Preferences.getStackZStart()) / ICamera.DEPTH;
+
+		motor.setVelocity(Y_AXIS, dy * framerate);
+		motor.setVelocity(Z_AXIS, dz * framerate);
 
 		displayPanel.setStackMode(false);
 		motor.setTarget(axis, target);
@@ -201,11 +202,9 @@ public class Microscope {
 				System.out.println("stopped motor");
 				break;
 			}
-			if(axis == Z_AXIS) {
-				zpos = motor.getPosition(Z_AXIS);
-				zrel = (zpos - STACK_START_Z) / (STACK_END_Z - STACK_START_Z);
-				plane = (int)Math.round(zrel * ICamera.DEPTH);
-			}
+			if(axis == Z_AXIS)
+				plane = getCurrentPlane();
+
 			camera.getPreviewImage(plane, frame);
 			displayPanel.display(frame, plane);
 			System.out.println("display z = " + plane);
@@ -229,25 +228,25 @@ public class Microscope {
 		while(camera.isPreviewRunning())
 			sleep(100);
 
-		motor.setTarget(Y_AXIS, STACK_END_Y);
-		motor.setTarget(Z_AXIS, STACK_END_Z);
+		motor.setTarget(Y_AXIS, Preferences.getStackYEnd());
+		motor.setTarget(Z_AXIS, Preferences.getStackZEnd());
 		displayPanel.setStackMode(false);
 		while(motor.isMoving()) {
-			double pos = motor.getPosition(Z_AXIS);
-			double rel = (pos - STACK_START_Z) / (STACK_END_Z - STACK_START_Z);
-			int plane = (int)Math.round(rel * ICamera.DEPTH);
+			int plane = getCurrentPlane();
 			displayPanel.display(null, plane);
 		}
 
 		// set the speed of the motor according to the frame rate
 		double framerate = camera.getFramerate();
-		motor.setVelocity(Y_AXIS, STACK_DY * framerate);
-		motor.setVelocity(Z_AXIS, STACK_DZ * framerate);
+		double dy = (Preferences.getStackYEnd() - Preferences.getStackYStart()) / ICamera.DEPTH;
+		double dz = (Preferences.getStackZEnd() - Preferences.getStackZStart()) / ICamera.DEPTH;
+		motor.setVelocity(Y_AXIS, dy * framerate);
+		motor.setVelocity(Z_AXIS, dz * framerate);
 
 		displayPanel.setStackMode(true);
 		displayPanel.display(null, ICamera.DEPTH - 1);
-		motor.setTarget(Y_AXIS, STACK_START_Y);
-		motor.setTarget(Z_AXIS, STACK_START_Z);
+		motor.setTarget(Y_AXIS, Preferences.getStackYStart());
+		motor.setTarget(Z_AXIS, Preferences.getStackZStart());
 		camera.startSequence();
 		for(int i = ICamera.DEPTH - 1; i >= 0; i--) {
 			camera.getNextSequenceImage(frame);
