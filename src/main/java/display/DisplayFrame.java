@@ -1,17 +1,39 @@
 package display;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+import java.awt.Label;
 
 @SuppressWarnings("serial")
 public class DisplayFrame extends Frame {
 
 	private boolean fullscreen = false;
 
+	private final Label message;
+
 	public DisplayFrame(PlaneDisplay disp) {
 		super("Display");
 		add(disp);
+
+		message = new Label("");
+		message.setAlignment(Label.CENTER);
+		message.setForeground(Color.WHITE);
+		message.setBackground(Color.BLACK);
+		message.setPreferredSize(new Dimension(200, 30));
+		add(message, BorderLayout.SOUTH);
+	}
+
+	public void showMessage(String message) {
+		this.message.setText(message);
+		this.message.repaint();
+	}
+
+	public void clearMessage() {
+		this.message.setText("");
 	}
 
 	public boolean isFullscreen() {
