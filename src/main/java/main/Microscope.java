@@ -200,7 +200,7 @@ public class Microscope {
 		displayWindow.setVisible(true);
 		displayWindow.setFullscreen(true);
 		displayPanel.requestFocusInWindow();
-		displayPanel.display(null, 0);
+		displayPanel.display(null, null, 0);
 		final byte[] frame = new byte[ICamera.WIDTH * ICamera.HEIGHT];
 
 		buttons.addButtonsListener(new ButtonsListener() {
@@ -286,6 +286,10 @@ public class Microscope {
 		motor.setTarget(axis, target);
 		camera.startPreview();
 
+		byte[] transmission = new byte[ICamera.WIDTH * ICamera.HEIGHT];
+		for(int i = 0; i < transmission.length; i++)
+			transmission[i] = 100;
+
 		while(motor.isMoving(axis)) {
 			// stop if button was released
 			if(buttons.getButtonDown() != button) {
@@ -299,7 +303,7 @@ public class Microscope {
 				plane = getCurrentPlane();
 
 			camera.getPreviewImage(plane, frame);
-			displayPanel.display(frame, plane);
+			displayPanel.display(frame, transmission, plane);
 			System.out.println("display z = " + plane);
 		}
 		camera.stopPreview();
@@ -326,7 +330,7 @@ public class Microscope {
 		displayPanel.setStackMode(false);
 		while(motor.isMoving()) {
 			int plane = getCurrentPlane();
-			displayPanel.display(null, plane);
+			displayPanel.display(null, null, plane);
 		}
 
 		// set the speed of the motor according to the frame rate
@@ -337,13 +341,13 @@ public class Microscope {
 		motor.setVelocity(Z_AXIS, dz * framerate);
 
 		displayPanel.setStackMode(true);
-		displayPanel.display(null, ICamera.DEPTH - 1);
+		displayPanel.display(null, null, ICamera.DEPTH - 1);
 		motor.setTarget(Y_AXIS, Preferences.getStackYStart());
 		motor.setTarget(Z_AXIS, Preferences.getStackZStart());
 		camera.startSequence();
 		for(int i = ICamera.DEPTH - 1; i >= 0; i--) {
 			camera.getNextSequenceImage(frame);
-			displayPanel.display(frame, i);
+			displayPanel.display(frame, null, i);
 		}
 		camera.stopSequence();
 

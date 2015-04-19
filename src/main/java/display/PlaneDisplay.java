@@ -28,19 +28,20 @@ public class PlaneDisplay extends Canvas {
 	private static final int WIDTH  = 800;
 	private static final int HEIGHT = 600;
 
-	private byte[] data = null;
-	private final IndexColorModel[] cms;
+	private byte[] fluorescence = null;
+	private byte[] transmission = null;
+	private final IndexColorModel[] stackColorModels;
+	private final IndexColorModel planeColorModel;
 	private int z = 0;
 
-	private boolean clearGraphics = true;
-	private boolean drawCoordSys = true;
-	private boolean composite = true;
+	private boolean isStack = false;
 
 	private final double relativeScaleAtZEnd = 0.7;
 
 	public PlaneDisplay(IndexColorModel lut) {
 		setBackground(Color.black);
-		this.cms = prepareColorcode(ICamera.DEPTH, lut);
+		this.stackColorModels = prepareStackColorcode(ICamera.DEPTH, lut);
+		this.planeColorModel = preparePlaneColorcode();
 		this.setIgnoreRepaint(true);
 		// this.setDoubleBuffered(true);
 		addComponentListener(new ComponentListener() {
@@ -55,15 +56,7 @@ public class PlaneDisplay extends Canvas {
 	}
 
 	public void setStackMode(boolean b) {
-		if(b) {
-			clearGraphics = false;
-			drawCoordSys = false;
-			composite = true;
-		} else {
-			clearGraphics = true;
-			drawCoordSys = true;
-			composite = false;
-		}
+		isStack = b;
 	}
 
 	@Override
@@ -71,21 +64,25 @@ public class PlaneDisplay extends Canvas {
 		return new Dimension(WIDTH, HEIGHT);
 	}
 
-	public void display(byte[] data, int z) {
-		this.data = data;
+	public void display(byte[] fluorescence, byte[] transmission, int z) {
+		this.fluorescence = fluorescence;
+		this.transmission = transmission;
 		this.z = z;
 		render();
 	}
 
-	public Image getImage() {
-		BufferedImage bi = null;
-		if(!composite)
-			bi = new BufferedImage(ICamera.WIDTH, ICamera.HEIGHT, BufferedImage.TYPE_BYTE_GRAY);
-		else
-			bi = new BufferedImage(ICamera.WIDTH, ICamera.HEIGHT, BufferedImage.TYPE_BYTE_INDEXED, cms[z]);
-
+	public Image getFluorescenceImage() {
+		IndexColorModel cm = isStack ? stackColorModels[z] : planeColorModel;
+		BufferedImage bi = new BufferedImage(ICamera.WIDTH, ICamera.HEIGHT, BufferedImage.TYPE_BYTE_INDEXED, cm);
 		byte[] array = ((DataBufferByte) bi.getRaster().getDataBuffer()).getData();
-		System.arraycopy(data, 0, array, 0, array.length);
+		System.arraycopy(fluorescence, 0, array, 0, array.length);
+		return bi;
+	}
+
+	public Image getTransmissionImage() {
+		BufferedImage bi = new BufferedImage(ICamera.WIDTH, ICamera.HEIGHT, BufferedImage.TYPE_BYTE_GRAY);
+		byte[] array = ((DataBufferByte) bi.getRaster().getDataBuffer()).getData();
+		System.arraycopy(transmission, 0, array, 0, array.length);
 		return bi;
 	}
 
@@ -171,7 +168,6 @@ public class PlaneDisplay extends Canvas {
 			// image
 			offscreenImage = createImage(currentSize.width, currentSize.height);
 			offscreenGraphics = offscreenImage.getGraphics();
-//			renderedImage = new BufferedImage(currentSize.width, currentSize.height, BufferedImage.TYPE_INT_ARGB);
 			renderedImage = createImage(currentSize.width, currentSize.height);
 			renderedGraphics = renderedImage.getGraphics();
 			offscreenDimension = currentSize;
@@ -195,7 +191,7 @@ public class PlaneDisplay extends Canvas {
 		int w = getWidth();
 		int h = getHeight();
 
-		if(clearGraphics) {
+		if(!isStack) {
 			((Graphics2D)renderedGraphics).setComposite(AlphaComposite.getInstance(AlphaComposite.CLEAR));
 			renderedGraphics.fillRect(0, 0, w, h);
 			((Graphics2D)renderedGraphics).setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER));
@@ -210,7 +206,7 @@ public class PlaneDisplay extends Canvas {
 		double scale = Math.min(sx, sy);
 		scale *= 0.8;
 
-		if(drawCoordSys)
+		if(!isStack)
 			drawCoordSysInt(renderedGraphics, scale);
 
 
@@ -222,8 +218,11 @@ public class PlaneDisplay extends Canvas {
 		int xOffs = (int)Math.round((w - imageWidth) / 2.0);
 		int yOffs = (int)Math.round((h - imageHeight) / 2.0);
 
-		if(data != null)
-			renderedGraphics.drawImage(getImage(), xOffs, yOffs, imageWidth, imageHeight, null);
+		if(!isStack && transmission != null)
+			renderedGraphics.drawImage(getTransmissionImage(), xOffs, yOffs, imageWidth, imageHeight, null);
+
+		if(fluorescence != null)
+			renderedGraphics.drawImage(getFluorescenceImage(), xOffs, yOffs, imageWidth, imageHeight, null);
 
 		g.drawImage(renderedImage, 0, 0, null);
 
@@ -232,7 +231,7 @@ public class PlaneDisplay extends Canvas {
 		g.drawRect(xOffs, yOffs, imageWidth - 1, imageHeight - 1);
 	}
 
-	private static IndexColorModel[] prepareColorcode(int nlayers, IndexColorModel lut) {
+	private static IndexColorModel[] prepareStackColorcode(int nlayers, IndexColorModel lut) {
 		byte[] r = new byte[256];
 		byte[] g = new byte[256];
 		byte[] b = new byte[256];
@@ -265,6 +264,24 @@ public class PlaneDisplay extends Canvas {
 		return colormodel;
 	}
 
+	private static IndexColorModel preparePlaneColorcode() {
+		byte[] r = new byte[256];
+		byte[] g = new byte[256];
+		byte[] b = new byte[256];
+		byte[] a = new byte[256];
+
+		for (int j = 0; j < 256; j++) {
+			r[j] = 0;
+			g[j] = (byte)j;
+			b[j] = 0;
+			a[j] = (byte)j;
+			// newA[j] = (byte) Math.round(255 * Math.pow(j / 255.0, 2));
+		}
+
+		IndexColorModel cm = new IndexColorModel(8, 256, r, g, b, a);
+		return cm;
+	}
+
 	public static void main(String... args) throws Exception {
 		ImagePlus imp = IJ.openImage("/Users/bschmid/flybrain_big.tif");
 		int d = imp.getStackSize();
@@ -284,23 +301,19 @@ public class PlaneDisplay extends Canvas {
 //		disp.display(data, 200);
 
 		// disp.display(data[0], 0);
-		disp.clearGraphics = true;
-		disp.drawCoordSys = true;
-		disp.composite = false;
+		disp.isStack = false;
 		for(int z = 0; z < 400; z++) {
 			long start = System.currentTimeMillis();
-			disp.display(data[z], z);
+			disp.display(data[z], null, z);
 			long end = System.currentTimeMillis();
 			System.out.println(z + ": " + (end - start));
 			// Thread.sleep(10);
 		}
-		disp.display(null, 399);
+		disp.display(null, null, 399);
 
-		disp.clearGraphics = false;
-		disp.drawCoordSys = false;
-		disp.composite = true;
+		disp.isStack = true;
 		for(int z = 399; z >= 0; z--) {
-			disp.display(data[z], z);
+			disp.display(data[z], null, z);
 			// Thread.sleep(10);
 		}
 	}
