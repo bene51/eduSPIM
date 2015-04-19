@@ -113,7 +113,6 @@ public class Microscope {
 						displayWindow.remove(mirrorPanel);
 						displayWindow.doLayout();
 						displayWindow.repaint();
-						displayPanel.render();
 					}
 				}
 				else if(e.getKeyCode() == KeyEvent.VK_ENTER ||
@@ -145,13 +144,11 @@ public class Microscope {
 					displayWindow.setFullscreen(fs);
 					displayPanel.requestFocus();
 					displayWindow.repaint();
-					displayPanel.render();
 				} else if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_M) {
 					if(mode == Mode.NORMAL) {
 						displayWindow.add(mirrorPanel, BorderLayout.WEST);
 						displayWindow.doLayout();
 						displayWindow.repaint();
-						displayPanel.render();
 						mode = Mode.DEFINE_MIRROR_POS1;
 						displayWindow.showMessage("Go to one end in z, adjust the mirror and press <Ctrl>-m again");
 					}
@@ -167,7 +164,6 @@ public class Microscope {
 						displayWindow.remove(mirrorPanel);
 						displayWindow.doLayout();
 						displayWindow.repaint();
-						displayPanel.render();
 					}
 				} else if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_C) {
 					if(mode == Mode.NORMAL) {

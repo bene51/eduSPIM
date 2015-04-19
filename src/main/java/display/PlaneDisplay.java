@@ -14,6 +14,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.IndexColorModel;
@@ -41,6 +43,15 @@ public class PlaneDisplay extends Canvas {
 		this.cms = prepareColorcode(ICamera.DEPTH, lut);
 		this.setIgnoreRepaint(true);
 		// this.setDoubleBuffered(true);
+		addComponentListener(new ComponentListener() {
+			public void componentResized(ComponentEvent e) {
+				render();
+			}
+
+			public void componentMoved(ComponentEvent e) {}
+			public void componentShown(ComponentEvent e) {}
+			public void componentHidden(ComponentEvent e) {}
+		});
 	}
 
 	public void setStackMode(boolean b) {
