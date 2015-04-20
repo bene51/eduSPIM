@@ -44,6 +44,10 @@ import display.PlaneDisplay;
  *     - new reference image/histogram
  *
  * - mode 'calibrate mirror'
+ *
+ * - log button events to file
+ *   (time stamp, button type)
+ *
  */
 public class Microscope {
 
