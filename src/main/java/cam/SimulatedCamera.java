@@ -8,6 +8,8 @@ public class SimulatedCamera implements ICamera {
 
 	private ImagePlus image;
 	private boolean previewOn = false;
+	private int zPos;
+	private int yPos;
 
 	public SimulatedCamera(ImagePlus image) {
 		this.image = image;
@@ -15,14 +17,27 @@ public class SimulatedCamera implements ICamera {
 			throw new RuntimeException("Simulated camera: Image doesn't have the correct number of planes");
 	}
 
+	public void setZPosition(int z) {
+		if(z < 0)
+			zPos = 0;
+		else if(z > DEPTH - 1)
+			zPos = DEPTH - 1;
+		else
+			zPos = z;
+	}
+
+	public void setYPosition(double yRel) {
+		yPos = (int)Math.round(yRel * (image.getHeight() - HEIGHT));
+	}
+
 	public void startPreview() {
 		previewOn = true;
 	}
 
-	public void getPreviewImage(int z, byte[] ret) {
-		if(z < 0) z = 0;
-		if(z > DEPTH - 1) z = DEPTH - 1;
-		System.arraycopy(image.getStack().getPixels(z + 1), 0, ret, 0, WIDTH * HEIGHT);
+	public void getPreviewImage(byte[] ret) {
+		System.out.println("SimulatedCamera.getPreviewImage: y = " + yPos);
+		int y1 = Math.min(yPos + HEIGHT, image.getHeight());
+		System.arraycopy(image.getStack().getPixels(zPos + 1), WIDTH * yPos, ret, 0, WIDTH * (y1 - yPos));
 	}
 
 	public void stopPreview() {
@@ -56,7 +71,8 @@ public class SimulatedCamera implements ICamera {
 			}
 		}
 
-		System.arraycopy(image.getStack().getPixels(DEPTH - currentSequenceIndex), 0, ret, 0, WIDTH * HEIGHT);
+		int y1 = Math.min(yPos + HEIGHT, image.getHeight());
+		System.arraycopy(image.getStack().getPixels(DEPTH - currentSequenceIndex), WIDTH * yPos, ret, 0, WIDTH * (y1 - yPos));
 		currentSequenceIndex++;
 	}
 

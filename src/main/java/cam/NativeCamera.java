@@ -33,7 +33,7 @@ public class NativeCamera implements ICamera {
 		previewRunning = true;
 	}
 
-	public void getPreviewImage(int z, byte[] ret) {
+	public void getPreviewImage(byte[] ret) {
 		camGetPreviewImage(camIdx, ret);
 	}
 
@@ -91,7 +91,7 @@ public class NativeCamera implements ICamera {
 		String line;
 		while (!(line = in.readLine()).equals("quit")) {
 			System.out.println("echo: " + line);
-			cam.getPreviewImage(0, frame);
+			cam.getPreviewImage(frame);
 			System.out.println(Integer.toString(frame[0]));
 		}
 		System.out.println("echo: " + line);

@@ -91,7 +91,7 @@ public class Microscope {
 		while(motor.isMoving())
 			sleep(100);
 
-		ImagePlus imp = IJ.openImage(System.getProperty("user.home") + "/HeadBack030_010um_2.tif");
+		ImagePlus imp = IJ.openImage(System.getProperty("user.home") + "/HeadBack030_010um_3.tif");
 		camera = new SimulatedCamera(imp);
 		// camera = new NativeCamera(0);
 
@@ -269,6 +269,11 @@ public class Microscope {
 		return (int)Math.round(zrel * ICamera.DEPTH);
 	}
 
+	double getCurrentRelativeYPos() {
+		double ypos = motor.getPosition(Y_AXIS);
+		return (ypos - Preferences.getStackYStart()) / (Preferences.getStackYEnd() - Preferences.getStackYStart());
+	}
+
 	void startPreview(int button, int axis, double target, byte[] frame) {
 		synchronized(this) {
 			acquiringStack = true;
@@ -276,15 +281,17 @@ public class Microscope {
 		System.out.println("startPreview: axis = " + axis + " target = " + target);
 		// get current plane
 		int plane = getCurrentPlane();
+		double yRel = getCurrentRelativeYPos();
 		System.out.println("start plane = " + plane);
 
 		// set the speed of the motor according to the frame rate
 		double framerate = camera.getFramerate();
-		double dy = (Preferences.getStackYEnd() - Preferences.getStackYStart()) / ICamera.DEPTH;
+		// double dy = (Preferences.getStackYEnd() - Preferences.getStackYStart()) / ICamera.DEPTH;
 		double dz = (Preferences.getStackZEnd() - Preferences.getStackZStart()) / ICamera.DEPTH;
 
-		motor.setVelocity(Y_AXIS, dy * framerate);
-		motor.setVelocity(Z_AXIS, dz * framerate);
+		double vel = dz * framerate;
+		motor.setVelocity(Y_AXIS, vel);
+		motor.setVelocity(Z_AXIS, vel);
 
 		displayPanel.setStackMode(false);
 		motor.setTarget(axis, target);
@@ -294,22 +301,36 @@ public class Microscope {
 		for(int i = 0; i < transmission.length; i++)
 			transmission[i] = 100;
 
-		while(motor.isMoving(axis)) {
+		while(true) {
+			boolean stop = false;
 			// stop if button was released
 			if(buttons.getButtonDown() != button) {
 				motor.stop();
-				while(motor.isMoving())
+				while(motor.isMoving()) {
+					System.out.println("waiting for motor to stop");
 					sleep(50);
+				}
+				// TODO adjust mirror accordingly and wait for it.
 				System.out.println("stopped motor");
-				break;
+				stop = true;
 			}
 			if(axis == Z_AXIS)
 				plane = getCurrentPlane();
+			else if(axis == Y_AXIS)
+				yRel = getCurrentRelativeYPos();
 
-			camera.getPreviewImage(plane, frame);
+			if(camera instanceof SimulatedCamera) {
+				((SimulatedCamera) camera).setYPosition(yRel);
+				((SimulatedCamera) camera).setZPosition(plane);
+			}
+
+			camera.getPreviewImage(frame);
 			displayPanel.display(frame, transmission, plane);
 			System.out.println("display z = " + plane);
+			if(stop)
+				break;
 		}
+
 		camera.stopPreview();
 
 		// reset the motor speed
@@ -329,7 +350,7 @@ public class Microscope {
 		while(camera.isPreviewRunning())
 			sleep(100);
 
-		motor.setTarget(Y_AXIS, Preferences.getStackYEnd());
+		// motor.setTarget(Y_AXIS, Preferences.getStackYEnd());
 		motor.setTarget(Z_AXIS, Preferences.getStackZEnd());
 		displayPanel.setStackMode(false);
 		while(motor.isMoving()) {
@@ -346,8 +367,12 @@ public class Microscope {
 
 		displayPanel.setStackMode(true);
 		displayPanel.display(null, null, ICamera.DEPTH - 1);
-		motor.setTarget(Y_AXIS, Preferences.getStackYStart());
 		motor.setTarget(Z_AXIS, Preferences.getStackZStart());
+
+		double yRel = getCurrentRelativeYPos();
+		if(camera instanceof SimulatedCamera)
+			((SimulatedCamera) camera).setYPosition(yRel);
+
 		camera.startSequence();
 		for(int i = ICamera.DEPTH - 1; i >= 0; i--) {
 			camera.getNextSequenceImage(frame);

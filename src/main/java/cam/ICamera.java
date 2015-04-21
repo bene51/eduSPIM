@@ -39,13 +39,7 @@ public interface ICamera {
 
 	public void startPreview();
 
-	/**
-	 * z is only needed for the simulated camera.
-	 * @param z
-	 * @param ret
-	 * @return
-	 */
-	public void getPreviewImage(int z, byte[] ret);
+	public void getPreviewImage(byte[] ret);
 
 	public void stopPreview();
 
