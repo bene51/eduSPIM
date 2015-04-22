@@ -17,13 +17,22 @@ public class Preferences {
 	public static final String STACK_Z_END   = "stack_z_end";
 	public static final String STACK_Y_START = "stack_y_start";
 	public static final String STACK_Y_END   = "stack_y_end";
+	public static final String PIXEL_WIDTH   = "pixel_width";
+
+	private static final double DEFAULT_STACK_ZSTART = IMotor.POS_MIN_Z;
+	private static final double DEFAULT_STACK_ZEND   = IMotor.POS_MAX_Z;
+	private static final double DEFAULT_STACK_YSTART = IMotor.POS_MIN_Y;
+	private static final double DEFAULT_STACK_YEND   = IMotor.POS_MAX_Y;
+	private static final double DEFAULT_PIXEL_WIDHT  = 5.3 *  // pixel width on sensor
+	                                                   0.1 *  // magnification
+	                                                   0.001; // convert to mm
 
 	private static Preferences instance;
 
 	private final Properties properties;
 	private final File propertiesFile;
 
-	private double stackZStart, stackZEnd, stackYStart, stackYEnd;
+	private double stackZStart, stackZEnd, stackYStart, stackYEnd, pixelWidth;
 
 	public static double getStackZStart() {
 		return getInstance().stackZStart;
@@ -39,6 +48,10 @@ public class Preferences {
 
 	public static double getStackYEnd() {
 		return getInstance().stackYEnd;
+	}
+
+	public static double getPixelWidth() {
+		return getInstance().pixelWidth;
 	}
 
 	public static void setStackZStart(double stackZStart) {
@@ -72,10 +85,11 @@ public class Preferences {
 			properties.load(reader);
 		} catch(Exception e) {
 			e.printStackTrace();
-			properties.put(STACK_Z_START, Double.toString(IMotor.POS_MIN_Z));
-			properties.put(STACK_Z_END,   Double.toString(IMotor.POS_MAX_Z));
-			properties.put(STACK_Y_START, Double.toString(IMotor.POS_MIN_Y));
-			properties.put(STACK_Y_END,   Double.toString(IMotor.POS_MAX_Y));
+			properties.put(STACK_Z_START, Double.toString(DEFAULT_STACK_ZSTART));
+			properties.put(STACK_Z_END,   Double.toString(DEFAULT_STACK_ZEND));
+			properties.put(STACK_Y_START, Double.toString(DEFAULT_STACK_YSTART));
+			properties.put(STACK_Y_END,   Double.toString(DEFAULT_STACK_YEND));
+			properties.put(PIXEL_WIDTH,   Double.toString(DEFAULT_PIXEL_WIDHT));
 			save(propertiesFile, properties);
 		} finally {
 			try {
@@ -84,10 +98,11 @@ public class Preferences {
 				e.printStackTrace();
 			}
 		}
-		stackZStart = Double.parseDouble(properties.getProperty(STACK_Z_START));
-		stackZEnd   = Double.parseDouble(properties.getProperty(STACK_Z_END));
-		stackYStart = Double.parseDouble(properties.getProperty(STACK_Y_START));
-		stackYEnd   = Double.parseDouble(properties.getProperty(STACK_Y_END));
+		stackZStart = Double.parseDouble(properties.getProperty(STACK_Z_START, Double.toString(DEFAULT_STACK_ZSTART)));
+		stackZEnd   = Double.parseDouble(properties.getProperty(STACK_Z_END,   Double.toString(DEFAULT_STACK_ZEND)));
+		stackYStart = Double.parseDouble(properties.getProperty(STACK_Y_START, Double.toString(DEFAULT_STACK_YSTART)));
+		stackYEnd   = Double.parseDouble(properties.getProperty(STACK_Y_END,   Double.toString(DEFAULT_STACK_YEND)));
+		pixelWidth  = Double.parseDouble(properties.getProperty(PIXEL_WIDTH,   Double.toString(DEFAULT_PIXEL_WIDHT)));
 	}
 
 	private static Preferences getInstance() {

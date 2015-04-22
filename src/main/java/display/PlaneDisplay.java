@@ -20,6 +20,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.IndexColorModel;
 
+import main.Preferences;
 import cam.ICamera;
 
 @SuppressWarnings("serial")
@@ -33,6 +34,7 @@ public class PlaneDisplay extends Canvas {
 	private final IndexColorModel[] stackColorModels;
 	private final IndexColorModel planeColorModel;
 	private int z = 0;
+	private double yRel = 0;
 
 	private boolean isStack = false;
 
@@ -64,9 +66,10 @@ public class PlaneDisplay extends Canvas {
 		return new Dimension(WIDTH, HEIGHT);
 	}
 
-	public void display(byte[] fluorescence, byte[] transmission, int z) {
+	public void display(byte[] fluorescence, byte[] transmission, double yRel, int z) {
 		this.fluorescence = fluorescence;
 		this.transmission = transmission;
+		this.yRel = yRel;
 		this.z = z;
 		render();
 	}
@@ -229,6 +232,37 @@ public class PlaneDisplay extends Canvas {
 		g.setColor(Color.red);
 		g2d.setStroke(new BasicStroke(1.0f));
 		g.drawRect(xOffs, yOffs, imageWidth - 1, imageHeight - 1);
+
+		// draw the y-indicator
+		imageWidth  = 2 * (int)Math.round(ICamera.WIDTH  * scale / 2.0);
+		imageHeight = 2 * (int)Math.round(ICamera.HEIGHT * scale / 2.0);
+
+		xOffs = (int)Math.round((w + imageWidth) / 2.0) + 20;
+		yOffs = (int)Math.round((h - imageHeight) / 2.0);
+
+		g.setColor(Color.LIGHT_GRAY);
+		int cw = w - xOffs - 20;
+		if(cw > 20)
+			cw = 20;
+
+		double factor = (double) cw / ICamera.WIDTH;
+		int ch = (int)Math.round(factor * ICamera.HEIGHT);
+		int fullh = ((int)(Math.abs(Preferences.getStackYEnd() - Preferences.getStackYStart()) // motor range
+				/ Preferences.getPixelWidth() // in camera pixels
+				/ ICamera.HEIGHT              // in multiples of camera heights
+				* ch))                        // convert to drawing coords
+				+ ch;                         // additional camera height
+
+		if(fullh > imageHeight / 2) {
+			double f = imageHeight / 2.0 / fullh;
+			fullh = (int)Math.round(fullh * f);
+			ch = (int)Math.round(ch * f);
+			cw = (int)Math.round(cw * f);
+		}
+		g.fillRect(xOffs, yOffs + fullh - ch, cw, ch);
+
+		int cy = (int)Math.round(yRel * (fullh - ch));
+		g.drawRect(xOffs, yOffs + fullh - ch - cy, cw, fullh);
 	}
 
 	private static IndexColorModel[] prepareStackColorcode(int nlayers, IndexColorModel lut) {
@@ -304,16 +338,16 @@ public class PlaneDisplay extends Canvas {
 		disp.isStack = false;
 		for(int z = 0; z < 400; z++) {
 			long start = System.currentTimeMillis();
-			disp.display(data[z], null, z);
+			disp.display(data[z], null, 0, z);
 			long end = System.currentTimeMillis();
 			System.out.println(z + ": " + (end - start));
 			// Thread.sleep(10);
 		}
-		disp.display(null, null, 399);
+		disp.display(null, null, 0, 399);
 
 		disp.isStack = true;
 		for(int z = 399; z >= 0; z--) {
-			disp.display(data[z], null, z);
+			disp.display(data[z], null, 0, z);
 			// Thread.sleep(10);
 		}
 	}

@@ -91,6 +91,8 @@ public class Microscope {
 		while(motor.isMoving())
 			sleep(100);
 
+		double yRel = getCurrentRelativeYPos();
+
 		ImagePlus imp = IJ.openImage(System.getProperty("user.home") + "/HeadBack030_010um_3.tif");
 		camera = new SimulatedCamera(imp);
 		// camera = new NativeCamera(0);
@@ -204,7 +206,7 @@ public class Microscope {
 		displayWindow.setVisible(true);
 		displayWindow.setFullscreen(true);
 		displayPanel.requestFocusInWindow();
-		displayPanel.display(null, null, 0);
+		displayPanel.display(null, null, yRel, 0);
 		final byte[] frame = new byte[ICamera.WIDTH * ICamera.HEIGHT];
 
 		buttons.addButtonsListener(new ButtonsListener() {
@@ -325,7 +327,7 @@ public class Microscope {
 			}
 
 			camera.getPreviewImage(frame);
-			displayPanel.display(frame, transmission, plane);
+			displayPanel.display(frame, transmission, yRel, plane);
 			System.out.println("display z = " + plane);
 			if(stop)
 				break;
@@ -350,12 +352,14 @@ public class Microscope {
 		while(camera.isPreviewRunning())
 			sleep(100);
 
+		double yRel = getCurrentRelativeYPos();
+
 		// motor.setTarget(Y_AXIS, Preferences.getStackYEnd());
 		motor.setTarget(Z_AXIS, Preferences.getStackZEnd());
 		displayPanel.setStackMode(false);
 		while(motor.isMoving()) {
 			int plane = getCurrentPlane();
-			displayPanel.display(null, null, plane);
+			displayPanel.display(null, null, yRel, plane);
 		}
 
 		// set the speed of the motor according to the frame rate
@@ -366,17 +370,16 @@ public class Microscope {
 		motor.setVelocity(Z_AXIS, dz * framerate);
 
 		displayPanel.setStackMode(true);
-		displayPanel.display(null, null, ICamera.DEPTH - 1);
+		displayPanel.display(null, null, yRel, ICamera.DEPTH - 1);
 		motor.setTarget(Z_AXIS, Preferences.getStackZStart());
 
-		double yRel = getCurrentRelativeYPos();
 		if(camera instanceof SimulatedCamera)
 			((SimulatedCamera) camera).setYPosition(yRel);
 
 		camera.startSequence();
 		for(int i = ICamera.DEPTH - 1; i >= 0; i--) {
 			camera.getNextSequenceImage(frame);
-			displayPanel.display(frame, null, i);
+			displayPanel.display(frame, null, yRel, i);
 		}
 		camera.stopSequence();
 
