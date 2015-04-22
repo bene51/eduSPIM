@@ -28,6 +28,8 @@ public class SimulatedCamera implements ICamera {
 
 	public void setYPosition(double yRel) {
 		yPos = (int)Math.round(yRel * (image.getHeight() - HEIGHT));
+		if(yPos < 0)
+			yPos = 0;
 	}
 
 	public void startPreview() {
