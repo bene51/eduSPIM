@@ -15,12 +15,12 @@ public class AWTButtons extends AbstractButtons {
 
 	private final Panel panel = new Panel(new GridLayout(2,3,2,2));
 
-	private final Button yDownButton = new Button("y-");
-	private final Button yUpButton   = new Button("y+");
-	private final Button zDownButton = new Button("z-");
-	private final Button zUpButton   = new Button("z+");
-	private final Button stackButton = new Button("S");
-	private final Button laserButton = new Button("L");
+	private final Button yDownButton = new MButton("y-");
+	private final Button yUpButton   = new MButton("y+");
+	private final Button zDownButton = new MButton("z-");
+	private final Button zUpButton   = new MButton("z+");
+	private final Button stackButton = new MButton("S");
+	private final Button laserButton = new MButton("L");
 
 	public AWTButtons() {
 		GridBagLayout gridbag = new GridBagLayout();
@@ -31,6 +31,7 @@ public class AWTButtons extends AbstractButtons {
 		panel.setForeground(Color.white);
 
 		c.anchor = GridBagConstraints.CENTER;
+		c.fill = GridBagConstraints.BOTH;
 		c.insets = new Insets(0, 0, 0, 0);
 
 		c.gridx = 1;
@@ -68,6 +69,14 @@ public class AWTButtons extends AbstractButtons {
 
 	public Panel getPanel() {
 		return panel;
+	}
+
+	private static class MButton extends Button {
+
+		public MButton(String s) {
+			super(s);
+			setForeground(Color.BLACK);
+		}
 	}
 
 	private class MouseAdapter implements MouseListener {
