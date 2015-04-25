@@ -356,8 +356,9 @@ public class Microscope {
 		double dz = (Preferences.getStackZEnd() - Preferences.getStackZStart()) / ICamera.DEPTH;
 		motor.setVelocity(Z_AXIS, dz * framerate);
 
-		displayPanel.setStackMode(true);
 		displayPanel.display(null, null, yRel, ICamera.DEPTH - 1);
+		sleep(100); // delay to ensure rendering before changing stack mode
+		displayPanel.setStackMode(true);
 		motor.setTarget(Z_AXIS, Preferences.getStackZStart());
 
 		camera.startSequence();
