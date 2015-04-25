@@ -1,26 +1,28 @@
 package buttons;
 
-import java.awt.Button;
 import java.awt.Color;
-import java.awt.Frame;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
-import java.awt.Panel;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+
 public class AWTButtons extends AbstractButtons {
 
-	private final Panel panel = new Panel(new GridLayout(2,3,2,2));
+	private final JPanel panel = new JPanel(new GridLayout(2,3,1,1));
 
-	private final Button yDownButton = new MButton("y-");
-	private final Button yUpButton   = new MButton("y+");
-	private final Button zDownButton = new MButton("z-");
-	private final Button zUpButton   = new MButton("z+");
-	private final Button stackButton = new MButton("S");
-	private final Button laserButton = new MButton("L");
+	private final JButton yDownButton = new MButton("y-");
+	private final JButton yUpButton   = new MButton("y+");
+	private final JButton zDownButton = new MButton("z-");
+	private final JButton zUpButton   = new MButton("z+");
+	private final JButton stackButton = new MButton("S");
+	private final JButton laserButton = new MButton("L");
 
 	public AWTButtons() {
 		GridBagLayout gridbag = new GridBagLayout();
@@ -67,15 +69,19 @@ public class AWTButtons extends AbstractButtons {
 		laserButton.addMouseListener(new MouseAdapter(BUTTON_LASER));
 	}
 
-	public Panel getPanel() {
+	public JPanel getPanel() {
 		return panel;
 	}
 
-	private static class MButton extends Button {
+	@SuppressWarnings("serial")
+	private static class MButton extends JButton {
 
 		public MButton(String s) {
 			super(s);
 			setForeground(Color.BLACK);
+			Dimension d = getPreferredSize();
+			this.setMargin(new Insets(1, 1, 1, 1));
+			setPreferredSize(new Dimension(3 * d.height / 2, d.height));
 		}
 	}
 
@@ -87,25 +93,30 @@ public class AWTButtons extends AbstractButtons {
 			this.button = button;
 		}
 
+		@Override
 		public void mouseClicked(MouseEvent e) {}
 
+		@Override
 		public void mousePressed(MouseEvent e) {
 			fireButtonPressed(button);
 		}
 
+		@Override
 		public void mouseReleased(MouseEvent e) {
 			fireButtonReleased(button);
 		}
 
+		@Override
 		public void mouseEntered(MouseEvent e) {}
 
+		@Override
 		public void mouseExited(MouseEvent e) {}
 
 	}
 
 	public static void main(String... args) {
-		Frame f = new Frame();
-		f.add(new AWTButtons().getPanel());
+		JFrame f = new JFrame();
+		f.getContentPane().add(new AWTButtons().getPanel());
 		f.pack();
 		f.setVisible(true);
 	}
