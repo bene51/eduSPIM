@@ -348,9 +348,6 @@ public class Microscope {
 		synchronized(this) {
 			acquiringStack = true;
 		}
-		// make sure the other thread is not doing anything now
-		while(camera.isPreviewRunning())
-			sleep(100);
 
 		double yRel = getCurrentRelativeYPos();
 
