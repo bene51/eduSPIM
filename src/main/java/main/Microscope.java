@@ -351,7 +351,7 @@ public class Microscope {
 
 		double yRel = getCurrentRelativeYPos();
 
-		// motor.setTarget(Y_AXIS, Preferences.getStackYEnd());
+		// move the motor back
 		motor.setTarget(Z_AXIS, Preferences.getStackZEnd());
 		displayPanel.setStackMode(false);
 		while(motor.isMoving()) {
@@ -361,9 +361,7 @@ public class Microscope {
 
 		// set the speed of the motor according to the frame rate
 		double framerate = camera.getFramerate();
-		double dy = (Preferences.getStackYEnd() - Preferences.getStackYStart()) / ICamera.DEPTH;
 		double dz = (Preferences.getStackZEnd() - Preferences.getStackZStart()) / ICamera.DEPTH;
-		motor.setVelocity(Y_AXIS, dy * framerate);
 		motor.setVelocity(Z_AXIS, dz * framerate);
 
 		displayPanel.setStackMode(true);
