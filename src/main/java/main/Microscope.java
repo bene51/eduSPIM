@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
+import javax.swing.SwingUtilities;
+
 import stage.IMotor;
 import stage.SimulatedMotor;
 import buttons.AWTButtons;
@@ -56,10 +58,7 @@ public class Microscope {
 
 	private static enum Mode {
 		NORMAL,
-		DEFINE_VOLUME_START,
-		DEFINE_VOLUME_END,
-		DEFINE_MIRROR_POS1,
-		DEFINE_MIRROR_POS2,
+		ADMIN,
 	}
 
 	private Mode mode = Mode.NORMAL;
@@ -74,7 +73,7 @@ public class Microscope {
 
 	private final PlaneDisplay displayPanel;
 	private final DisplayFrame displayWindow;
-	private final MirrorPanel mirrorPanel;
+	private final AdminPanel adminPanel;
 
 	// TODO whenever there occurs an exception with the camera, switch to artificial camera.
 	// TODO whenever there occurs an exception with the stage, switch to artificial camera and stage.
@@ -93,7 +92,10 @@ public class Microscope {
 
 		double yRel = getCurrentRelativeYPos();
 
+		System.out.println("max memory: " + Runtime.getRuntime().maxMemory() / 1024.0 / 1024.0);
+		System.out.println("Loading the image");
 		ImagePlus imp = IJ.openImage(System.getProperty("user.home") + "/HeadBack030_010um_3.tif");
+		System.out.println("image loaded");
 		camera = new SimulatedCamera(imp);
 		// camera = new NativeCamera(0);
 
@@ -102,37 +104,27 @@ public class Microscope {
 		IndexColorModel depthLut = LutLoader.open(stream);
 		stream.close();
 
+		adminPanel = new AdminPanel(motor.getPosition(Y_AXIS), motor.getPosition(Z_AXIS));
+
 		mirrorQueue = new SingleElementThreadQueue();
-		mirrorPanel = new MirrorPanel();
-		mirrorPanel.addMirrorPanelListener(new MirrorPanelListener() {
-			public void keyPressed(KeyEvent e) {
-				if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_M) {
-					if(mode == Mode.DEFINE_MIRROR_POS1) {
-						// TODO do something
-						mode = Mode.DEFINE_MIRROR_POS2;
-						displayWindow.showMessage("Go to the other end in z, adjust the mirror and press <Ctrl>-m again");
+		adminPanel.addAdminPanelListener(new AdminPanelListener() {
+			public void mirrorPositionChanged(final double pos) {
+				mirrorQueue.push(new Runnable() {
+					public void run() {
+						// TODO do something:
+						// set mirror target pos to mirrorPos
+						// wait until it's arrived
+						// capture a single preview image and display it.
 					}
-					else if(mode == Mode.DEFINE_MIRROR_POS2) {
-						// TODO do something
-						mode = Mode.NORMAL;
-						displayWindow.clearMessage();
-						displayWindow.remove(mirrorPanel);
-						displayWindow.doLayout();
-						displayWindow.repaint();
-					}
-				}
-				else if(e.getKeyCode() == KeyEvent.VK_ENTER ||
-						e.getKeyCode() == KeyEvent.VK_UP ||
-						e.getKeyCode() == KeyEvent.VK_DOWN) {
-					final double mirrorPos = mirrorPanel.getPosition();
-					mirrorQueue.push(new Runnable() {
-						public void run() {
-							// TODO do something:
-							// set mirror target pos to mirrorPos
-							// wait until it's arrived
-							// capture a single preview image and display it.
-						}
-					});
+				});
+			}
+
+			public void done() {
+				if(mode == Mode.ADMIN) {
+					mode = Mode.NORMAL;
+					displayWindow.remove(adminPanel);
+					displayWindow.validate();
+					displayPanel.requestFocusInWindow();
 				}
 			}
 		});
@@ -148,52 +140,23 @@ public class Microscope {
 					boolean fs = !displayWindow.isFullscreen();
 					System.out.println("put window to fullscreen: " + fs);
 					displayWindow.setFullscreen(fs);
-					displayPanel.requestFocus();
+					displayPanel.requestFocusInWindow();
 					displayWindow.repaint();
-				} else if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_M) {
+				} else if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_A) {
 					if(mode == Mode.NORMAL) {
-						displayWindow.add(mirrorPanel, BorderLayout.WEST);
-						displayWindow.doLayout();
-						displayWindow.repaint();
-						mode = Mode.DEFINE_MIRROR_POS1;
-						displayWindow.showMessage("Go to one end in z, adjust the mirror and press <Ctrl>-m again");
+						mode = Mode.ADMIN;
+						displayWindow.add(adminPanel, BorderLayout.WEST);
+						displayWindow.validate();
+						displayPanel.requestFocusInWindow();
 					}
-					else if(mode == Mode.DEFINE_MIRROR_POS1) {
-						// TODO do something
-						mode = Mode.DEFINE_MIRROR_POS2;
-						displayWindow.showMessage("Go to the other end in z, adjust the mirror and press <Ctrl>-m again");
-					}
-					else if(mode == Mode.DEFINE_MIRROR_POS2) {
-						// TODO do something
-						mode = Mode.NORMAL;
-						displayWindow.clearMessage();
-						displayWindow.remove(mirrorPanel);
-						displayWindow.doLayout();
-						displayWindow.repaint();
-					}
-				} else if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_C) {
-					if(mode == Mode.NORMAL) {
-						// TODO set stack limits to motor limits
-						mode = Mode.DEFINE_VOLUME_START;
-						displayWindow.showMessage("Go to the y/z beginning of the volume and press <Ctrl>-c again");
-					}
-					else if(mode == Mode.DEFINE_VOLUME_START) {
-						Preferences.setStackYStart(motor.getPosition(Y_AXIS));
-						Preferences.setStackZStart(motor.getPosition(Z_AXIS));
-						mode = Mode.DEFINE_VOLUME_END;
-						displayWindow.showMessage("Go to the y/z end of the volume and press <Ctrl>-c again");
-					}
-					else if(mode == Mode.DEFINE_VOLUME_END) {
-						Preferences.setStackYEnd(motor.getPosition(Y_AXIS));
-						Preferences.setStackZEnd(motor.getPosition(Z_AXIS));
-						mode = Mode.NORMAL;
-						displayWindow.showMessage("Start: (" +
-								Preferences.getStackYStart() + ", " +
-								Preferences.getStackYEnd() + ")    Stop: (" +
-								Preferences.getStackZStart() + ", " +
-								Preferences.getStackZEnd() + ")");
-						sleep(5000);
-						displayWindow.clearMessage();
+				} else if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_B) {
+					if(!beanshell.isShowing()) {
+						displayWindow.add(beanshell, BorderLayout.NORTH);
+						displayWindow.validate();
+					} else {
+						displayWindow.remove(beanshell);
+						displayWindow.validate();
+						displayPanel.requestFocusInWindow();
 					}
 				}
 			}
@@ -204,21 +167,18 @@ public class Microscope {
 			displayWindow.add(((AWTButtons)buttons).getPanel(), BorderLayout.EAST);
 		displayWindow.pack();
 		displayWindow.setVisible(true);
-		displayWindow.setFullscreen(true);
+//		displayWindow.setFullscreen(true);
 		displayPanel.requestFocusInWindow();
 		displayPanel.display(null, null, yRel, 0);
 		final byte[] frame = new byte[ICamera.WIDTH * ICamera.HEIGHT];
 
 		buttons.addButtonsListener(new ButtonsListener() {
 			public void buttonPressed(int button) {
-				displayPanel.requestFocus();
 				System.out.println("mic: button pressed " + button);
 				synchronized(Microscope.this) {
 					if(acquiringStack) {
-						System.out.println("already acquiring... returning");
+						displayPanel.requestFocusInWindow();
 						return;
-					} else {
-						System.out.println("Not acquiring stack");
 					}
 				}
 
@@ -242,10 +202,10 @@ public class Microscope {
 					startPreview(button, Z_AXIS, true,  Preferences.getStackZEnd(), frame);
 					break;
 				}
+				displayPanel.requestFocusInWindow();
 			}
 
 			public void buttonReleased(int button) {
-				displayPanel.requestFocus();
 				switch(button) {
 				case AbstractButtons.BUTTON_LASER:
 					// TODO move mirror back and switch laser to triggered
@@ -261,8 +221,13 @@ public class Microscope {
 				case AbstractButtons.BUTTON_Z_UP:
 					break;
 				}
+				displayPanel.requestFocusInWindow();
 			}
 		});
+	}
+
+	public IMotor getMotor() {
+		return motor;
 	}
 
 	int getCurrentPlane() {
@@ -342,6 +307,9 @@ public class Microscope {
 		motor.setVelocity(Y_AXIS, IMotor.VEL_MAX_Y);
 		motor.setVelocity(Z_AXIS, IMotor.VEL_MAX_Z);
 
+		adminPanel.setPosition(motor.getPosition(Y_AXIS), motor.getPosition(Z_AXIS));
+		displayPanel.requestFocusInWindow();
+
 		synchronized(this) {
 			acquiringStack = false;
 		}
@@ -385,6 +353,9 @@ public class Microscope {
 		// reset the motor speed
 		motor.setVelocity(Y_AXIS, IMotor.VEL_MAX_Y);
 		motor.setVelocity(Z_AXIS, IMotor.VEL_MAX_Z);
+
+		adminPanel.setPosition(motor.getPosition(Y_AXIS), motor.getPosition(Z_AXIS));
+
 		synchronized(this) {
 			acquiringStack = false;
 		}
@@ -410,7 +381,16 @@ public class Microscope {
 		System.exit(0);
 	}
 
-	public static void main(String... args) throws IOException {
-		new Microscope();
+	public static void main(String... args) {
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					new Microscope();
+				} catch (IOException e) {
+					e.printStackTrace();
+					System.exit(-1);
+				}
+			}
+		});
 	}
 }

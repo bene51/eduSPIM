@@ -2,29 +2,30 @@ package display;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Frame;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
-import java.awt.Label;
+
+import javax.swing.JFrame;
+import javax.swing.JLabel;
 
 @SuppressWarnings("serial")
-public class DisplayFrame extends Frame {
+public class DisplayFrame extends JFrame {
 
 	private boolean fullscreen = false;
 
-	private final Label message;
+	private final JLabel message;
 
 	public DisplayFrame(PlaneDisplay disp) {
 		super("Display");
-		add(disp);
+		getContentPane().add(disp);
+		setFocusable(false);
 
-		message = new Label("");
-		message.setAlignment(Label.CENTER);
+		message = new JLabel("");
+		message.setAlignmentX(JLabel.CENTER_ALIGNMENT);
 		message.setForeground(Color.WHITE);
 		message.setBackground(Color.BLACK);
-		message.setPreferredSize(new Dimension(200, 30));
-		add(message, BorderLayout.SOUTH);
+		message.setOpaque(true);
+		getContentPane().add(message, BorderLayout.SOUTH);
 	}
 
 	public void showMessage(String message) {

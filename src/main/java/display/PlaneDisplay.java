@@ -6,7 +6,6 @@ import ij.plugin.LutLoader;
 
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
-import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Frame;
@@ -14,17 +13,17 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.IndexColorModel;
+
+import javax.swing.JPanel;
 
 import main.Preferences;
 import cam.ICamera;
 
 @SuppressWarnings("serial")
-public class PlaneDisplay extends Canvas {
+public class PlaneDisplay extends JPanel {
 
 	private static final int WIDTH  = 800;
 	private static final int HEIGHT = 600;
@@ -44,17 +43,6 @@ public class PlaneDisplay extends Canvas {
 		setBackground(Color.black);
 		this.stackColorModels = prepareStackColorcode(ICamera.DEPTH, lut);
 		this.planeColorModel = preparePlaneColorcode();
-		this.setIgnoreRepaint(true);
-		// this.setDoubleBuffered(true);
-		addComponentListener(new ComponentListener() {
-			public void componentResized(ComponentEvent e) {
-				render();
-			}
-
-			public void componentMoved(ComponentEvent e) {}
-			public void componentShown(ComponentEvent e) {}
-			public void componentHidden(ComponentEvent e) {}
-		});
 	}
 
 	public void setStackMode(boolean b) {
@@ -91,11 +79,13 @@ public class PlaneDisplay extends Canvas {
 
 	@Override
 	public void update(Graphics g) {
-		// paint(g);
+		paint(g);
 	}
 
 	private void drawCoordSysInt(Graphics g, double scale) {
 		Graphics2D g2d = (Graphics2D)g;
+		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+		    RenderingHints.VALUE_ANTIALIAS_ON);
 		int w = getWidth();
 		int h = getHeight();
 		g.setColor(Color.white);
@@ -153,10 +143,7 @@ public class PlaneDisplay extends Canvas {
 	}
 
 	public void render() {
-		Graphics g = getGraphics();
-		if (g != null)
-			paint(g);
-		g.dispose();
+		repaint();
 	}
 
 	private Image offscreenImage, renderedImage;
@@ -164,7 +151,7 @@ public class PlaneDisplay extends Canvas {
 	private Dimension offscreenDimension;
 
 	@Override
-	public void paint(Graphics g) {
+	public void paintComponent(Graphics g) {
 		Dimension currentSize = getSize();
 		if (offscreenImage == null || renderedImage == null || !currentSize.equals(offscreenDimension)) {
 			// call the 'java.awt.Component.createImage(...)' method to get an

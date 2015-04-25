@@ -13,19 +13,31 @@ public class Preferences {
 	public static final String PROPERTY_FILE =
 		System.getProperty("user.home") + File.separator + ".EduSPIM.props";
 
-	public static final String STACK_Z_START = "stack_z_start";
-	public static final String STACK_Z_END   = "stack_z_end";
-	public static final String STACK_Y_START = "stack_y_start";
-	public static final String STACK_Y_END   = "stack_y_end";
-	public static final String PIXEL_WIDTH   = "pixel_width";
+	public static final String STACK_Z_START  = "stack_z_start";
+	public static final String STACK_Z_END    = "stack_z_end";
+	public static final String STACK_Y_START  = "stack_y_start";
+	public static final String STACK_Y_END    = "stack_y_end";
+	public static final String PIXEL_WIDTH    = "pixel_width";
+	public static final String MIRROR_Z1      = "mirror_z1";
+	public static final String MIRROR_M1      = "mirror_m1";
+	public static final String MIRROR_Z2      = "mirror_z2";
+	public static final String MIRROR_M2      = "mirror_m2";
+	public static final String MIRROR_COEFF_M = "mirror_coeff_m";
+	public static final String MIRROR_COEFF_T = "mirror_coeff_t";
 
-	private static final double DEFAULT_STACK_ZSTART = IMotor.POS_MIN_Z;
-	private static final double DEFAULT_STACK_ZEND   = IMotor.POS_MAX_Z;
-	private static final double DEFAULT_STACK_YSTART = IMotor.POS_MIN_Y;
-	private static final double DEFAULT_STACK_YEND   = IMotor.POS_MAX_Y;
-	private static final double DEFAULT_PIXEL_WIDHT  = 5.3 *  // pixel width on sensor
-	                                                   0.1 *  // magnification
-	                                                   0.001; // convert to mm
+	private static final double DEFAULT_STACK_ZSTART   = IMotor.POS_MIN_Z;
+	private static final double DEFAULT_STACK_ZEND     = IMotor.POS_MAX_Z;
+	private static final double DEFAULT_STACK_YSTART   = IMotor.POS_MIN_Y;
+	private static final double DEFAULT_STACK_YEND     = IMotor.POS_MAX_Y;
+	private static final double DEFAULT_PIXEL_WIDHT    = 5.3 *  // pixel width on sensor
+	                                                     0.1 *  // magnification
+	                                                     0.001; // convert to mm
+	private static final double DEFAULT_MIRROR_Z1      = IMotor.POS_MIN_Z;
+	private static final double DEFAULT_MIRROR_M1      = 0;
+	private static final double DEFAULT_MIRROR_Z2      = IMotor.POS_MAX_Z;
+	private static final double DEFAULT_MIRROR_M2      = 0;
+	private static final double DEFAULT_MIRROR_COEFF_M = 0;
+	private static final double DEFAULT_MIRROR_COEFF_T = 0;
 
 	private static Preferences instance;
 
@@ -33,6 +45,7 @@ public class Preferences {
 	private final File propertiesFile;
 
 	private double stackZStart, stackZEnd, stackYStart, stackYEnd, pixelWidth;
+	private double mirrorZ1, mirrorM1, mirrorZ2, mirrorM2, mirrorCoeffM, mirrorCoeffT;
 
 	public static double getStackZStart() {
 		return getInstance().stackZStart;
@@ -52,6 +65,30 @@ public class Preferences {
 
 	public static double getPixelWidth() {
 		return getInstance().pixelWidth;
+	}
+
+	public static double getMirrorZ1() {
+		return getInstance().mirrorZ1;
+	}
+
+	public static double getMirrorM1() {
+		return getInstance().mirrorM1;
+	}
+
+	public static double getMirrorZ2() {
+		return getInstance().mirrorZ2;
+	}
+
+	public static double getMirrorM2() {
+		return getInstance().mirrorM2;
+	}
+
+	public static double getMirrorCoefficientM() {
+		return getInstance().mirrorCoeffM;
+	}
+
+	public static double getMirrorCoefficientT() {
+		return getInstance().mirrorCoeffT;
 	}
 
 	public static void setStackZStart(double stackZStart) {
@@ -74,6 +111,36 @@ public class Preferences {
 		set(STACK_Y_END, stackYEnd);
 	}
 
+	public static void setMirrorZ1(double mirrorZ1) {
+		getInstance().mirrorZ1 = mirrorZ1;
+		set(MIRROR_Z1, mirrorZ1);
+	}
+
+	public static void setMirrorM1(double mirrorM1) {
+		getInstance().mirrorM1 = mirrorM1;
+		set(MIRROR_M1, mirrorM1);
+	}
+
+	public static void setMirrorZ2(double mirrorZ2) {
+		getInstance().mirrorZ2 = mirrorZ2;
+		set(MIRROR_Z2, mirrorZ2);
+	}
+
+	public static void setMirrorM2(double mirrorM2) {
+		getInstance().mirrorM2 = mirrorM2;
+		set(MIRROR_M2, mirrorM2);
+	}
+
+	public static void setMirrorCoefficientM(double m) {
+		getInstance().mirrorCoeffM = m;
+		set(MIRROR_COEFF_M, m);
+	}
+
+	public static void setMirrorCoefficientT(double t) {
+		getInstance().mirrorCoeffT = t;
+		set(MIRROR_COEFF_T, t);
+	}
+
 	private Preferences() {
 		properties = new Properties();
 
@@ -85,11 +152,17 @@ public class Preferences {
 			properties.load(reader);
 		} catch(Exception e) {
 			e.printStackTrace();
-			properties.put(STACK_Z_START, Double.toString(DEFAULT_STACK_ZSTART));
-			properties.put(STACK_Z_END,   Double.toString(DEFAULT_STACK_ZEND));
-			properties.put(STACK_Y_START, Double.toString(DEFAULT_STACK_YSTART));
-			properties.put(STACK_Y_END,   Double.toString(DEFAULT_STACK_YEND));
-			properties.put(PIXEL_WIDTH,   Double.toString(DEFAULT_PIXEL_WIDHT));
+			properties.put(STACK_Z_START,  Double.toString(DEFAULT_STACK_ZSTART));
+			properties.put(STACK_Z_END,    Double.toString(DEFAULT_STACK_ZEND));
+			properties.put(STACK_Y_START,  Double.toString(DEFAULT_STACK_YSTART));
+			properties.put(STACK_Y_END,    Double.toString(DEFAULT_STACK_YEND));
+			properties.put(PIXEL_WIDTH,    Double.toString(DEFAULT_PIXEL_WIDHT));
+			properties.put(MIRROR_Z1,      Double.toString(DEFAULT_MIRROR_Z1));
+			properties.put(MIRROR_M1,      Double.toString(DEFAULT_MIRROR_M1));
+			properties.put(MIRROR_Z2,      Double.toString(DEFAULT_MIRROR_Z2));
+			properties.put(MIRROR_M2,      Double.toString(DEFAULT_MIRROR_M2));
+			properties.put(MIRROR_COEFF_M, Double.toString(DEFAULT_MIRROR_COEFF_M));
+			properties.put(MIRROR_COEFF_T, Double.toString(DEFAULT_MIRROR_COEFF_T));
 			save(propertiesFile, properties);
 		} finally {
 			try {
@@ -98,11 +171,17 @@ public class Preferences {
 				e.printStackTrace();
 			}
 		}
-		stackZStart = Double.parseDouble(properties.getProperty(STACK_Z_START, Double.toString(DEFAULT_STACK_ZSTART)));
-		stackZEnd   = Double.parseDouble(properties.getProperty(STACK_Z_END,   Double.toString(DEFAULT_STACK_ZEND)));
-		stackYStart = Double.parseDouble(properties.getProperty(STACK_Y_START, Double.toString(DEFAULT_STACK_YSTART)));
-		stackYEnd   = Double.parseDouble(properties.getProperty(STACK_Y_END,   Double.toString(DEFAULT_STACK_YEND)));
-		pixelWidth  = Double.parseDouble(properties.getProperty(PIXEL_WIDTH,   Double.toString(DEFAULT_PIXEL_WIDHT)));
+		stackZStart  = Double.parseDouble(properties.getProperty(STACK_Z_START,  Double.toString(DEFAULT_STACK_ZSTART)));
+		stackZEnd    = Double.parseDouble(properties.getProperty(STACK_Z_END,    Double.toString(DEFAULT_STACK_ZEND)));
+		stackYStart  = Double.parseDouble(properties.getProperty(STACK_Y_START,  Double.toString(DEFAULT_STACK_YSTART)));
+		stackYEnd    = Double.parseDouble(properties.getProperty(STACK_Y_END,    Double.toString(DEFAULT_STACK_YEND)));
+		pixelWidth   = Double.parseDouble(properties.getProperty(PIXEL_WIDTH,    Double.toString(DEFAULT_PIXEL_WIDHT)));
+		mirrorZ1     = Double.parseDouble(properties.getProperty(MIRROR_Z1,      Double.toString(DEFAULT_MIRROR_Z1)));
+		mirrorM1     = Double.parseDouble(properties.getProperty(MIRROR_M1,      Double.toString(DEFAULT_MIRROR_M1)));
+		mirrorZ2     = Double.parseDouble(properties.getProperty(MIRROR_Z2,      Double.toString(DEFAULT_MIRROR_Z2)));
+		mirrorM2     = Double.parseDouble(properties.getProperty(MIRROR_M2,      Double.toString(DEFAULT_MIRROR_M2)));
+		mirrorCoeffM = Double.parseDouble(properties.getProperty(MIRROR_COEFF_M, Double.toString(DEFAULT_MIRROR_COEFF_M)));
+		mirrorCoeffT = Double.parseDouble(properties.getProperty(MIRROR_COEFF_T, Double.toString(DEFAULT_MIRROR_COEFF_T)));
 	}
 
 	private static Preferences getInstance() {
