@@ -124,8 +124,10 @@ public class Microscope {
 
 		mirrorQueue = new SingleElementThreadQueue();
 		adminPanel.addAdminPanelListener(new AdminPanelListener() {
+			@Override
 			public void mirrorPositionChanged(final double pos) {
 				mirrorQueue.push(new Runnable() {
+					@Override
 					public void run() {
 						// TODO do something:
 						// set mirror target pos to mirrorPos
@@ -135,6 +137,7 @@ public class Microscope {
 				});
 			}
 
+			@Override
 			public void done() {
 				if(mode == Mode.ADMIN) {
 					mode = Mode.NORMAL;
@@ -189,6 +192,7 @@ public class Microscope {
 		final byte[] frame = new byte[ICamera.WIDTH * ICamera.HEIGHT];
 
 		buttons.addButtonsListener(new ButtonsListener() {
+			@Override
 			public void buttonPressed(int button) {
 				System.out.println("mic: button pressed " + button);
 				synchronized(Microscope.this) {
@@ -221,6 +225,7 @@ public class Microscope {
 				displayPanel.requestFocusInWindow();
 			}
 
+			@Override
 			public void buttonReleased(int button) {
 				switch(button) {
 				case AbstractButtons.BUTTON_LASER:
@@ -399,6 +404,7 @@ public class Microscope {
 
 	public static void main(String... args) {
 		SwingUtilities.invokeLater(new Runnable() {
+			@Override
 			public void run() {
 				try {
 					new Microscope();
