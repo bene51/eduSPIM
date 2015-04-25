@@ -78,7 +78,6 @@ public class SimulatedCamera implements ICamera {
 		}
 
 		int y1 = Math.min(yPos + HEIGHT, image.getHeight());
-//		System.arraycopy(image.getStack().getPixels(DEPTH - currentSequenceIndex), WIDTH * yPos, ret, 0, WIDTH * (y1 - yPos));
 		System.arraycopy(ips[zPos], WIDTH * yPos, ret, 0, WIDTH * (y1 - yPos));
 		currentSequenceIndex++;
 	}
