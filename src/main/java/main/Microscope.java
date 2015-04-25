@@ -112,6 +112,8 @@ public class Microscope {
 		System.out.println("Loading the image");
 		ImagePlus imp = IJ.openImage(System.getProperty("user.home") + "/HeadBack030_010um_3.tif");
 		System.out.println("image loaded");
+		final byte[] frame = new byte[ICamera.WIDTH * ICamera.HEIGHT];
+
 		camera = new SimulatedCamera(imp);
 		// camera = new NativeCamera(0);
 
@@ -124,15 +126,36 @@ public class Microscope {
 
 		mirrorQueue = new SingleElementThreadQueue();
 		adminPanel.addAdminPanelListener(new AdminPanelListener() {
+
 			@Override
 			public void mirrorPositionChanged(final double pos) {
 				mirrorQueue.push(new Runnable() {
 					@Override
 					public void run() {
-						// TODO do something:
-						// set mirror target pos to mirrorPos
-						// wait until it's arrived
-						// capture a single preview image and display it.
+						if(!camera.isPreviewRunning()) {
+							System.out.println("Starting preview");
+							Thread previewThread = new Thread() {
+								@Override
+								public void run() {
+									displayPanel.setStackMode(false);
+									camera.startPreview();
+									double yRel = getCurrentRelativeYPos();
+									int z = getCurrentPlane();
+									if(camera instanceof SimulatedCamera) {
+										((SimulatedCamera) camera).setYPosition(yRel);
+										((SimulatedCamera) camera).setZPosition(z);
+									}
+									while(!mirrorQueue.isIdle()) { // || mirror.isMoving()
+										camera.getPreviewImage(frame);
+										displayPanel.display(frame, null, yRel, z);
+									}
+									camera.stopPreview();
+									System.out.println("Stopped preview");
+								}
+							};
+							previewThread.start();
+						}
+						// TODO set mirror target pos to mirrorPos
 					}
 				});
 			}
@@ -189,7 +212,6 @@ public class Microscope {
 //		displayWindow.setFullscreen(true);
 		displayPanel.requestFocusInWindow();
 		displayPanel.display(null, null, yRel, 0);
-		final byte[] frame = new byte[ICamera.WIDTH * ICamera.HEIGHT];
 
 		buttons.addButtonsListener(new ButtonsListener() {
 			@Override
