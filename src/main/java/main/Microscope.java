@@ -18,6 +18,9 @@ import javax.swing.SwingUtilities;
 
 import stage.IMotor;
 import stage.SimulatedMotor;
+import bsh.EvalError;
+import bsh.Interpreter;
+import bsh.util.JConsole;
 import buttons.AWTButtons;
 import buttons.AbstractButtons;
 import buttons.ButtonsListener;
@@ -74,12 +77,25 @@ public class Microscope {
 	private final PlaneDisplay displayPanel;
 	private final DisplayFrame displayWindow;
 	private final AdminPanel adminPanel;
+	private final JConsole beanshell;
 
 	// TODO whenever there occurs an exception with the camera, switch to artificial camera.
 	// TODO whenever there occurs an exception with the stage, switch to artificial camera and stage.
 	// TODO same for mirror once it's implemented
 	// TODO acquireStack should not move the motor in y direction
 	public Microscope() throws IOException { // TODO catch exception
+
+		beanshell = new JConsole();
+		Interpreter interpreter = new Interpreter( beanshell );
+		try {
+			interpreter.set("microscope", Microscope.this);
+		} catch (EvalError e) {
+			e.printStackTrace();
+		}
+		new Thread( interpreter ).start();
+
+
+
 		motor = new SimulatedMotor();
 		// final IMotor motor = new NativeMotor(COM_PORT, BAUD_RATE);
 		motor.setVelocity(Y_AXIS, IMotor.VEL_MAX_Y);
