@@ -1,6 +1,7 @@
 package main;
 
 import java.awt.Color;
+import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -10,6 +11,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -19,13 +21,17 @@ import javax.swing.JTextField;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 
+import stage.IMotor;
+
 @SuppressWarnings("serial")
 public class AdminPanel extends JPanel {
 
 	private static DecimalFormat df = new DecimalFormat("0.000");
 
+	private HashMap<String, String> oldPreferences;
+
 	private MTextField volumeStartY, volumeStartZ, volumeEndY, volumeEndZ;
-	private JButton setStart, setEnd, done;
+	private JButton setStart, setEnd, ok, cancel;
 	private MTextField mirror1Z, mirror2Z;
 	private NumberField mirror1M, mirror2M;
 	private ArrayList<AdminPanelListener> listeners = new ArrayList<AdminPanelListener>();
@@ -42,6 +48,7 @@ public class AdminPanel extends JPanel {
 		volumeStartZ = new MTextField(df.format(Preferences.getStackZStart()));
 		setStart = new JButton("Set");
 		setStart.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				volumeStartY.setText(df.format(yPos));
 				volumeStartZ.setText(df.format(zPos));
@@ -51,6 +58,7 @@ public class AdminPanel extends JPanel {
 		volumeEndZ = new MTextField(df.format(Preferences.getStackZEnd()));
 		setEnd = new JButton("Set");
 		setEnd.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				volumeEndY.setText(df.format(yPos));
 				volumeEndZ.setText(df.format(zPos));
@@ -88,10 +96,18 @@ public class AdminPanel extends JPanel {
 				}
 			}
 		});
-		done = new JButton("Apply & leave admin mode");
-		done.addActionListener(new ActionListener() {
+		cancel = new JButton("Cancel");
+		cancel.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
-				fireDone();
+				cancel();
+			}
+		});
+		ok = new JButton("Apply & leave admin mode");
+		ok.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				apply();
 			}
 		});
 
@@ -211,14 +227,66 @@ public class AdminPanel extends JPanel {
 		cAll.weightx = 1;
 		add(mirror2Panel, cAll);
 
-
+		JPanel buttons = new JPanel(new FlowLayout(FlowLayout.CENTER));
+		buttons.setOpaque(true);
+		buttons.setBackground(Color.BLACK);
+		buttons.setForeground(Color.WHITE);
+		buttons.add(cancel);
+		buttons.add(ok);
 		cAll.gridy++;
 		cAll.gridx = 0;
 		cAll.fill = GridBagConstraints.NONE;
 		cAll.insets = new Insets(20, 3, 20, 3);
 		cAll.gridwidth = GridBagConstraints.REMAINDER;
 		cAll.anchor = GridBagConstraints.CENTER;
-		add(done, cAll);
+		add(buttons, cAll);
+	}
+
+	public void init() {
+		volumeStartY.setText(df.format(Preferences.getStackYStart()));
+		volumeStartZ.setText(df.format(Preferences.getStackZStart()));
+		volumeEndY.setText(df.format(Preferences.getStackYEnd()));
+		volumeEndZ.setText(df.format(Preferences.getStackZEnd()));
+		mirror1Z.setText(df.format(Preferences.getMirrorZ1()));
+		mirror2Z.setText(df.format(Preferences.getMirrorZ2()));
+		mirror1M.setText(df.format(Preferences.getMirrorM1()));
+		mirror2M.setText(df.format(Preferences.getMirrorM2()));
+
+		oldPreferences = Preferences.backup();
+
+		Preferences.setStackYStart(IMotor.POS_MIN_Y);
+		Preferences.setStackZStart(IMotor.POS_MIN_Z);
+		Preferences.setStackYEnd(IMotor.POS_MAX_Y);
+		Preferences.setStackZEnd(IMotor.POS_MAX_Z);
+	}
+
+	public void cancel() {
+		Preferences.restore(oldPreferences);
+		fireDone();
+	}
+
+	public void apply() {
+		double x1 = Double.parseDouble(mirror1Z.getText());
+		double y1 = Double.parseDouble(mirror1M.getText());
+		double x2 = Double.parseDouble(mirror2Z.getText());
+		double y2 = Double.parseDouble(mirror2M.getText());
+
+		double m = (y2 - y1) / (x2 - x1);
+		double t = y1 - m * x1;
+
+		oldPreferences.put(Preferences.STACK_Y_START,  volumeStartY.getText());
+		oldPreferences.put(Preferences.STACK_Z_START,  volumeStartZ.getText());
+		oldPreferences.put(Preferences.STACK_Y_END,    volumeEndY.getText());
+		oldPreferences.put(Preferences.STACK_Z_END,    volumeEndY.getText());
+		oldPreferences.put(Preferences.MIRROR_Z1,      Double.toString(x1));
+		oldPreferences.put(Preferences.MIRROR_M1,      Double.toString(y1));
+		oldPreferences.put(Preferences.MIRROR_Z2,      Double.toString(x2));
+		oldPreferences.put(Preferences.MIRROR_M2,      Double.toString(y2));
+		oldPreferences.put(Preferences.MIRROR_COEFF_M, Double.toString(m));
+		oldPreferences.put(Preferences.MIRROR_COEFF_T, Double.toString(t));
+
+		Preferences.restore(oldPreferences);
+		fireDone();
 	}
 
 	public void setPosition(double yPos, double zPos) {

@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Properties;
 
 import stage.IMotor;
@@ -143,6 +145,17 @@ public class Preferences {
 
 	private Preferences() {
 		properties = new Properties();
+		properties.put(STACK_Z_START,  Double.toString(DEFAULT_STACK_ZSTART));
+		properties.put(STACK_Z_END,    Double.toString(DEFAULT_STACK_ZEND));
+		properties.put(STACK_Y_START,  Double.toString(DEFAULT_STACK_YSTART));
+		properties.put(STACK_Y_END,    Double.toString(DEFAULT_STACK_YEND));
+		properties.put(PIXEL_WIDTH,    Double.toString(DEFAULT_PIXEL_WIDHT));
+		properties.put(MIRROR_Z1,      Double.toString(DEFAULT_MIRROR_Z1));
+		properties.put(MIRROR_M1,      Double.toString(DEFAULT_MIRROR_M1));
+		properties.put(MIRROR_Z2,      Double.toString(DEFAULT_MIRROR_Z2));
+		properties.put(MIRROR_M2,      Double.toString(DEFAULT_MIRROR_M2));
+		properties.put(MIRROR_COEFF_M, Double.toString(DEFAULT_MIRROR_COEFF_M));
+		properties.put(MIRROR_COEFF_T, Double.toString(DEFAULT_MIRROR_COEFF_T));
 
 		propertiesFile = new File(PROPERTY_FILE);
 
@@ -152,21 +165,10 @@ public class Preferences {
 			properties.load(reader);
 		} catch(Exception e) {
 			e.printStackTrace();
-			properties.put(STACK_Z_START,  Double.toString(DEFAULT_STACK_ZSTART));
-			properties.put(STACK_Z_END,    Double.toString(DEFAULT_STACK_ZEND));
-			properties.put(STACK_Y_START,  Double.toString(DEFAULT_STACK_YSTART));
-			properties.put(STACK_Y_END,    Double.toString(DEFAULT_STACK_YEND));
-			properties.put(PIXEL_WIDTH,    Double.toString(DEFAULT_PIXEL_WIDHT));
-			properties.put(MIRROR_Z1,      Double.toString(DEFAULT_MIRROR_Z1));
-			properties.put(MIRROR_M1,      Double.toString(DEFAULT_MIRROR_M1));
-			properties.put(MIRROR_Z2,      Double.toString(DEFAULT_MIRROR_Z2));
-			properties.put(MIRROR_M2,      Double.toString(DEFAULT_MIRROR_M2));
-			properties.put(MIRROR_COEFF_M, Double.toString(DEFAULT_MIRROR_COEFF_M));
-			properties.put(MIRROR_COEFF_T, Double.toString(DEFAULT_MIRROR_COEFF_T));
-			save(propertiesFile, properties);
 		} finally {
 			try {
-				reader.close();
+				if(reader != null)
+					reader.close();
 			} catch(IOException e) {
 				e.printStackTrace();
 			}
@@ -182,6 +184,33 @@ public class Preferences {
 		mirrorM2     = Double.parseDouble(properties.getProperty(MIRROR_M2,      Double.toString(DEFAULT_MIRROR_M2)));
 		mirrorCoeffM = Double.parseDouble(properties.getProperty(MIRROR_COEFF_M, Double.toString(DEFAULT_MIRROR_COEFF_M)));
 		mirrorCoeffT = Double.parseDouble(properties.getProperty(MIRROR_COEFF_T, Double.toString(DEFAULT_MIRROR_COEFF_T)));
+	}
+
+	public static HashMap<String, String> backup() {
+		HashMap<String, String> backup = new HashMap<String, String>();
+		Preferences p = getInstance();
+		Enumeration<?> e = p.properties.propertyNames();
+		while(e.hasMoreElements()) {
+			String key = (String)e.nextElement();
+			backup.put(key, p.properties.getProperty(key));
+		}
+		return backup;
+	}
+
+	public static void restore(HashMap<String, String> backup) {
+		Preferences p = getInstance();
+		p.stackZStart  = Double.parseDouble(backup.get(STACK_Z_START));
+		p.stackZEnd    = Double.parseDouble(backup.get(STACK_Z_END));
+		p.stackYStart  = Double.parseDouble(backup.get(STACK_Y_START));
+		p.stackYEnd    = Double.parseDouble(backup.get(STACK_Y_END));
+		p.pixelWidth   = Double.parseDouble(backup.get(PIXEL_WIDTH));
+		p.mirrorZ1     = Double.parseDouble(backup.get(MIRROR_Z1));
+		p.mirrorM1     = Double.parseDouble(backup.get(MIRROR_M1));
+		p.mirrorZ2     = Double.parseDouble(backup.get(MIRROR_Z2));
+		p.mirrorM2     = Double.parseDouble(backup.get(MIRROR_M2));
+		p.mirrorCoeffM = Double.parseDouble(backup.get(MIRROR_COEFF_M));
+		p.mirrorCoeffT = Double.parseDouble(backup.get(MIRROR_COEFF_T));
+		Preferences.setAll(backup);
 	}
 
 	private static Preferences getInstance() {
@@ -202,8 +231,14 @@ public class Preferences {
 		return Double.parseDouble(get(key));
 	}
 
+	private static void setAll(HashMap<String, String> table) {
+		for(String key : table.keySet())
+			getInstance().properties.setProperty(key, table.get(key));
+		save(getInstance().propertiesFile, getInstance().properties);
+	}
+
 	private static void set(String key, Object value) {
-		getInstance().properties.put(key, value.toString());
+		getInstance().properties.setProperty(key, value.toString());
 		save(getInstance().propertiesFile, getInstance().properties);
 	}
 

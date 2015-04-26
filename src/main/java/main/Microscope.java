@@ -187,6 +187,7 @@ public class Microscope {
 				} else if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_A) {
 					if(mode == Mode.NORMAL) {
 						mode = Mode.ADMIN;
+						adminPanel.init();
 						displayWindow.add(adminPanel, BorderLayout.WEST);
 						displayWindow.validate();
 						displayPanel.requestFocusInWindow();
