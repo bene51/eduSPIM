@@ -5,7 +5,10 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
 
+import javax.swing.InputMap;
+import javax.swing.JFrame;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 
 @SuppressWarnings("serial")
 public class NumberField extends JTextField {
@@ -37,8 +40,19 @@ public class NumberField extends JTextField {
 			l.keyTyped(e);
 	}
 
+	public static void main(String[] args) {
+		JFrame frame = new JFrame("");
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.getContentPane().add(new NumberField(8));
+		frame.pack();
+		frame.setVisible(true);
+	}
+
 	public NumberField(int n) {
 		super(n);
+		InputMap im = getInputMap();
+		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), "bla");
+		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), "bla");
 		super.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
@@ -57,6 +71,7 @@ public class NumberField extends JTextField {
 						if(digit < 9) {
 							text.setCharAt(car, Integer.toString(digit + 1).charAt(0));
 							setText(text.toString());
+							setCaretPosition(originalCar);
 							break;
 						}
 						text.setCharAt(car, '0');
@@ -81,13 +96,16 @@ public class NumberField extends JTextField {
 							continue;
 						int digit = Integer.parseInt(Character.toString(ch));
 						if(digit > 0) {
+							int carP = 0;
 							if(car == 0 && digit == 1 && text.charAt(1) != '.') {
 								text.deleteCharAt(0);
-								setCaretPosition(Math.max(0, originalCar - 1));
+								carP = Math.max(0, originalCar - 1);
 							} else {
 								text.setCharAt(car, Integer.toString(digit - 1).charAt(0));
+								carP = originalCar;
 							}
 							setText(text.toString());
+							setCaretPosition(carP);
 							break;
 						}
 						text.setCharAt(car, '9');
