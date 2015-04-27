@@ -28,6 +28,7 @@ public class SimulatedMotor implements IMotor {
 		movingThread.start();
 	}
 
+	@Override
 	public double getPosition(int axis) {
 		double ret = 0;
 		synchronized(lock) {
@@ -37,11 +38,13 @@ public class SimulatedMotor implements IMotor {
 		return ret;
 	}
 
+	@Override
 	public double getVelocity(int axis) {
 		sleep(50);
 		return vel[axis];
 	}
 
+	@Override
 	public boolean isMoving(int axis) {
 		boolean moving = false;
 		synchronized(lock) {
@@ -51,6 +54,7 @@ public class SimulatedMotor implements IMotor {
 		return moving;
 	}
 
+	@Override
 	public boolean isMoving() {
 		boolean moving = false;
 		synchronized(lock) {
@@ -66,11 +70,13 @@ public class SimulatedMotor implements IMotor {
 		return moving;
 	}
 
+	@Override
 	public void setVelocity(int axis, double vel) {
 		this.vel[axis] = vel;
 		sleep(50);
 	}
 
+	@Override
 	public void setTarget(int axis, double target) {
 		this.tar[axis] = target;
 		sleep(50);
@@ -84,10 +90,12 @@ public class SimulatedMotor implements IMotor {
 		}
 	}
 
+	@Override
 	public void stop() {
 		stopMoving = true;
 	}
 
+	@Override
 	public void close() {
 		closed = true;
 		try {
@@ -117,6 +125,7 @@ public class SimulatedMotor implements IMotor {
 			}
 		}
 
+		@Override
 		public void run() {
 			prevTimestamp = System.currentTimeMillis();
 			try {
@@ -167,7 +176,7 @@ public class SimulatedMotor implements IMotor {
 		}
 	}
 
-	public static void main1(String[] args) {
+	public static void main1() {
 		SimulatedMotor motor = new SimulatedMotor();
 		motor.setVelocity(IMotor.Y_AXIS, IMotor.POS_MAX_Y);
 		motor.setVelocity(IMotor.Z_AXIS, IMotor.POS_MAX_Z);

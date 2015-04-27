@@ -5,5 +5,5 @@ public interface AdminPanelListener {
 
 	public void mirrorPositionChanged(double pos);
 
-	public void done();
+	public void adminPanelDone();
 }

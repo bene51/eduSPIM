@@ -10,7 +10,7 @@ public class NativeMotor implements IMotor {
 		System.loadLibrary("stage_NativeMotor");
 	}
 
-	public NativeMotor(int comPort, int baudRate) {
+	public NativeMotor(int comPort, int baudRate) throws MotorException {
 		stageConnect(comPort, baudRate);
 		if(stageIsReferenceNeeded()) {
 			boolean allow = true; // TODO ask the user for permission to move and reference
@@ -19,50 +19,58 @@ public class NativeMotor implements IMotor {
 		}
 	}
 
-	private static native void stageConnect(int comport, int baudrate);
-	private static native boolean stageIsReferenceNeeded();
-	private static native void stageReferenceIfNeeded();
-	private static native double stageGetPosition(int axis);
-	private static native double stageGetVelocity(int axis);
-	private static native boolean stageIsMoving(int axis);
-	private static native void stageSetVelocity(int axis, double vel);
-	private static native void stageSetTarget(int axis, double pos);
-	private static native void stageStopMoving();
-	private static native void stageClose();
+	private static native void stageConnect(int comport, int baudrate) throws MotorException;
+	private static native boolean stageIsReferenceNeeded() throws MotorException;
+	private static native void stageReferenceIfNeeded() throws MotorException;
+	private static native double stageGetPosition(int axis) throws MotorException;
+	private static native double stageGetVelocity(int axis) throws MotorException;
+	private static native boolean stageIsMoving(int axis) throws MotorException;
+	private static native void stageSetVelocity(int axis, double vel) throws MotorException;
+	private static native void stageSetTarget(int axis, double pos) throws MotorException;
+	private static native void stageStopMoving() throws MotorException;
+	private static native void stageClose() throws MotorException;
 
-	public double getPosition(int axis) {
+	@Override
+	public double getPosition(int axis) throws MotorException {
 		return stageGetPosition(axis);
 	}
 
-	public double getVelocity(int axis) {
+	@Override
+	public double getVelocity(int axis) throws MotorException {
 		return stageGetVelocity(axis);
 	}
 
-	public boolean isMoving() {
+	@Override
+	public boolean isMoving() throws MotorException {
 		return isMoving(IMotor.Y_AXIS) || isMoving(IMotor.Z_AXIS);
 	}
 
-	public boolean isMoving(int axis) {
+	@Override
+	public boolean isMoving(int axis) throws MotorException {
 		return stageIsMoving(axis);
 	}
 
-	public void setVelocity(int axis, double vel) {
+	@Override
+	public void setVelocity(int axis, double vel) throws MotorException {
 		stageSetVelocity(axis, vel);
 	}
 
-	public void setTarget(int axis, double pos) {
+	@Override
+	public void setTarget(int axis, double pos) throws MotorException {
 		stageSetTarget(axis, pos);
 	}
 
-	public void stop() {
+	@Override
+	public void stop() throws MotorException {
 		stageStopMoving();
 	}
 
-	public void close() {
+	@Override
+	public void close() throws MotorException {
 		stageClose();
 	}
 
-	public static void main(String[] args) throws NumberFormatException, IOException {
+	public static void main(String[] args) throws NumberFormatException, IOException, MotorException {
 		NativeMotor motor = new NativeMotor(7, 38400);
 		System.out.println("motor initialized");
 		double y = motor.getPosition(Y_AXIS);

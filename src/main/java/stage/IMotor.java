@@ -15,19 +15,19 @@ public interface IMotor {
 	public double VEL_MAX_Y = 1.5;
 	public double VEL_MAX_Z = 1.5;
 
-	public double getPosition(int axis);
+	public double getPosition(int axis) throws MotorException;
 
-	public double getVelocity(int axis);
+	public double getVelocity(int axis) throws MotorException;
 
-	public boolean isMoving();
+	public boolean isMoving() throws MotorException;
 
-	public boolean isMoving(int axis);
+	public boolean isMoving(int axis) throws MotorException;
 
-	public void setVelocity(int axis, double vel);
+	public void setVelocity(int axis, double vel) throws MotorException;
 
-	public void setTarget(int axis, double pos);
+	public void setTarget(int axis, double pos) throws MotorException;
 
-	public void stop();
+	public void stop() throws MotorException;
 
-	public void close();
+	public void close() throws MotorException;
 }

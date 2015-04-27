@@ -309,7 +309,7 @@ public class AdminPanel extends JPanel {
 
 	private void fireDone() {
 		for(AdminPanelListener l : listeners)
-			l.done();
+			l.adminPanelDone();
 	}
 
 	private static class MTextField extends JTextField {

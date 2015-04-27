@@ -6,15 +6,15 @@ import java.io.InputStreamReader;
 
 public class NativeCamera implements ICamera {
 
-	private static native void camSetup(int camIdx);
-	private static native void camStartPreview(int camIdx);
-	private static native void camStopPreview(int camIdx);
-	private static native void camGetPreviewImage(int camIdx, byte[] ret);
-	private static native void camStartSequence(int camIdx);
-	private static native void camGetNextSequenceImage(int camIdx, byte[] ret);
-	private static native void camStopSequence(int camIdx);
-	private static native double camGetFramerate(int camIdx);
-	private static native void camClose(int camIdx);
+	private static native void camSetup(int camIdx) throws CameraException;
+	private static native void camStartPreview(int camIdx) throws CameraException;
+	private static native void camStopPreview(int camIdx) throws CameraException;
+	private static native void camGetPreviewImage(int camIdx, byte[] ret) throws CameraException;
+	private static native void camStartSequence(int camIdx) throws CameraException;
+	private static native void camGetNextSequenceImage(int camIdx, byte[] ret) throws CameraException;
+	private static native void camStopSequence(int camIdx) throws CameraException;
+	private static native double camGetFramerate(int camIdx) throws CameraException;
+	private static native void camClose(int camIdx) throws CameraException;
 
 	private boolean previewRunning = false;
 	private int camIdx;
@@ -23,50 +23,59 @@ public class NativeCamera implements ICamera {
 		System.loadLibrary("cam_NativeCamera");
 	}
 
-	public NativeCamera(int camIdx) {
+	public NativeCamera(int camIdx) throws CameraException {
 		System.out.println("NativeCamera: constructor");
 		camSetup(camIdx);
 	}
 
-	public void startPreview() {
+	@Override
+	public void startPreview() throws CameraException {
 		camStartPreview(camIdx);
 		previewRunning = true;
 	}
 
-	public void getPreviewImage(byte[] ret) {
+	@Override
+	public void getPreviewImage(byte[] ret) throws CameraException {
 		camGetPreviewImage(camIdx, ret);
 	}
 
-	public void stopPreview() {
+	@Override
+	public void stopPreview() throws CameraException {
 		camStopPreview(camIdx);
 		previewRunning = false;
 	}
 
+	@Override
 	public boolean isPreviewRunning() {
 		return previewRunning;
 	}
 
-	public void startSequence() {
+	@Override
+	public void startSequence() throws CameraException {
 		camStartSequence(camIdx);
 	}
 
-	public void getNextSequenceImage(byte[] ret) {
+	@Override
+	public void getNextSequenceImage(byte[] ret) throws CameraException {
 		camGetNextSequenceImage(camIdx, ret);
 	}
 
-	public void stopSequence() {
+	@Override
+	public void stopSequence() throws CameraException {
 		camStopSequence(camIdx);
 	}
 
-	public double getFramerate() {
+	@Override
+	public double getFramerate() throws CameraException {
 		return camGetFramerate(camIdx);
 	}
 
-	public void close() {
+	@Override
+	public void close() throws CameraException {
 		camClose(camIdx);
 	}
 
-	public static void main(String... args) throws IOException {
+	public static void main(String... args) throws IOException, CameraException {
 		NativeCamera cam = new NativeCamera(0);
 
 		byte[] frame = new byte[WIDTH * HEIGHT];

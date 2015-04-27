@@ -37,21 +37,21 @@ public interface ICamera {
 	public final int HEIGHT = 1024;
 
 
-	public void startPreview();
+	public void startPreview() throws CameraException;
 
-	public void getPreviewImage(byte[] ret);
+	public void getPreviewImage(byte[] ret) throws CameraException;
 
-	public void stopPreview();
+	public void stopPreview() throws CameraException;
 
 	public boolean isPreviewRunning();
 
-	public void startSequence();
+	public void startSequence() throws CameraException;
 
-	public void getNextSequenceImage(byte[] ret);
+	public void getNextSequenceImage(byte[] ret) throws CameraException;
 
-	public void stopSequence();
+	public void stopSequence() throws CameraException;
 
-	public double getFramerate();
+	public double getFramerate() throws CameraException;
 
-	public void close();
+	public void close() throws CameraException;
 }

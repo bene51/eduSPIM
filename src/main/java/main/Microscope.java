@@ -17,14 +17,17 @@ import java.net.URL;
 import javax.swing.SwingUtilities;
 
 import stage.IMotor;
+import stage.MotorException;
+import stage.NativeMotor;
 import stage.SimulatedMotor;
 import bsh.EvalError;
 import bsh.Interpreter;
 import bsh.util.JConsole;
 import buttons.AWTButtons;
 import buttons.AbstractButtons;
-import buttons.ButtonsListener;
+import cam.CameraException;
 import cam.ICamera;
+import cam.NativeCamera;
 import cam.SimulatedCamera;
 import display.DisplayFrame;
 import display.PlaneDisplay;
@@ -54,7 +57,13 @@ import display.PlaneDisplay;
  *   (time stamp, button type)
  *
  */
-public class Microscope {
+public class Microscope implements AdminPanelListener {
+
+	public static final int EXIT_NORMAL         =  0;
+	public static final int EXIT_PREVIEW_ERROR  = -1;
+	public static final int EXIT_STACK_ERROR    = -2;
+	public static final int EXIT_INITIALIZATION = -3;
+	public static final int EXIT_FATAL_ERROR    = -4;
 
 	private static final int COM_PORT = 7;
 	private static final int BAUD_RATE = 38400;
@@ -64,12 +73,14 @@ public class Microscope {
 		ADMIN,
 	}
 
+	private boolean simulated = false;
+
 	private Mode mode = Mode.NORMAL;
 
-	private boolean acquiringStack = false;
+	private boolean busy = false;
 
-	private final IMotor motor;
-	private final ICamera camera;
+	private IMotor motor;
+	private ICamera camera;
 	private final AbstractButtons buttons;
 
 	private final SingleElementThreadQueue mirrorQueue;
@@ -77,104 +88,37 @@ public class Microscope {
 	private final PlaneDisplay displayPanel;
 	private final DisplayFrame displayWindow;
 	private final AdminPanel adminPanel;
-	private final JConsole beanshell;
+	private JConsole beanshell;
 
-	// TODO whenever there occurs an exception with the camera, switch to artificial camera.
-	// TODO whenever there occurs an exception with the stage, switch to artificial camera and stage.
-	// TODO same for mirror once it's implemented
-	// TODO acquireStack should not move the motor in y direction
-	public Microscope() throws IOException { // TODO catch exception
+	private final byte[] fluorescenceFrame, transmissionFrame;
 
-		beanshell = new JConsole();
-		Interpreter interpreter = new Interpreter( beanshell );
-		try {
-			interpreter.set("microscope", Microscope.this);
-		} catch (EvalError e) {
-			e.printStackTrace();
-		}
-		new Thread( interpreter ).start();
+	public Microscope() throws IOException, MotorException {
 
-
-
-		motor = new SimulatedMotor();
-		// final IMotor motor = new NativeMotor(COM_PORT, BAUD_RATE);
-		motor.setVelocity(Y_AXIS, IMotor.VEL_MAX_Y);
-		motor.setVelocity(Z_AXIS, IMotor.VEL_MAX_Z);
-		motor.setTarget(Y_AXIS, Preferences.getStackYStart());
-		motor.setTarget(Z_AXIS, Preferences.getStackZStart());
-
-		while(motor.isMoving())
-			sleep(100);
+		initBeanshell();
+		initMotor(true);
+		initCamera();
 
 		double yRel = getCurrentRelativeYPos();
 
-		System.out.println("max memory: " + Runtime.getRuntime().maxMemory() / 1024.0 / 1024.0);
-		System.out.println("Loading the image");
-		ImagePlus imp = IJ.openImage(System.getProperty("user.home") + "/HeadBack030_010um_3.tif");
-		System.out.println("image loaded");
-		final byte[] frame = new byte[ICamera.WIDTH * ICamera.HEIGHT];
-
-		camera = new SimulatedCamera(imp);
-		// camera = new NativeCamera(0);
+		fluorescenceFrame = new byte[ICamera.WIDTH * ICamera.HEIGHT];
+		transmissionFrame = new byte[ICamera.WIDTH * ICamera.HEIGHT];
 
 		URL url = getClass().getResource("/fire.lut");
 		InputStream stream = url.openStream();
 		IndexColorModel depthLut = LutLoader.open(stream);
 		stream.close();
 
-		adminPanel = new AdminPanel(motor.getPosition(Y_AXIS), motor.getPosition(Z_AXIS));
-
 		mirrorQueue = new SingleElementThreadQueue();
-		adminPanel.addAdminPanelListener(new AdminPanelListener() {
 
-			@Override
-			public void mirrorPositionChanged(final double pos) {
-				mirrorQueue.push(new Runnable() {
-					@Override
-					public void run() {
-						if(!camera.isPreviewRunning()) {
-							System.out.println("Starting preview");
-							Thread previewThread = new Thread() {
-								@Override
-								public void run() {
-									displayPanel.setStackMode(false);
-									camera.startPreview();
-									double yRel = getCurrentRelativeYPos();
-									int z = getCurrentPlane();
-									if(camera instanceof SimulatedCamera) {
-										((SimulatedCamera) camera).setYPosition(yRel);
-										((SimulatedCamera) camera).setZPosition(z);
-									}
-									while(!mirrorQueue.isIdle()) { // || mirror.isMoving()
-										camera.getPreviewImage(frame);
-										displayPanel.display(frame, null, yRel, z);
-									}
-									camera.stopPreview();
-									System.out.println("Stopped preview");
-								}
-							};
-							previewThread.start();
-						}
-						// TODO set mirror target pos to mirrorPos
-					}
-				});
-			}
+		adminPanel = new AdminPanel(motor.getPosition(Y_AXIS), motor.getPosition(Z_AXIS));
+		adminPanel.addAdminPanelListener(this);
 
-			@Override
-			public void done() {
-				if(mode == Mode.ADMIN) {
-					mode = Mode.NORMAL;
-					displayWindow.remove(adminPanel);
-					displayWindow.validate();
-					displayPanel.requestFocusInWindow();
-				}
-			}
-		});
+
 		displayPanel = new PlaneDisplay(depthLut);
 		displayPanel.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
-				if(acquiringStack)
+				if(busy)
 					return;
 				if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_Q) {
 					shutdown();
@@ -214,80 +158,98 @@ public class Microscope {
 		displayPanel.requestFocusInWindow();
 		displayPanel.display(null, null, yRel, 0);
 
-		buttons.addButtonsListener(new ButtonsListener() {
-			@Override
-			public void buttonPressed(int button) {
-				System.out.println("mic: button pressed " + button);
-				synchronized(Microscope.this) {
-					if(acquiringStack) {
-						displayPanel.requestFocusInWindow();
-						return;
-					}
-				}
+		buttons.addButtonsListener(new SPIMButtonsListener(this));
+	}
 
-				switch(button) {
-				case AbstractButtons.BUTTON_LASER:
-					// TODO move mirror away and switch laser on
-					break;
-				case AbstractButtons.BUTTON_STACK:
-					acquireStack(frame);
-					break;
-				case AbstractButtons.BUTTON_Y_DOWN:
-					startPreview(button, Y_AXIS, false, Preferences.getStackYStart(), frame);
-					break;
-				case AbstractButtons.BUTTON_Y_UP:
-					startPreview(button, Y_AXIS, true,  Preferences.getStackYEnd(), frame);
-					break;
-				case AbstractButtons.BUTTON_Z_DOWN:
-					startPreview(button, Z_AXIS, false, Preferences.getStackZStart(), frame);
-					break;
-				case AbstractButtons.BUTTON_Z_UP:
-					startPreview(button, Z_AXIS, true,  Preferences.getStackZEnd(), frame);
-					break;
-				}
-				displayPanel.requestFocusInWindow();
+	public void initMotor(boolean moveToStart) {
+		try {
+			motor = new NativeMotor(COM_PORT, BAUD_RATE); // TODO save parameters in Preferences
+			if(moveToStart) {
+				motor.setVelocity(Y_AXIS, IMotor.VEL_MAX_Y);
+				motor.setVelocity(Z_AXIS, IMotor.VEL_MAX_Z);
+				motor.setTarget(Y_AXIS, Preferences.getStackYStart());
+				motor.setTarget(Z_AXIS, Preferences.getStackZStart());
+				while(motor.isMoving())
+					sleep(50);
 			}
+		} catch(Throwable e) {
+			ExceptionHandler.handleException(e);
+			motor = new SimulatedMotor();
+			if(moveToStart) {
+				try {
+					motor.setVelocity(Y_AXIS, IMotor.VEL_MAX_Y);
+					motor.setVelocity(Z_AXIS, IMotor.VEL_MAX_Z);
+					motor.setTarget(Y_AXIS, Preferences.getStackYStart());
+					motor.setTarget(Z_AXIS, Preferences.getStackZStart());
+					while(motor.isMoving())
+						sleep(50);
+				} catch(Throwable ex) {
+					ExceptionHandler.handleException(ex);
+					shutdown(EXIT_FATAL_ERROR);
+				}
+			}
+			simulated = true;
+		}
+	}
 
-			@Override
-			public void buttonReleased(int button) {
-				switch(button) {
-				case AbstractButtons.BUTTON_LASER:
-					// TODO move mirror back and switch laser to triggered
-					break;
-				case AbstractButtons.BUTTON_STACK:
-					break;
-				case AbstractButtons.BUTTON_Y_DOWN:
-					break;
-				case AbstractButtons.BUTTON_Y_UP:
-					break;
-				case AbstractButtons.BUTTON_Z_DOWN:
-					break;
-				case AbstractButtons.BUTTON_Z_UP:
-					break;
-				}
-				displayPanel.requestFocusInWindow();
+	public void initCamera() {
+		if(!simulated) {
+			try {
+				camera = new NativeCamera(0);
+				return;
+			} catch(Throwable e) {
+				ExceptionHandler.handleException(e);
 			}
-		});
+		}
+
+		simulated = true;
+		System.out.println("Loading the image");
+		ImagePlus imp = IJ.openImage(System.getProperty("user.home") + "/HeadBack030_010um_3.tif");
+		System.out.println("image loaded");
+		camera = new SimulatedCamera(imp);
+	}
+
+	public void initBeanshell() {
+		beanshell = new JConsole();
+		Interpreter interpreter = new Interpreter( beanshell );
+		try {
+			interpreter.set("microscope", Microscope.this);
+		} catch (EvalError e) {
+			e.printStackTrace();
+		}
+		new Thread( interpreter ).start();
+	}
+
+	public void requestFocus() {
+		displayPanel.requestFocusInWindow();
+	}
+
+	public synchronized boolean isBusy() {
+		return busy;
+	}
+
+	synchronized void resetBusy() {
+		this.busy = false;
 	}
 
 	public IMotor getMotor() {
 		return motor;
 	}
 
-	int getCurrentPlane() {
+	int getCurrentPlane() throws MotorException {
 		double zpos = motor.getPosition(Z_AXIS);
 		double zrel = (zpos - Preferences.getStackZStart()) / (Preferences.getStackZEnd() - Preferences.getStackZStart());
 		return (int)Math.round(zrel * ICamera.DEPTH);
 	}
 
-	double getCurrentRelativeYPos() {
+	double getCurrentRelativeYPos() throws MotorException {
 		double ypos = motor.getPosition(Y_AXIS);
 		return (ypos - Preferences.getStackYStart()) / (Preferences.getStackYEnd() - Preferences.getStackYStart());
 	}
 
-	void startPreview(int button, int axis, boolean positive, double target, byte[] frame) {
+	void startPreview(int button, int axis, boolean positive, double target) throws MotorException, CameraException {
 		synchronized(this) {
-			acquiringStack = true;
+			busy = true;
 		}
 		System.out.println("startPreview: axis = " + axis + " target = " + target);
 		// get current plane
@@ -301,9 +263,8 @@ public class Microscope {
 		double dz = (Preferences.getStackZEnd() - Preferences.getStackZStart()) / ICamera.DEPTH;
 		motor.setVelocity(axis, dz * framerate);
 
-		byte[] transmission = new byte[ICamera.WIDTH * ICamera.HEIGHT];
-		for(int i = 0; i < transmission.length; i++)
-			transmission[i] = 100;
+		for(int i = 0; i < transmissionFrame.length; i++)
+			transmissionFrame[i] = 100;
 
 		displayPanel.setStackMode(false);
 		motor.setTarget(axis, target);
@@ -329,8 +290,8 @@ public class Microscope {
 				((SimulatedCamera) camera).setYPosition(yRel);
 				((SimulatedCamera) camera).setZPosition(plane);
 			}
-			camera.getNextSequenceImage(frame);
-			displayPanel.display(frame, transmission, yRel, plane);
+			camera.getNextSequenceImage(fluorescenceFrame);
+			displayPanel.display(fluorescenceFrame, transmissionFrame, yRel, plane);
 		} while(buttons.getButtonDown() == button);
 
 		camera.stopSequence();
@@ -355,13 +316,13 @@ public class Microscope {
 		displayPanel.requestFocusInWindow();
 
 		synchronized(this) {
-			acquiringStack = false;
+			busy = false;
 		}
 	}
 
-	void acquireStack(byte[] frame) {
+	void acquireStack() throws MotorException, CameraException {
 		synchronized(this) {
-			acquiringStack = true;
+			busy = true;
 		}
 
 		double yRel = getCurrentRelativeYPos();
@@ -390,8 +351,8 @@ public class Microscope {
 				((SimulatedCamera) camera).setYPosition(yRel);
 				((SimulatedCamera) camera).setZPosition(i);
 			}
-			camera.getNextSequenceImage(frame);
-			displayPanel.display(frame, null, yRel, i);
+			camera.getNextSequenceImage(fluorescenceFrame);
+			displayPanel.display(fluorescenceFrame, null, yRel, i);
 		}
 		camera.stopSequence();
 
@@ -402,28 +363,98 @@ public class Microscope {
 		adminPanel.setPosition(motor.getPosition(Y_AXIS), motor.getPosition(Z_AXIS));
 
 		synchronized(this) {
-			acquiringStack = false;
+			busy = false;
 		}
 	}
 
-	private static void sleep(long ms) {
+	public static void sleep(long ms) {
 		try {
 			Thread.sleep(ms);
 		} catch (InterruptedException e) {
+			ExceptionHandler.handleException(e);
 			e.printStackTrace();
 		}
 	}
 
 	public void shutdown() {
+		shutdown(0);
+	}
+
+	public void shutdown(int exitcode) {
+		// TODO log it somewhere
 		while(!mirrorQueue.isIdle())
 			sleep(100);
-		motor.close();
-		camera.close();
+		try {
+			motor.close();
+		} catch(MotorException e) {
+			ExceptionHandler.handleException(e);
+		}
+		try {
+			camera.close();
+		} catch (CameraException e) {
+			ExceptionHandler.handleException(e);
+		}
 		buttons.close();
 
 		mirrorQueue.shutdown();
 		displayWindow.dispose();
-		System.exit(0);
+		System.exit(exitcode);
+	}
+
+	/******************************************************
+	 * AdminPanelListener interaface
+	 */
+	@Override
+	public void mirrorPositionChanged(final double pos) {
+		mirrorQueue.push(new Runnable() {
+			@Override
+			public void run() {
+				if(!camera.isPreviewRunning()) {
+					System.out.println("Starting preview");
+					Thread previewThread = new Thread() {
+						@Override
+						public void run() {
+							try {
+								displayPanel.setStackMode(false);
+								camera.startPreview();
+								double yRel = getCurrentRelativeYPos();
+								int z = getCurrentPlane();
+								if(camera instanceof SimulatedCamera) {
+									((SimulatedCamera) camera).setYPosition(yRel);
+									((SimulatedCamera) camera).setZPosition(z);
+								}
+								while(!mirrorQueue.isIdle()) { // || mirror.isMoving()
+									camera.getPreviewImage(fluorescenceFrame);
+									displayPanel.display(fluorescenceFrame, null, yRel, z);
+								}
+								camera.stopPreview();
+								System.out.println("Stopped preview");
+							} catch(Throwable e) {
+								ExceptionHandler.showException(e);
+								try {
+									camera.stopPreview();
+								} catch(Throwable ex) {
+									ex.printStackTrace();
+									ExceptionHandler.showException(ex);
+								}
+							}
+						}
+					};
+					previewThread.start();
+				}
+				// TODO set mirror target pos to mirrorPos
+			}
+		});
+	}
+
+	@Override
+	public void adminPanelDone() {
+		if(mode == Mode.ADMIN) {
+			mode = Mode.NORMAL;
+			displayWindow.remove(adminPanel);
+			displayWindow.validate();
+			displayPanel.requestFocusInWindow();
+		}
 	}
 
 	public static void main(String... args) {
@@ -432,9 +463,9 @@ public class Microscope {
 			public void run() {
 				try {
 					new Microscope();
-				} catch (IOException e) {
+				} catch (Throwable e) {
 					e.printStackTrace();
-					System.exit(-1);
+					System.exit(EXIT_FATAL_ERROR);
 				}
 			}
 		});
