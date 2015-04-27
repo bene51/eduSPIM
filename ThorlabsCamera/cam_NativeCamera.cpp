@@ -7,7 +7,7 @@ ThrowException(const char *msg, void *env_ptr)
     printf("%s\n", msg);
     JNIEnv *env = (JNIEnv *)env_ptr;
 	jclass cl;
-	cl = env->FindClass("java/lang/RuntimeException");
+	cl = env->FindClass("cam/CameraException");
 	env->ThrowNew(cl, msg);
 }
 
