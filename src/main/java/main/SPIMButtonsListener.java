@@ -93,6 +93,7 @@ public class SPIMButtonsListener implements ButtonsListener {
 				microscope.initCamera();
 				microscope.acquireStack();
 			} catch(Exception ex) {
+				ExceptionHandler.handleException(ex);
 				microscope.shutdown(Microscope.EXIT_STACK_ERROR);
 			}
 		}

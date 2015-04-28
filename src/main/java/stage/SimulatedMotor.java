@@ -7,6 +7,8 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 
+import main.ExceptionHandler;
+
 
 public class SimulatedMotor implements IMotor {
 
@@ -86,7 +88,7 @@ public class SimulatedMotor implements IMotor {
 		try {
 			Thread.sleep(millis);
 		} catch(InterruptedException e) {
-			e.printStackTrace();
+			ExceptionHandler.handleException(e);
 		}
 	}
 
@@ -101,7 +103,7 @@ public class SimulatedMotor implements IMotor {
 		try {
 			movingThread.join();
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			ExceptionHandler.handleException(e);
 		}
 	}
 
@@ -121,7 +123,7 @@ public class SimulatedMotor implements IMotor {
 		        clip.loop(Clip.LOOP_CONTINUOUSLY);
 		        clip.stop();
 			} catch(Exception e) {
-				e.printStackTrace();
+				ExceptionHandler.handleException(e);
 			}
 		}
 
@@ -131,7 +133,7 @@ public class SimulatedMotor implements IMotor {
 			try {
 				Thread.sleep(50);
 			} catch (InterruptedException e1) {
-				e1.printStackTrace();
+				ExceptionHandler.handleException(e1);
 			}
 			while(!closed) {
 				long timestamp = System.currentTimeMillis();
@@ -170,7 +172,7 @@ public class SimulatedMotor implements IMotor {
 				try {
 					Thread.sleep(50);
 				} catch (InterruptedException e) {
-					e.printStackTrace();
+					ExceptionHandler.handleException(e);
 				}
 			}
 		}

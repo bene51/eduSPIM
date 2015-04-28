@@ -209,7 +209,7 @@ public class Microscope implements AdminPanelListener {
 		try {
 			interpreter.set("microscope", Microscope.this);
 		} catch (EvalError e) {
-			e.printStackTrace();
+			ExceptionHandler.handleException(e);
 		}
 		new Thread( interpreter ).start();
 	}
@@ -366,7 +366,6 @@ public class Microscope implements AdminPanelListener {
 			Thread.sleep(ms);
 		} catch (InterruptedException e) {
 			ExceptionHandler.handleException(e);
-			e.printStackTrace();
 		}
 	}
 
@@ -428,7 +427,6 @@ public class Microscope implements AdminPanelListener {
 								try {
 									camera.stopPreview();
 								} catch(Throwable ex) {
-									ex.printStackTrace();
 									ExceptionHandler.showException(ex);
 								}
 							}
@@ -458,7 +456,7 @@ public class Microscope implements AdminPanelListener {
 				try {
 					new Microscope();
 				} catch (Throwable e) {
-					e.printStackTrace();
+					ExceptionHandler.handleException(e);
 					System.exit(EXIT_FATAL_ERROR);
 				}
 			}

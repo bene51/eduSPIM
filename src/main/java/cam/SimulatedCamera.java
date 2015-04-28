@@ -1,6 +1,7 @@
 package cam;
 
 import ij.ImagePlus;
+import main.ExceptionHandler;
 
 public class SimulatedCamera implements ICamera {
 
@@ -36,32 +37,38 @@ public class SimulatedCamera implements ICamera {
 			yPos = 0;
 	}
 
+	@Override
 	public void startPreview() {
 		previewOn = true;
 	}
 
+	@Override
 	public void getPreviewImage(byte[] ret) {
 		System.out.println("SimulatedCamera.getPreviewImage: y = " + yPos);
 		int y1 = Math.min(yPos + HEIGHT, image.getHeight());
 		System.arraycopy(ips[zPos], WIDTH * yPos, ret, 0, WIDTH * (y1 - yPos));
 	}
 
+	@Override
 	public void stopPreview() {
 		previewOn = false;
 	}
 
+	@Override
 	public boolean isPreviewRunning() {
 		return previewOn;
 	}
 
 	private int currentSequenceIndex = 0;
 
+	@Override
 	public void startSequence() {
 		currentSequenceIndex = 0;
 	}
 
 	private long sequenceStartTime = 0;
 
+	@Override
 	public void getNextSequenceImage(byte[] ret) {
 		long time = System.currentTimeMillis();
 		if(currentSequenceIndex == 0) {
@@ -72,7 +79,7 @@ public class SimulatedCamera implements ICamera {
 				try {
 					Thread.sleep(targetTime - time);
 				} catch (InterruptedException e) {
-					e.printStackTrace();
+					ExceptionHandler.handleException(e);
 				}
 			}
 		}
@@ -82,11 +89,14 @@ public class SimulatedCamera implements ICamera {
 		currentSequenceIndex++;
 	}
 
+	@Override
 	public void stopSequence() {}
 
+	@Override
 	public double getFramerate() {
 		return FRAMERATE;
 	}
 
+	@Override
 	public void close() {}
 }

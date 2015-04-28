@@ -59,7 +59,7 @@ public class SingleElementThreadQueue {
 						wait();
 						idle = false;
 					} catch (InterruptedException e) {
-						e.printStackTrace();
+						ExceptionHandler.handleException(e);
 					}
 				}
 			}
@@ -79,7 +79,7 @@ public class SingleElementThreadQueue {
 			try {
 				thread.join();
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				ExceptionHandler.handleException(e);
 			}
 		}
 	}

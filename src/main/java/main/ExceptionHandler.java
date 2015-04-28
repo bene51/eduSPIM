@@ -8,7 +8,12 @@ import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class ExceptionHandler {
+
+	private static final Logger logger = LoggerFactory.getLogger(ExceptionHandler.class);
 
 	public static void handleException(Throwable e) {
 		Mail.sendError(exceptionToString(e));
@@ -23,7 +28,7 @@ public class ExceptionHandler {
 	}
 
 	public static void showException(Throwable e) {
-		e.printStackTrace();
+		logger.error("Error", e);
 		String s = exceptionToString(e);
 		JTextArea ta = new JTextArea(s);
 		final JComponent[] inputs = new JComponent[] { new JScrollPane(ta) };
