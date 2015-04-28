@@ -39,10 +39,6 @@ import display.PlaneDisplay;
  * - 2nd camera for fluorescence, overlay for scroll mode,
  *   only fluorescence for stack mode
  *
- * - y scrolling
- *
- * - mail on exception
- *
  * - automatic image upload once per day
  *
  * - panel for 'motor moving', etc.
@@ -50,8 +46,6 @@ import display.PlaneDisplay;
  * - mode 'change sample'
  *     - new positions for y/z start and end
  *     - new reference image/histogram
- *
- * - mode 'calibrate mirror'
  *
  * - log button events to file
  *   (time stamp, button type)
