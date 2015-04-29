@@ -282,7 +282,7 @@ public class AdminPanel extends JPanel {
 		oldPreferences.put(Preferences.STACK_Y_START,  volumeStartY.getText());
 		oldPreferences.put(Preferences.STACK_Z_START,  volumeStartZ.getText());
 		oldPreferences.put(Preferences.STACK_Y_END,    volumeEndY.getText());
-		oldPreferences.put(Preferences.STACK_Z_END,    volumeEndY.getText());
+		oldPreferences.put(Preferences.STACK_Z_END,    volumeEndZ.getText());
 		oldPreferences.put(Preferences.MIRROR_Z1,      Double.toString(x1));
 		oldPreferences.put(Preferences.MIRROR_M1,      Double.toString(y1));
 		oldPreferences.put(Preferences.MIRROR_Z2,      Double.toString(x2));

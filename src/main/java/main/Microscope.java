@@ -9,11 +9,16 @@ import ij.plugin.LutLoader;
 import java.awt.BorderLayout;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
 import java.awt.image.IndexColorModel;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
+import javax.imageio.ImageIO;
 import javax.swing.SwingUtilities;
 
 import org.slf4j.Logger;
@@ -69,6 +74,8 @@ public class Microscope implements AdminPanelListener {
 
 	private static final int COM_PORT = 7;
 	private static final int BAUD_RATE = 38400;
+
+	private static final String SNAPSHOT_FOLDER = "C:\\Users\\huiskenlab\\EduSPIM_snapshots"; // TODO put on dropbox?
 
 	private static enum Mode {
 		NORMAL,
@@ -386,6 +393,18 @@ public class Microscope implements AdminPanelListener {
 		motor.setVelocity(Z_AXIS, IMotor.VEL_MAX_Z);
 
 		adminPanel.setPosition(motor.getPosition(Y_AXIS), motor.getPosition(Z_AXIS));
+
+		// save the rendered projection // TODO only if we are in a head region
+		try {
+			BufferedImage im = displayPanel.getSnapshot();
+			File f = new File(SNAPSHOT_FOLDER);
+			if(!f.exists())
+				f.mkdirs();
+			String date = new SimpleDateFormat("yyyMMdd").format(new Date());
+			ImageIO.write(im, "png", new File(f, date + ".png"));
+		} catch(Throwable e) {
+			ExceptionHandler.handleException("Error saving rendered snapshot", e);
+		}
 
 		synchronized(this) {
 			busy = false;
