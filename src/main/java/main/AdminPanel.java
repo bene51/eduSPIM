@@ -21,10 +21,15 @@ import javax.swing.JTextField;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import stage.IMotor;
 
 @SuppressWarnings("serial")
 public class AdminPanel extends JPanel {
+
+	private final Logger logger = LoggerFactory.getLogger(AdminPanel.class);
 
 	private static DecimalFormat df = new DecimalFormat("0.000");
 
@@ -286,6 +291,7 @@ public class AdminPanel extends JPanel {
 		oldPreferences.put(Preferences.MIRROR_COEFF_T, Double.toString(t));
 
 		Preferences.restore(oldPreferences);
+		logger.info("Successfully changed EduSPIM settings.");
 		fireDone();
 	}
 

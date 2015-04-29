@@ -16,6 +16,9 @@ import java.net.URL;
 
 import javax.swing.SwingUtilities;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import stage.IMotor;
 import stage.MotorException;
 import stage.NativeMotor;
@@ -53,6 +56,8 @@ import display.PlaneDisplay;
  */
 public class Microscope implements AdminPanelListener {
 
+	private static final Logger logger = LoggerFactory.getLogger(Microscope.class);
+
 	public static final int EXIT_NORMAL         =  0;
 	public static final int EXIT_PREVIEW_ERROR  = -1;
 	public static final int EXIT_STACK_ERROR    = -2;
@@ -88,6 +93,8 @@ public class Microscope implements AdminPanelListener {
 
 	public Microscope(boolean fatal) throws IOException, MotorException {
 
+		logger.info("Initializing microscope");
+
 		if(fatal) {
 			displayPanel = null;
 			displayWindow = new DisplayFrame(null, true);
@@ -98,6 +105,7 @@ public class Microscope implements AdminPanelListener {
 			fluorescenceFrame = null;
 			transmissionFrame = null;
 			buttons = null;
+			logger.info("Initialized fatal screen");
 			return;
 		}
 
@@ -166,6 +174,7 @@ public class Microscope implements AdminPanelListener {
 		displayPanel.display(null, null, yRel, 0);
 
 		buttons.addButtonsListener(new SPIMButtonsListener(this));
+		logger.info("Successfully initialized the microscope");
 	}
 
 	public void initMotor(boolean moveToStart) {
@@ -262,6 +271,7 @@ public class Microscope implements AdminPanelListener {
 		synchronized(this) {
 			busy = true;
 		}
+		logger.info("Starting preview");
 		System.out.println("startPreview: axis = " + axis + " target = " + target);
 		// get current plane
 		int plane = getCurrentPlane();
@@ -335,6 +345,7 @@ public class Microscope implements AdminPanelListener {
 		synchronized(this) {
 			busy = true;
 		}
+		logger.info("Acquiring stack");
 
 		double yRel = getCurrentRelativeYPos();
 
@@ -391,7 +402,7 @@ public class Microscope implements AdminPanelListener {
 	}
 
 	public void shutdown(int exitcode) {
-		// TODO log it somewhere
+		logger.info("Shutting down with exit code " + exitcode);
 		while(!mirrorQueue.isIdle())
 			sleep(100);
 		try {
