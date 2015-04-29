@@ -36,6 +36,15 @@ import display.DisplayFrame;
 import display.PlaneDisplay;
 
 /*
+ * Things to test there:
+ * - Sending mail
+ *
+ * - Send email on startup/shutdown (maybe with log).
+ *
+ * - Check all caught exceptions, whether they should exit the program.
+ *
+ * - FATAL mode.
+ *
  * - 6 buttons for y+, y-, z+, z-, laser, stack
  *   software simulation/ with arduino
  *
@@ -43,12 +52,6 @@ import display.PlaneDisplay;
  *   only fluorescence for stack mode
  *
  * - automatic image upload once per day
- *
- * - panel for 'motor moving', etc.
- *
- * - mode 'change sample'
- *     - new positions for y/z start and end
- *     - new reference image/histogram
  *
  * - log button events to file
  *   (time stamp, button type)
