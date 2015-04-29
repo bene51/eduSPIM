@@ -77,6 +77,7 @@ public class SPIMButtonsListener implements ButtonsListener {
 			// in case it fails, restart the software
 			microscope.resetBusy();
 			try {
+				microscope.getMotor().close();
 				microscope.initMotor(false);
 				microscope.acquireStack();
 			} catch(Exception ex) {
@@ -91,6 +92,7 @@ public class SPIMButtonsListener implements ButtonsListener {
 			// in case it fails, restart the software
 			microscope.resetBusy();
 			try {
+				microscope.getCamera().close();
 				microscope.initCamera();
 				microscope.acquireStack();
 			} catch(Exception ex) {
@@ -115,6 +117,7 @@ public class SPIMButtonsListener implements ButtonsListener {
 			// in case it fails, restart the software
 			microscope.resetBusy();
 			try {
+				microscope.getMotor().close();
 				microscope.initMotor(false);
 				microscope.getMotor().setTarget(Y_AXIS, y);
 				microscope.getMotor().setTarget(Z_AXIS, z);
@@ -132,6 +135,7 @@ public class SPIMButtonsListener implements ButtonsListener {
 			// in case it fails, restart the software
 			microscope.resetBusy();
 			try {
+				microscope.getCamera().close();
 				microscope.initCamera();
 				microscope.startPreview(button, axis, positive, target);
 			} catch(Exception ex) {

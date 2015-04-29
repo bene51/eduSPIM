@@ -230,6 +230,10 @@ public class Microscope implements AdminPanelListener {
 		return motor;
 	}
 
+	public ICamera getCamera() {
+		return camera;
+	}
+
 	int getCurrentPlane() throws MotorException {
 		double zpos = motor.getPosition(Z_AXIS);
 		double zrel = (zpos - Preferences.getStackZStart()) / (Preferences.getStackZEnd() - Preferences.getStackZStart());
