@@ -173,6 +173,29 @@ public class PlaneDisplay extends JPanel {
 		g.drawImage(offscreenImage, 0, 0, this);
 	}
 
+	public BufferedImage getSnapshot() {
+		int w = getWidth();
+		int h = getHeight();
+
+		double sx = (double)w / ICamera.WIDTH;
+		double sy = (double)h / ICamera.HEIGHT;
+
+		double scale = Math.min(sx, sy);
+		scale *= 0.8;
+
+		int imageWidth  = 2 * (int)Math.round(ICamera.WIDTH  * scale / 2.0);
+		int imageHeight = 2 * (int)Math.round(ICamera.HEIGHT * scale / 2.0);
+
+		int xOffs = (int)Math.round((w - imageWidth) / 2.0);
+		int yOffs = (int)Math.round((h - imageHeight) / 2.0);
+
+		BufferedImage image = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_ARGB);
+		Graphics g = image.getGraphics();
+		g.drawImage(renderedImage, -xOffs, -yOffs, null);
+		g.dispose();
+		return image;
+	}
+
 	public void mypaint(Graphics g) {
 		Graphics2D g2d = (Graphics2D) g;
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
