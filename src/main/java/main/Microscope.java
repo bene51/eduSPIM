@@ -86,7 +86,20 @@ public class Microscope implements AdminPanelListener {
 
 	private final byte[] fluorescenceFrame, transmissionFrame;
 
-	public Microscope() throws IOException, MotorException {
+	public Microscope(boolean fatal) throws IOException, MotorException {
+
+		if(fatal) {
+			displayPanel = null;
+			displayWindow = new DisplayFrame(null, true);
+			displayWindow.setVisible(true);
+			displayWindow.setFullscreen(true);
+			adminPanel = null;
+			mirrorQueue = null;
+			fluorescenceFrame = null;
+			transmissionFrame = null;
+			buttons = null;
+			return;
+		}
 
 		initBeanshell();
 		initMotor(true);
@@ -142,7 +155,7 @@ public class Microscope implements AdminPanelListener {
 				}
 			}
 		});
-		displayWindow = new DisplayFrame(displayPanel);
+		displayWindow = new DisplayFrame(displayPanel, false);
 		buttons = new AWTButtons();
 		if(buttons instanceof AWTButtons)
 			displayWindow.add(((AWTButtons)buttons).getPanel(), BorderLayout.EAST);
@@ -454,11 +467,17 @@ public class Microscope implements AdminPanelListener {
 	}
 
 	public static void main(String... args) {
+		boolean fatal = false;
+		for(String s : args) {
+			if(s.trim().equalsIgnoreCase("--fatal"))
+				fatal = true;
+		}
+		final boolean isFatal = fatal;
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
 				try {
-					new Microscope();
+					new Microscope(isFatal);
 				} catch (Throwable e) {
 					ExceptionHandler.handleException("Unexpected error during initialization", e);
 					System.exit(EXIT_FATAL_ERROR);

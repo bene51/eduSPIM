@@ -5,8 +5,10 @@ import java.awt.Color;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 
+import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 @SuppressWarnings("serial")
 public class DisplayFrame extends JFrame {
@@ -15,9 +17,10 @@ public class DisplayFrame extends JFrame {
 
 	private final JLabel message;
 
-	public DisplayFrame(PlaneDisplay disp) {
+	public DisplayFrame(PlaneDisplay disp, boolean fatal) {
 		super("Display");
-		getContentPane().add(disp);
+		JPanel panel = fatal ? makeUnavailablePanel() : disp;
+		getContentPane().add(panel);
 		setFocusable(false);
 
 		message = new JLabel("");
@@ -26,6 +29,22 @@ public class DisplayFrame extends JFrame {
 		message.setBackground(Color.BLACK);
 		message.setOpaque(true);
 		getContentPane().add(message, BorderLayout.SOUTH);
+	}
+
+	public JPanel makeUnavailablePanel() {
+		JPanel panel = new JPanel();
+		panel.setBorder(BorderFactory.createEmptyBorder(200, 100, 50, 100));
+		panel.setBackground(Color.BLACK);
+		JLabel label = new JLabel();
+		label.setForeground(Color.WHITE);
+		label.setAlignmentX(JLabel.LEFT_ALIGNMENT);
+		label.setAlignmentY(JLabel.CENTER_ALIGNMENT);
+		label.setText(
+				"<html><h1 style=\"font-size:30px; color: #ffcc00\">Ausser Betrieb / Unavailable</h1>" +
+				"<p style=\"font-size:15px; color: #a0a0a0\"><br><br>Das Mikroskop ist zur Zeit wegen eines Hardwarefehlers ausser Betrieb und wird in Kuerze gewartet.<br>Wir bitten um Ihr Verstaendnis.</p><br><br>" +
+				"<p style=\"font-size:15px; color: #a0a0a0\">The microscope is currently unavailable due to hardware issues. It will be maintained shortly.<br>Please apologize this accident.</p></html>");
+		panel.add(label, BorderLayout.CENTER);
+		return panel;
 	}
 
 	public void showMessage(String message) {
@@ -65,21 +84,10 @@ public class DisplayFrame extends JFrame {
 		}
 	}
 
-//	public static void main(String[] args) throws InterruptedException {
-//		byte[] data = new byte[ICamera.WIDTH * ICamera.HEIGHT];
-//		PlaneDisplay disp = new PlaneDisplay();
-//
-//		DisplayFrame f = new DisplayFrame(disp);
-//		f.pack();
-//		f.setVisible(true);
-//
-//		for(int z = 0; z < 400; z++) {
-//			disp.display(data, z);
-//			Thread.sleep(5);
-//		}
-//		for(int z = 400; z >= 0; z--) {
-//			disp.display(data, z);
-//			Thread.sleep(5);
-//		}
-//	}
+	public static void main(String[] args) {
+		DisplayFrame f = new DisplayFrame(null, true);
+		f.pack();
+		f.setVisible(true);
+		f.setFullscreen(true);
+	}
 }
