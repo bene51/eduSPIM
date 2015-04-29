@@ -164,13 +164,13 @@ public class Preferences {
 			reader = new FileReader(propertiesFile);
 			properties.load(reader);
 		} catch(Exception e) {
-			ExceptionHandler.handleException(e);
+			ExceptionHandler.handleException("Error loading properties file", e);
 		} finally {
 			try {
 				if(reader != null)
 					reader.close();
 			} catch(IOException e) {
-				ExceptionHandler.handleException(e);
+				ExceptionHandler.handleException("Error closing properties file", e);
 			}
 		}
 		stackZStart  = Double.parseDouble(properties.getProperty(STACK_Z_START,  Double.toString(DEFAULT_STACK_ZSTART)));
@@ -248,12 +248,12 @@ public class Preferences {
 			writer = new FileWriter(file);
 			props.store(writer, "EduSPIM properties");
 		} catch(Exception e) {
-			ExceptionHandler.handleException(e);
+			ExceptionHandler.handleException("Error saving properties file", e);
 		} finally {
 			try {
 				writer.close();
 			} catch(Exception e) {
-				ExceptionHandler.handleException(e);
+				ExceptionHandler.handleException("Error closing properties file", e);
 			}
 		}
 	}

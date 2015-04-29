@@ -88,7 +88,7 @@ public class SimulatedMotor implements IMotor {
 		try {
 			Thread.sleep(millis);
 		} catch(InterruptedException e) {
-			ExceptionHandler.handleException(e);
+			ExceptionHandler.handleException("Interrupted during artificial delay", e);
 		}
 	}
 
@@ -103,7 +103,7 @@ public class SimulatedMotor implements IMotor {
 		try {
 			movingThread.join();
 		} catch (InterruptedException e) {
-			ExceptionHandler.handleException(e);
+			ExceptionHandler.handleException("Error closing the motor", e);
 		}
 	}
 
@@ -123,18 +123,14 @@ public class SimulatedMotor implements IMotor {
 		        clip.loop(Clip.LOOP_CONTINUOUSLY);
 		        clip.stop();
 			} catch(Exception e) {
-				ExceptionHandler.handleException(e);
+				ExceptionHandler.handleException("Error initializing the artificial motor sound", e);
 			}
 		}
 
 		@Override
 		public void run() {
 			prevTimestamp = System.currentTimeMillis();
-			try {
-				Thread.sleep(50);
-			} catch (InterruptedException e1) {
-				ExceptionHandler.handleException(e1);
-			}
+			sleep(50);
 			while(!closed) {
 				long timestamp = System.currentTimeMillis();
 				double dt = (timestamp - prevTimestamp) / 1000.0;
@@ -169,11 +165,7 @@ public class SimulatedMotor implements IMotor {
 				}
 
 				wasMoving = moving;
-				try {
-					Thread.sleep(50);
-				} catch (InterruptedException e) {
-					ExceptionHandler.handleException(e);
-				}
+				sleep(50);
 			}
 		}
 	}

@@ -48,7 +48,7 @@ public class Mail {
 
 			Transport.send(message);
 		} catch (MessagingException e) {
-			ExceptionHandler.handleException(e);
+			ExceptionHandler.handleException("Error sending mail", e);
 		}
 	}
 }

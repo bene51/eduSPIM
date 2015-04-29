@@ -79,7 +79,7 @@ public class SimulatedCamera implements ICamera {
 				try {
 					Thread.sleep(targetTime - time);
 				} catch (InterruptedException e) {
-					ExceptionHandler.handleException(e);
+					ExceptionHandler.handleException("Interrupted during artificial delay", e);
 				}
 			}
 		}

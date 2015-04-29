@@ -167,7 +167,7 @@ public class Microscope implements AdminPanelListener {
 					sleep(50);
 			}
 		} catch(Throwable e) {
-			ExceptionHandler.handleException(e);
+			ExceptionHandler.handleException("Error initializing the motors, using simulated motors instead", e);
 			motor = new SimulatedMotor();
 			if(moveToStart) {
 				try {
@@ -178,7 +178,7 @@ public class Microscope implements AdminPanelListener {
 					while(motor.isMoving())
 						sleep(50);
 				} catch(Throwable ex) {
-					ExceptionHandler.handleException(ex);
+					ExceptionHandler.handleException("Error initializing simulated motors, exiting...", ex);
 					shutdown(EXIT_FATAL_ERROR);
 				}
 			}
@@ -192,7 +192,7 @@ public class Microscope implements AdminPanelListener {
 				camera = new NativeCamera(0);
 				return;
 			} catch(Throwable e) {
-				ExceptionHandler.handleException(e);
+				ExceptionHandler.handleException("Error initializing the camera, using simulated camera instead instead", e);
 			}
 		}
 
@@ -209,7 +209,7 @@ public class Microscope implements AdminPanelListener {
 		try {
 			interpreter.set("microscope", Microscope.this);
 		} catch (EvalError e) {
-			ExceptionHandler.handleException(e);
+			ExceptionHandler.showException("Error evaluating beanshell commands", e);
 		}
 		new Thread( interpreter ).start();
 	}
@@ -365,7 +365,7 @@ public class Microscope implements AdminPanelListener {
 		try {
 			Thread.sleep(ms);
 		} catch (InterruptedException e) {
-			ExceptionHandler.handleException(e);
+			ExceptionHandler.handleException("Interrupted during artificial delay", e);
 		}
 	}
 
@@ -380,12 +380,12 @@ public class Microscope implements AdminPanelListener {
 		try {
 			motor.close();
 		} catch(MotorException e) {
-			ExceptionHandler.handleException(e);
+			ExceptionHandler.handleException("Error closing the motors", e);
 		}
 		try {
 			camera.close();
 		} catch (CameraException e) {
-			ExceptionHandler.handleException(e);
+			ExceptionHandler.handleException("Error closing the camera", e);
 		}
 		buttons.close();
 
@@ -423,11 +423,11 @@ public class Microscope implements AdminPanelListener {
 								camera.stopPreview();
 								System.out.println("Stopped preview");
 							} catch(Throwable e) {
-								ExceptionHandler.showException(e);
+								ExceptionHandler.showException("Error during preview", e);
 								try {
 									camera.stopPreview();
 								} catch(Throwable ex) {
-									ExceptionHandler.showException(ex);
+									ExceptionHandler.showException("Error stopping preview", ex);
 								}
 							}
 						}
@@ -456,7 +456,7 @@ public class Microscope implements AdminPanelListener {
 				try {
 					new Microscope();
 				} catch (Throwable e) {
-					ExceptionHandler.handleException(e);
+					ExceptionHandler.handleException("Unexpected error during initialization", e);
 					System.exit(EXIT_FATAL_ERROR);
 				}
 			}

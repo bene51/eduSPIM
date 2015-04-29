@@ -15,9 +15,9 @@ public class ExceptionHandler {
 
 	private static final Logger logger = LoggerFactory.getLogger(ExceptionHandler.class);
 
-	public static void handleException(Throwable e) {
+	public static void handleException(String message, Throwable e) {
 		Mail.sendError(exceptionToString(e));
-		// TODO also log it
+		logger.error(message, e);
 	}
 
 	private static String exceptionToString(Throwable e) {
@@ -27,21 +27,22 @@ public class ExceptionHandler {
 		return sw.toString();
 	}
 
-	public static void showException(Throwable e) {
-		logger.error("Error", e);
+	public static void showException(String message, Throwable e) {
+		logger.error(message, e);
 		String s = exceptionToString(e);
-		JTextArea ta = new JTextArea(s);
+		JTextArea ta = new JTextArea(message + "\n\n" + s);
 		final JComponent[] inputs = new JComponent[] { new JScrollPane(ta) };
 		JOptionPane.showMessageDialog(null, inputs, "Exception", JOptionPane.ERROR_MESSAGE);
 	}
 
 	public static void main(String[] args) {
+
 		Exception e = new RuntimeException("bla");
 		try {
 			throw(e);
 		} catch(Exception ex) {
 			// handleException(ex);
-			showException(ex);
+			showException("Error in main", ex);
 		}
 	}
 }

@@ -59,7 +59,7 @@ public class SingleElementThreadQueue {
 						wait();
 						idle = false;
 					} catch (InterruptedException e) {
-						ExceptionHandler.handleException(e);
+						ExceptionHandler.handleException("Interrupted while waiting for an event in the SingleElementThreadQueue", e);
 					}
 				}
 			}
@@ -79,7 +79,7 @@ public class SingleElementThreadQueue {
 			try {
 				thread.join();
 			} catch (InterruptedException e) {
-				ExceptionHandler.handleException(e);
+				ExceptionHandler.handleException("Interrupted while joining the execution thread in SingleElementThreadQueue", e);
 			}
 		}
 	}
