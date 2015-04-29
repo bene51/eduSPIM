@@ -16,8 +16,12 @@ public class SingleElementThreadQueue {
 			thread = new Thread() {
 				@Override
 				public void run() {
-					idle = false;
-					loop();
+					try {
+						idle = false;
+						loop();
+					} catch(Throwable e) {
+						ExceptionHandler.handleException("Unexpected exception in SingleElementThreadQueue", e);
+					}
 				}
 			};
 			thread.start();

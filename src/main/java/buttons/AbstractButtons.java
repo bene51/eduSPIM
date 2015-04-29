@@ -2,6 +2,8 @@ package buttons;
 
 import java.util.ArrayList;
 
+import main.ExceptionHandler;
+
 public abstract class AbstractButtons {
 
 	public static final int BUTTON_Y_DOWN = 0;
@@ -40,8 +42,13 @@ public abstract class AbstractButtons {
 		new Thread() {
 			@Override
 			public void run() {
-				for(ButtonsListener l : listeners)
-					l.buttonPressed(button);
+				for(ButtonsListener l : listeners) {
+					try {
+						l.buttonPressed(button);
+					} catch(Throwable e) {
+						ExceptionHandler.handleException("Unexpected error after pressing button " + button, e);
+					}
+				}
 			}
 		}.start();
 	}
@@ -57,8 +64,13 @@ public abstract class AbstractButtons {
 		new Thread() {
 			@Override
 			public void run() {
-				for(ButtonsListener l : listeners)
-					l.buttonReleased(button);
+				for(ButtonsListener l : listeners) {
+					try {
+						l.buttonReleased(button);
+					} catch(Throwable e) {
+						ExceptionHandler.handleException("Unexpected error after releasing button " + button, e);
+					}
+				}
 			}
 		}.start();
 	}

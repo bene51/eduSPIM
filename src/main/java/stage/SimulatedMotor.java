@@ -129,6 +129,14 @@ public class SimulatedMotor implements IMotor {
 
 		@Override
 		public void run() {
+			try {
+				dorun();
+			} catch(Throwable e) {
+				ExceptionHandler.handleException("Unexpected exception in SimulatedMotor", e);
+			}
+		}
+
+		public void dorun() {
 			prevTimestamp = System.currentTimeMillis();
 			sleep(50);
 			while(!closed) {
