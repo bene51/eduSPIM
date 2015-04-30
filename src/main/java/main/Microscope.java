@@ -531,11 +531,12 @@ public class Microscope implements AdminPanelListener {
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
+				Microscope m = null;
 				try {
-					new Microscope(isFatal);
+					m = new Microscope(isFatal);
 				} catch (Throwable e) {
 					ExceptionHandler.handleException("Unexpected error during initialization", e);
-					System.exit(EXIT_FATAL_ERROR);
+					m.shutdown(EXIT_FATAL_ERROR);
 				}
 			}
 		});
