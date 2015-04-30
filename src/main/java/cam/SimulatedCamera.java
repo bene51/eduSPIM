@@ -15,10 +15,10 @@ public class SimulatedCamera implements ICamera {
 
 	public SimulatedCamera(ImagePlus image) {
 		this.image = image;
-		if(image.getStackSize() != DEPTH)
+		if(image.getStackSize() != DEPTH && image.getStackSize() != 1)
 			throw new RuntimeException("Simulated camera: Image doesn't have the correct number of planes");
 		ips = new byte[DEPTH][];
-		for(int z = 0; z < DEPTH; z++)
+		for(int z = 0; z < image.getStackSize(); z++)
 			ips[z] = (byte[])image.getStack().getPixels(z + 1);
 	}
 

@@ -92,8 +92,9 @@ public class SPIMButtonsListener implements ButtonsListener {
 			// in case it fails, restart the software
 			microscope.resetBusy();
 			try {
-				microscope.getCamera().close();
-				microscope.initCamera();
+				microscope.getFluorescenceCamera().close();
+				microscope.getTransmissionCamera().close();
+				microscope.initCameras();
 				microscope.acquireStack();
 			} catch(Exception ex) {
 				ExceptionHandler.handleException("Error during stack acquisition after re-opening the camera, restarting the software", ex);
@@ -135,8 +136,9 @@ public class SPIMButtonsListener implements ButtonsListener {
 			// in case it fails, restart the software
 			microscope.resetBusy();
 			try {
-				microscope.getCamera().close();
-				microscope.initCamera();
+				microscope.getFluorescenceCamera().close();
+				microscope.getTransmissionCamera().close();
+				microscope.initCameras();
 				microscope.startPreview(button, axis, positive, target);
 			} catch(Exception ex) {
 				ExceptionHandler.handleException("Error during preview after re-opening the camera, restarting the software", e);

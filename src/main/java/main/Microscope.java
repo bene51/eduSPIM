@@ -89,7 +89,7 @@ public class Microscope implements AdminPanelListener {
 	private boolean busy = false;
 
 	private IMotor motor;
-	private ICamera camera;
+	private ICamera transmissionCamera, fluorescenceCamera;
 	private final AbstractButtons buttons;
 
 	private final SingleElementThreadQueue mirrorQueue;
@@ -121,7 +121,7 @@ public class Microscope implements AdminPanelListener {
 
 		initBeanshell();
 		initMotor(true);
-		initCamera();
+		initCameras();
 
 		double yRel = getCurrentRelativeYPos();
 
@@ -218,10 +218,12 @@ public class Microscope implements AdminPanelListener {
 		}
 	}
 
-	public void initCamera() {
+	public void initCameras() {
+		ImagePlus trans = IJ.openImage(System.getProperty("user.home") + "/transmission.tif");
 		if(!simulated) {
 			try {
-				camera = new NativeCamera(0);
+				fluorescenceCamera = new NativeCamera(0); // TODO check index
+				transmissionCamera = new SimulatedCamera(trans); // TODO new NativeCamera(1);
 				return;
 			} catch(Throwable e) {
 				ExceptionHandler.handleException("Error initializing the camera, using simulated camera instead instead", e);
@@ -232,7 +234,8 @@ public class Microscope implements AdminPanelListener {
 		System.out.println("Loading the image");
 		ImagePlus imp = IJ.openImage(System.getProperty("user.home") + "/HeadBack030_010um_3.tif");
 		System.out.println("image loaded");
-		camera = new SimulatedCamera(imp);
+		fluorescenceCamera = new SimulatedCamera(imp);
+		transmissionCamera = new SimulatedCamera(trans);
 	}
 
 	public void initBeanshell() {
@@ -262,8 +265,12 @@ public class Microscope implements AdminPanelListener {
 		return motor;
 	}
 
-	public ICamera getCamera() {
-		return camera;
+	public ICamera getFluorescenceCamera() {
+		return fluorescenceCamera;
+	}
+
+	public ICamera getTransmissionCamera() {
+		return transmissionCamera;
 	}
 
 	int getCurrentPlane() throws MotorException {
@@ -290,7 +297,7 @@ public class Microscope implements AdminPanelListener {
 		System.out.println("start plane = " + plane);
 
 		// set the speed of the motor according to the frame rate
-		double framerate = camera.getFramerate();
+		double framerate = fluorescenceCamera.getFramerate();
 		double dz = (Preferences.getStackZEnd() - Preferences.getStackZStart()) / ICamera.DEPTH;
 		motor.setVelocity(axis, dz * framerate);
 
@@ -300,7 +307,8 @@ public class Microscope implements AdminPanelListener {
 		displayPanel.setStackMode(false);
 		motor.setTarget(axis, target);
 
-		camera.startSequence();
+		fluorescenceCamera.startSequence();
+		transmissionCamera.startSequence();
 		do {
 			switch(axis) {
 			case Y_AXIS:
@@ -317,15 +325,21 @@ public class Microscope implements AdminPanelListener {
 					yRel < 0 || yRel > 1)
 				break;
 
-			if(camera instanceof SimulatedCamera) {
-				((SimulatedCamera) camera).setYPosition(yRel);
-				((SimulatedCamera) camera).setZPosition(plane);
+			if(fluorescenceCamera instanceof SimulatedCamera) {
+				((SimulatedCamera) fluorescenceCamera).setYPosition(yRel);
+				((SimulatedCamera) fluorescenceCamera).setZPosition(plane);
 			}
-			camera.getNextSequenceImage(fluorescenceFrame);
+			if(transmissionCamera instanceof SimulatedCamera) {
+				((SimulatedCamera) transmissionCamera).setYPosition(yRel);
+				((SimulatedCamera) transmissionCamera).setZPosition(0);
+			}
+			fluorescenceCamera.getNextSequenceImage(fluorescenceFrame);
+			transmissionCamera.getNextSequenceImage(transmissionFrame);
 			displayPanel.display(fluorescenceFrame, transmissionFrame, yRel, plane);
 		} while(buttons.getButtonDown() == button);
 
-		camera.stopSequence();
+		fluorescenceCamera.stopSequence();
+		transmissionCamera.stopSequence();
 		int mz = getCurrentPlane();
 		System.out.println("plane = " + plane + " mz = " + mz);
 
@@ -368,7 +382,7 @@ public class Microscope implements AdminPanelListener {
 		}
 
 		// set the speed of the motor according to the frame rate
-		double framerate = camera.getFramerate();
+		double framerate = fluorescenceCamera.getFramerate();
 		double dz = (Preferences.getStackZEnd() - Preferences.getStackZStart()) / ICamera.DEPTH;
 		motor.setVelocity(Z_AXIS, dz * framerate);
 
@@ -377,16 +391,16 @@ public class Microscope implements AdminPanelListener {
 		displayPanel.setStackMode(true);
 		motor.setTarget(Z_AXIS, Preferences.getStackZStart());
 
-		camera.startSequence();
+		fluorescenceCamera.startSequence();
 		for(int i = ICamera.DEPTH - 1; i >= 0; i--) {
-			if(camera instanceof SimulatedCamera) {
-				((SimulatedCamera) camera).setYPosition(yRel);
-				((SimulatedCamera) camera).setZPosition(i);
+			if(fluorescenceCamera instanceof SimulatedCamera) {
+				((SimulatedCamera) fluorescenceCamera).setYPosition(yRel);
+				((SimulatedCamera) fluorescenceCamera).setZPosition(i);
 			}
-			camera.getNextSequenceImage(fluorescenceFrame);
+			fluorescenceCamera.getNextSequenceImage(fluorescenceFrame);
 			displayPanel.display(fluorescenceFrame, null, yRel, i);
 		}
-		camera.stopSequence();
+		fluorescenceCamera.stopSequence();
 
 		// reset the motor speed
 		motor.setVelocity(Y_AXIS, IMotor.VEL_MAX_Y);
@@ -433,9 +447,14 @@ public class Microscope implements AdminPanelListener {
 			ExceptionHandler.handleException("Error closing the motors", e);
 		}
 		try {
-			camera.close();
+			fluorescenceCamera.close();
 		} catch (CameraException e) {
-			ExceptionHandler.handleException("Error closing the camera", e);
+			ExceptionHandler.handleException("Error closing the fluorescence camera", e);
+		}
+		try {
+			transmissionCamera.close();
+		} catch (CameraException e) {
+			ExceptionHandler.handleException("Error closing the transmission camera", e);
 		}
 		buttons.close();
 
@@ -452,30 +471,33 @@ public class Microscope implements AdminPanelListener {
 		mirrorQueue.push(new Runnable() {
 			@Override
 			public void run() {
-				if(!camera.isPreviewRunning()) {
+				if(!fluorescenceCamera.isPreviewRunning()) {
 					System.out.println("Starting preview");
 					Thread previewThread = new Thread() {
 						@Override
 						public void run() {
 							try {
 								displayPanel.setStackMode(false);
-								camera.startPreview();
+								fluorescenceCamera.startPreview();
 								double yRel = getCurrentRelativeYPos();
 								int z = getCurrentPlane();
-								if(camera instanceof SimulatedCamera) {
-									((SimulatedCamera) camera).setYPosition(yRel);
-									((SimulatedCamera) camera).setZPosition(z);
+								if(fluorescenceCamera instanceof SimulatedCamera) {
+									((SimulatedCamera) fluorescenceCamera).setYPosition(yRel);
+									((SimulatedCamera) fluorescenceCamera).setZPosition(z);
 								}
-								while(!mirrorQueue.isIdle()) { // || mirror.isMoving()
-									camera.getPreviewImage(fluorescenceFrame);
-									displayPanel.display(fluorescenceFrame, null, yRel, z);
-								}
-								camera.stopPreview();
+								do {
+									fluorescenceCamera.getPreviewImage(fluorescenceFrame);
+									// display it as transmission image to avoid the translucent
+									// lookup table:
+									displayPanel.display(null, fluorescenceFrame, yRel, z);
+								} while(!mirrorQueue.isIdle()); // || mirror.isMoving()
+
+								fluorescenceCamera.stopPreview();
 								System.out.println("Stopped preview");
 							} catch(Throwable e) {
 								ExceptionHandler.showException("Error during preview", e);
 								try {
-									camera.stopPreview();
+									fluorescenceCamera.stopPreview();
 								} catch(Throwable ex) {
 									ExceptionHandler.showException("Error stopping preview", ex);
 								}
