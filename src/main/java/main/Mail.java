@@ -12,6 +12,9 @@ import javax.mail.internet.MimeMessage;
 
 public class Mail {
 
+	private static final String TO = "bschmid@mpi-cbg.de"; // TODO change to huiskenlab@mpi-cbg.de:w
+
+
 	public static void main(String[] args) {
 		send("EduSPIM error", "test");
 	}
@@ -21,6 +24,10 @@ public class Mail {
 	}
 
 	public static void send(String subject, String text) {
+		send(subject, TO, text);
+	}
+
+	public static void send(String subject, String to, String text) {
 		final String username = "eduspim@gmail.com";
 		final String password = "cmlc2GFP";
 
