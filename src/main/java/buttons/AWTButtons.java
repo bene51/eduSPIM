@@ -79,6 +79,7 @@ public class AWTButtons extends AbstractButtons {
 		public MButton(String s) {
 			super(s);
 			setForeground(Color.BLACK);
+			setBackground(Color.BLACK);
 			Dimension d = getPreferredSize();
 			this.setMargin(new Insets(1, 1, 1, 1));
 			setPreferredSize(new Dimension(3 * d.height / 2, d.height));

@@ -18,6 +18,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 
@@ -36,7 +37,7 @@ public class AdminPanel extends JPanel {
 	private HashMap<String, String> oldPreferences;
 
 	private MTextField volumeStartY, volumeStartZ, volumeEndY, volumeEndZ;
-	private JButton setStart, setEnd, ok, cancel;
+	private MButton setStart, setEnd, ok, cancel;
 	private MTextField mirror1Z, mirror2Z;
 	private NumberField mirror1M, mirror2M;
 	private ArrayList<AdminPanelListener> listeners = new ArrayList<AdminPanelListener>();
@@ -51,7 +52,7 @@ public class AdminPanel extends JPanel {
 
 		volumeStartY = new MTextField(df.format(Preferences.getStackYStart()));
 		volumeStartZ = new MTextField(df.format(Preferences.getStackZStart()));
-		setStart = new JButton("Set");
+		setStart = new MButton("Set");
 		setStart.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -61,7 +62,7 @@ public class AdminPanel extends JPanel {
 		});
 		volumeEndY = new MTextField(df.format(Preferences.getStackYEnd()));
 		volumeEndZ = new MTextField(df.format(Preferences.getStackZEnd()));
-		setEnd = new JButton("Set");
+		setEnd = new MButton("Set");
 		setEnd.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -101,14 +102,14 @@ public class AdminPanel extends JPanel {
 				}
 			}
 		});
-		cancel = new JButton("Cancel");
+		cancel = new MButton("Cancel");
 		cancel.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				cancel();
 			}
 		});
-		ok = new JButton("Apply & leave admin mode");
+		ok = new MButton("Apply & leave admin mode");
 		ok.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -328,7 +329,21 @@ public class AdminPanel extends JPanel {
 		}
 	}
 
+	private static class MButton extends JButton {
+		public MButton(String text) {
+			super(text);
+			setBackground(Color.black);
+			setForeground(Color.black);
+		}
+	}
+
 	public static void main(String[] args) {
+		try {
+			// Set System L&F
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch(Throwable e) {
+			e.printStackTrace();
+		}
 		JFrame f = new JFrame();
 		f.getContentPane().add(new AdminPanel(0, 0));
 		f.pack();

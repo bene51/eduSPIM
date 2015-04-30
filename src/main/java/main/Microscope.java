@@ -20,6 +20,7 @@ import java.util.Date;
 
 import javax.imageio.ImageIO;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -528,6 +529,14 @@ public class Microscope implements AdminPanelListener {
 				fatal = true;
 		}
 		final boolean isFatal = fatal;
+
+		try {
+			// Set System L&F
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch(Throwable e) {
+			ExceptionHandler.handleException("Cannot set system L&F", e);
+		}
+
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
