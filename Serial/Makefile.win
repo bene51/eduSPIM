@@ -1,0 +1,29 @@
+.SUFFIXES: .cpp .obj
+
+CC = cl
+INCL = /I "$(JAVA_HOME)/include" /I "$(JAVA_HOME)/include/win32" /I "include"
+COMPILE_FLAGS = /c /O2 /EHsc /W3 /nologo /O2 /Zi /MT
+LIBS = setupapi.lib advapi32.lib
+
+CPP_OBJS = enumerate_serial.obj \
+           serial_ListSerialPorts.obj
+
+all: enumerate_serial.dll \
+     enumerate_serial.exe
+
+clean:
+	del enumerate_serial.dll enumerate_serial.exe $(CPP_OBJS)
+
+.cpp.obj:
+	@echo Building $@ from $<
+	$(CC) $(COMPILE_FLAGS) $(INCL) /Fe$@ $< >nul
+
+enumerate_serial.dll: $(CPP_OBJS)
+	@echo linking...
+	$(CC) /LD /Fe$@ $(LIBS) $** >nul
+	copy /Y $@ ..
+
+enumerate_serial.exe: $(CPP_OBJS)
+	@echo linking...
+	$(CC) /Fe$@ $(LIBS) $** >nul
+

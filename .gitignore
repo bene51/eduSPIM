@@ -15,3 +15,5 @@ ThorlabsCamera/cam_NativeCamera.lib
 Stage/stage_NativeMotor.lib
 stage_NativeMotor.dll
 cam_NativeCamera.dll
+enumerate_serial.dll
+enumerate_serial.lib
