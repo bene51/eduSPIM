@@ -27,6 +27,7 @@ public class SPIMButtonsListener implements ButtonsListener {
 		switch(button) {
 		case AbstractButtons.BUTTON_LASER:
 			// TODO move mirror away and switch laser on
+			// TODO log manual laser
 			break;
 		case AbstractButtons.BUTTON_STACK:
 			acquireStack();

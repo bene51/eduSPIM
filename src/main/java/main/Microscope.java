@@ -45,22 +45,15 @@ import display.PlaneDisplay;
  * Things to test there:
  * - Sending mail
  *
- * - Send email on startup/shutdown (maybe with log).
+ * TODO Send email on startup/shutdown (maybe with log).
  *
- * - Check all caught exceptions, whether they should exit the program.
+ * TODO Check all caught exceptions, whether they should exit the program.
  *
- * - FATAL mode.
+ * TODO arduino for buttons
  *
- * - 6 buttons for y+, y-, z+, z-, laser, stack
- *   software simulation/ with arduino
+ * TODO include laser
  *
- * - 2nd camera for fluorescence, overlay for scroll mode,
- *   only fluorescence for stack mode
- *
- * - automatic image upload once per day
- *
- * - log button events to file
- *   (time stamp, button type)
+ * TODO include mirror
  *
  */
 public class Microscope implements AdminPanelListener {
@@ -223,7 +216,7 @@ public class Microscope implements AdminPanelListener {
 		ImagePlus trans = IJ.openImage(System.getProperty("user.home") + "/transmission.tif");
 		if(!simulated) {
 			try {
-				fluorescenceCamera = new NativeCamera(0); // TODO check index
+				fluorescenceCamera = new NativeCamera(0); // TODO which camera has which index
 				transmissionCamera = new SimulatedCamera(trans); // TODO new NativeCamera(1);
 				return;
 			} catch(Throwable e) {

@@ -13,7 +13,7 @@ public class NativeMotor implements IMotor {
 	public NativeMotor(int comPort, int baudRate) throws MotorException {
 		stageConnect(comPort, baudRate);
 		if(stageIsReferenceNeeded()) {
-			boolean allow = true; // TODO ask the user for permission to move and reference
+			boolean allow = true; // TODO check with Wiebke the order of referencing
 			if(allow)
 				stageReferenceIfNeeded();
 		}
