@@ -75,7 +75,7 @@ public class Microscope implements AdminPanelListener {
 	private static final int COM_PORT = 7;
 	private static final int BAUD_RATE = 38400;
 
-	private static final String SNAPSHOT_FOLDER = "C:\\Users\\huiskenlab\\EduSPIM_snapshots"; // TODO put on dropbox?
+	private static final String SNAPSHOT_FOLDER = System.getProperty("user.home") + File.separator + "EduSPIM_snapshots"; // TODO put on dropbox?
 
 	private static enum Mode {
 		NORMAL,
