@@ -2,8 +2,8 @@ package main;
 
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Properties;
@@ -19,35 +19,42 @@ public class Preferences {
 	public static final String STACK_Z_END    = "stack_z_end";
 	public static final String STACK_Y_START  = "stack_y_start";
 	public static final String STACK_Y_END    = "stack_y_end";
-	public static final String PIXEL_WIDTH    = "pixel_width";
 	public static final String MIRROR_Z1      = "mirror_z1";
 	public static final String MIRROR_M1      = "mirror_m1";
 	public static final String MIRROR_Z2      = "mirror_z2";
 	public static final String MIRROR_M2      = "mirror_m2";
 	public static final String MIRROR_COEFF_M = "mirror_coeff_m";
 	public static final String MIRROR_COEFF_T = "mirror_coeff_t";
+	public static final String PIXEL_WIDTH    = "pixel_width";
+	public static final String SNAPSHOTS_DIR  = "snapshots_dir";
 
 	private static final double DEFAULT_STACK_ZSTART   = IMotor.POS_MIN_Z;
 	private static final double DEFAULT_STACK_ZEND     = IMotor.POS_MAX_Z;
 	private static final double DEFAULT_STACK_YSTART   = IMotor.POS_MIN_Y;
 	private static final double DEFAULT_STACK_YEND     = IMotor.POS_MAX_Y;
-	private static final double DEFAULT_PIXEL_WIDHT    = 5.3 *  // pixel width on sensor
-	                                                     0.1 *  // magnification
-	                                                     0.001; // convert to mm
 	private static final double DEFAULT_MIRROR_Z1      = IMotor.POS_MIN_Z;
 	private static final double DEFAULT_MIRROR_M1      = 0;
 	private static final double DEFAULT_MIRROR_Z2      = IMotor.POS_MAX_Z;
 	private static final double DEFAULT_MIRROR_M2      = 0;
 	private static final double DEFAULT_MIRROR_COEFF_M = 0;
 	private static final double DEFAULT_MIRROR_COEFF_T = 0;
+	private static final double DEFAULT_PIXEL_WIDHT    = 5.3 *  // pixel width on sensor
+	                                                     0.1 *  // magnification
+	                                                     0.001; // convert to mm
+	private static final String DEFAULT_SNAPSHOTS_DIR  = System.getProperty("user.home") +
+															File.separator + "Dropbox" +
+															File.separator + "EduSPIM" +
+															File.separator + "Snapshots";
 
 	private static Preferences instance;
 
 	private final Properties properties;
 	private final File propertiesFile;
 
-	private double stackZStart, stackZEnd, stackYStart, stackYEnd, pixelWidth;
+	private double stackZStart, stackZEnd, stackYStart, stackYEnd;
 	private double mirrorZ1, mirrorM1, mirrorZ2, mirrorM2, mirrorCoeffM, mirrorCoeffT;
+	private double  pixelWidth;
+	private String snapshotsdir;
 
 	public static double getStackZStart() {
 		return getInstance().stackZStart;
@@ -63,10 +70,6 @@ public class Preferences {
 
 	public static double getStackYEnd() {
 		return getInstance().stackYEnd;
-	}
-
-	public static double getPixelWidth() {
-		return getInstance().pixelWidth;
 	}
 
 	public static double getMirrorZ1() {
@@ -91,6 +94,14 @@ public class Preferences {
 
 	public static double getMirrorCoefficientT() {
 		return getInstance().mirrorCoeffT;
+	}
+
+	public static double getPixelWidth() {
+		return getInstance().pixelWidth;
+	}
+
+	public static String getSnapshotsDir() {
+		return getInstance().snapshotsdir;
 	}
 
 	public static void setStackZStart(double stackZStart) {
@@ -149,13 +160,14 @@ public class Preferences {
 		properties.put(STACK_Z_END,    Double.toString(DEFAULT_STACK_ZEND));
 		properties.put(STACK_Y_START,  Double.toString(DEFAULT_STACK_YSTART));
 		properties.put(STACK_Y_END,    Double.toString(DEFAULT_STACK_YEND));
-		properties.put(PIXEL_WIDTH,    Double.toString(DEFAULT_PIXEL_WIDHT));
 		properties.put(MIRROR_Z1,      Double.toString(DEFAULT_MIRROR_Z1));
 		properties.put(MIRROR_M1,      Double.toString(DEFAULT_MIRROR_M1));
 		properties.put(MIRROR_Z2,      Double.toString(DEFAULT_MIRROR_Z2));
 		properties.put(MIRROR_M2,      Double.toString(DEFAULT_MIRROR_M2));
 		properties.put(MIRROR_COEFF_M, Double.toString(DEFAULT_MIRROR_COEFF_M));
 		properties.put(MIRROR_COEFF_T, Double.toString(DEFAULT_MIRROR_COEFF_T));
+		properties.put(PIXEL_WIDTH,    Double.toString(DEFAULT_PIXEL_WIDHT));
+		properties.put(SNAPSHOTS_DIR,  DEFAULT_SNAPSHOTS_DIR);
 
 		propertiesFile = new File(PROPERTY_FILE);
 
@@ -177,13 +189,14 @@ public class Preferences {
 		stackZEnd    = Double.parseDouble(properties.getProperty(STACK_Z_END,    Double.toString(DEFAULT_STACK_ZEND)));
 		stackYStart  = Double.parseDouble(properties.getProperty(STACK_Y_START,  Double.toString(DEFAULT_STACK_YSTART)));
 		stackYEnd    = Double.parseDouble(properties.getProperty(STACK_Y_END,    Double.toString(DEFAULT_STACK_YEND)));
-		pixelWidth   = Double.parseDouble(properties.getProperty(PIXEL_WIDTH,    Double.toString(DEFAULT_PIXEL_WIDHT)));
 		mirrorZ1     = Double.parseDouble(properties.getProperty(MIRROR_Z1,      Double.toString(DEFAULT_MIRROR_Z1)));
 		mirrorM1     = Double.parseDouble(properties.getProperty(MIRROR_M1,      Double.toString(DEFAULT_MIRROR_M1)));
 		mirrorZ2     = Double.parseDouble(properties.getProperty(MIRROR_Z2,      Double.toString(DEFAULT_MIRROR_Z2)));
 		mirrorM2     = Double.parseDouble(properties.getProperty(MIRROR_M2,      Double.toString(DEFAULT_MIRROR_M2)));
 		mirrorCoeffM = Double.parseDouble(properties.getProperty(MIRROR_COEFF_M, Double.toString(DEFAULT_MIRROR_COEFF_M)));
 		mirrorCoeffT = Double.parseDouble(properties.getProperty(MIRROR_COEFF_T, Double.toString(DEFAULT_MIRROR_COEFF_T)));
+		pixelWidth   = Double.parseDouble(properties.getProperty(PIXEL_WIDTH,    Double.toString(DEFAULT_PIXEL_WIDHT)));
+		snapshotsdir = properties.getProperty(SNAPSHOTS_DIR, DEFAULT_SNAPSHOTS_DIR);
 	}
 
 	public static HashMap<String, String> backup() {
@@ -203,13 +216,14 @@ public class Preferences {
 		p.stackZEnd    = Double.parseDouble(backup.get(STACK_Z_END));
 		p.stackYStart  = Double.parseDouble(backup.get(STACK_Y_START));
 		p.stackYEnd    = Double.parseDouble(backup.get(STACK_Y_END));
-		p.pixelWidth   = Double.parseDouble(backup.get(PIXEL_WIDTH));
 		p.mirrorZ1     = Double.parseDouble(backup.get(MIRROR_Z1));
 		p.mirrorM1     = Double.parseDouble(backup.get(MIRROR_M1));
 		p.mirrorZ2     = Double.parseDouble(backup.get(MIRROR_Z2));
 		p.mirrorM2     = Double.parseDouble(backup.get(MIRROR_M2));
 		p.mirrorCoeffM = Double.parseDouble(backup.get(MIRROR_COEFF_M));
 		p.mirrorCoeffT = Double.parseDouble(backup.get(MIRROR_COEFF_T));
+		p.pixelWidth   = Double.parseDouble(backup.get(PIXEL_WIDTH));
+		p.snapshotsdir = backup.get(SNAPSHOTS_DIR);
 		Preferences.setAll(backup);
 	}
 
@@ -234,28 +248,57 @@ public class Preferences {
 	private static void setAll(HashMap<String, String> table) {
 		for(String key : table.keySet())
 			getInstance().properties.setProperty(key, table.get(key));
-		save(getInstance().propertiesFile, getInstance().properties);
+		save(getInstance().propertiesFile);
 	}
 
 	private static void set(String key, Object value) {
 		getInstance().properties.setProperty(key, value.toString());
-		save(getInstance().propertiesFile, getInstance().properties);
+		save(getInstance().propertiesFile);
 	}
 
-	private static void save(File file, Properties props) {
-		FileWriter writer = null;
+	private static void save(File file) {
+		PrintWriter out = null;
 		try {
-			writer = new FileWriter(file);
-			props.store(writer, "EduSPIM properties");
+			out = new PrintWriter(file);
+			doWrite(out);
 		} catch(Exception e) {
 			ExceptionHandler.handleException("Error saving properties file", e);
 		} finally {
 			try {
-				writer.close();
+				if(out != null)
+					out.close();
 			} catch(Exception e) {
 				ExceptionHandler.handleException("Error closing properties file", e);
 			}
 		}
+	}
+
+	private static void doWrite(PrintWriter out) {
+		Preferences p = getInstance();
+		out.println("# Properties for EduSPIM");
+		out.println();
+		out.println("# Volume limits:");
+		out.println(STACK_Y_START + "=" + p.stackYStart);
+		out.println(STACK_Z_START + "=" + p.stackZStart);
+		out.println(STACK_Y_END   + "=" + p.stackYEnd);
+		out.println(STACK_Z_END   + "=" + p.stackZEnd);
+		out.println();
+		out.println("# Mirror calibration");
+		out.println(MIRROR_Z1 + "=" + p.mirrorZ1);
+		out.println(MIRROR_M1 + "=" + p.mirrorM1);
+		out.println(MIRROR_Z2 + "=" + p.mirrorZ2);
+		out.println(MIRROR_M2 + "=" + p.mirrorM2);
+		out.println("# Resulting offset and slope");
+		out.println(MIRROR_COEFF_T + "=" + p.mirrorCoeffT);
+		out.println(MIRROR_COEFF_M + "=" + p.mirrorCoeffM);
+		out.println();
+		out.println("# Physical width of a pixel, in mm");
+		out.println(PIXEL_WIDTH + "=" + p.pixelWidth);
+		out.println();
+		out.println("# Folder where snapshots are written to");
+		out.println(SNAPSHOTS_DIR + "=" + p.snapshotsdir);
+
+
 	}
 }
 
