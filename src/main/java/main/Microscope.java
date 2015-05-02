@@ -70,7 +70,7 @@ public class Microscope implements AdminPanelListener {
 						"Cannot create directory " + logfile.getAbsolutePath());
 			}
 		}
-		logfile = new File(logfile, date + ".log");
+		logfile = new File(logfile, date + ".txt");
 		System.setProperty(SimpleLogger.LOG_FILE_KEY, logfile.getAbsolutePath());
 		logger = LoggerFactory.getLogger(Microscope.class);
 	}
