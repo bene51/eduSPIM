@@ -46,8 +46,6 @@ import display.PlaneDisplay;
  * Things to test there:
  * - Sending mail
  *
- * TODO Send email on startup/shutdown (maybe with log).
- *
  * TODO Check all caught exceptions, whether they should exit the program.
  *
  * TODO arduino for buttons
@@ -192,6 +190,14 @@ public class Microscope implements AdminPanelListener {
 
 		buttons.addButtonsListener(new SPIMButtonsListener(this));
 		logger.info("Successfully initialized the microscope");
+		Mail.send("Successful EduSPIM startup", Preferences.getMailto(), null,
+				"Hi,\n\n"
+				+ "EduSPIM was just started successfully.\n\n"
+				+ "Logs are here:\n"
+				+ Preferences.getLogsLink() + " \n\n"
+				+ "and snapshots:\n"
+				+ Preferences.getSnapshotsLink() + " \n\n"
+				+ "Greetings,\nEduSPIM");
 	}
 
 	public void initMotor(boolean moveToStart) {
@@ -446,6 +452,16 @@ public class Microscope implements AdminPanelListener {
 
 	public void shutdown(int exitcode) {
 		logger.info("Shutting down with exit code " + exitcode);
+		Mail.send("EduSPIM shutdown (exit code " + exitcode + ")",
+				Preferences.getMailto(),
+				null,
+				"Hi,\n\n"
+				+ "EduSPIM was just shut down with exit status " + exitcode + ".\n\n"
+				+ "Logs are here:\n"
+				+ Preferences.getLogsLink() + " \n\n"
+				+ "and snapshots:\n"
+				+ Preferences.getSnapshotsLink() + " \n\n"
+				+ "Greetings,\nEduSPIM");
 		while(!mirrorQueue.isIdle())
 			sleep(100);
 		try {
