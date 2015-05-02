@@ -456,7 +456,7 @@ public class Microscope implements AdminPanelListener {
 	}
 
 	/******************************************************
-	 * AdminPanelListener interaface
+	 * AdminPanelListener interface
 	 */
 	@Override
 	public void mirrorPositionChanged(final double pos) {
