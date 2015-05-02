@@ -24,6 +24,7 @@ import javax.swing.UIManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.impl.SimpleLogger;
 
 import stage.IMotor;
 import stage.MotorException;
@@ -58,7 +59,21 @@ import display.PlaneDisplay;
  */
 public class Microscope implements AdminPanelListener {
 
-	private static final Logger logger = LoggerFactory.getLogger(Microscope.class);
+	private static final Logger logger;
+
+	static {
+		String date = new SimpleDateFormat("yyyMMdd").format(new Date());
+		File logfile = new File(Preferences.getLogsDir());
+		if(!logfile.exists()) {
+			if(!logfile.mkdirs()) {
+				Mail.send("Error creating directory for log files",
+						"Cannot create directory " + logfile.getAbsolutePath());
+			}
+		}
+		logfile = new File(logfile, date + ".log");
+		System.setProperty(SimpleLogger.LOG_FILE_KEY, logfile.getAbsolutePath());
+		logger = LoggerFactory.getLogger(Microscope.class);
+	}
 
 	public static final int EXIT_NORMAL         =  0;
 	public static final int EXIT_PREVIEW_ERROR  = -1;

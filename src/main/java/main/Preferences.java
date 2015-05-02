@@ -27,6 +27,7 @@ public class Preferences {
 	public static final String MIRROR_COEFF_T = "mirror_coeff_t";
 	public static final String PIXEL_WIDTH    = "pixel_width";
 	public static final String SNAPSHOTS_DIR  = "snapshots_dir";
+	public static final String LOGS_DIR       = "logs_dir";
 
 	private static final double DEFAULT_STACK_ZSTART   = IMotor.POS_MIN_Z;
 	private static final double DEFAULT_STACK_ZEND     = IMotor.POS_MAX_Z;
@@ -45,6 +46,10 @@ public class Preferences {
 															File.separator + "Dropbox" +
 															File.separator + "EduSPIM" +
 															File.separator + "Snapshots";
+	private static final String DEFAULT_LOGS_DIR       = System.getProperty("user.home") +
+															File.separator + "Dropbox" +
+															File.separator + "EduSPIM" +
+															File.separator + "Logs";
 
 	private static Preferences instance;
 
@@ -54,7 +59,7 @@ public class Preferences {
 	private double stackZStart, stackZEnd, stackYStart, stackYEnd;
 	private double mirrorZ1, mirrorM1, mirrorZ2, mirrorM2, mirrorCoeffM, mirrorCoeffT;
 	private double  pixelWidth;
-	private String snapshotsdir;
+	private String snapshotsdir, logsdir;
 
 	public static double getStackZStart() {
 		return getInstance().stackZStart;
@@ -102,6 +107,10 @@ public class Preferences {
 
 	public static String getSnapshotsDir() {
 		return getInstance().snapshotsdir;
+	}
+
+	public static String getLogsDir() {
+		return getInstance().logsdir;
 	}
 
 	public static void setStackZStart(double stackZStart) {
@@ -168,6 +177,7 @@ public class Preferences {
 		properties.put(MIRROR_COEFF_T, Double.toString(DEFAULT_MIRROR_COEFF_T));
 		properties.put(PIXEL_WIDTH,    Double.toString(DEFAULT_PIXEL_WIDHT));
 		properties.put(SNAPSHOTS_DIR,  DEFAULT_SNAPSHOTS_DIR);
+		properties.put(LOGS_DIR,       DEFAULT_LOGS_DIR);
 
 		propertiesFile = new File(PROPERTY_FILE);
 
@@ -197,6 +207,7 @@ public class Preferences {
 		mirrorCoeffT = Double.parseDouble(properties.getProperty(MIRROR_COEFF_T, Double.toString(DEFAULT_MIRROR_COEFF_T)));
 		pixelWidth   = Double.parseDouble(properties.getProperty(PIXEL_WIDTH,    Double.toString(DEFAULT_PIXEL_WIDHT)));
 		snapshotsdir = properties.getProperty(SNAPSHOTS_DIR, DEFAULT_SNAPSHOTS_DIR);
+		logsdir      = properties.getProperty(LOGS_DIR, DEFAULT_LOGS_DIR);
 	}
 
 	public static HashMap<String, String> backup() {
@@ -224,6 +235,7 @@ public class Preferences {
 		p.mirrorCoeffT = Double.parseDouble(backup.get(MIRROR_COEFF_T));
 		p.pixelWidth   = Double.parseDouble(backup.get(PIXEL_WIDTH));
 		p.snapshotsdir = backup.get(SNAPSHOTS_DIR);
+		p.logsdir      = backup.get(LOGS_DIR);
 		Preferences.setAll(backup);
 	}
 
@@ -297,8 +309,9 @@ public class Preferences {
 		out.println();
 		out.println("# Folder where snapshots are written to");
 		out.println(SNAPSHOTS_DIR + "=" + p.snapshotsdir);
-
-
+		out.println();
+		out.println("# Folder where logs are written to");
+		out.println(LOGS_DIR + "=" + p.logsdir);
 	}
 }
 
