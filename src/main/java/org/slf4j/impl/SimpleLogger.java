@@ -216,7 +216,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
             return System.out;
         } else {
             try {
-                FileOutputStream fos = new FileOutputStream(logFile);
+                FileOutputStream fos = new FileOutputStream(logFile, true);
                 PrintStream printStream = new PrintStream(fos);
                 return printStream;
             } catch (FileNotFoundException e) {
