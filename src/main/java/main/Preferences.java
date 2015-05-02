@@ -308,10 +308,16 @@ public class Preferences {
 		out.println(PIXEL_WIDTH + "=" + p.pixelWidth);
 		out.println();
 		out.println("# Folder where snapshots are written to");
-		out.println(SNAPSHOTS_DIR + "=" + p.snapshotsdir);
+		out.println(SNAPSHOTS_DIR + "=" + escape(p.snapshotsdir));
 		out.println();
 		out.println("# Folder where logs are written to");
-		out.println(LOGS_DIR + "=" + p.logsdir);
+		out.println(LOGS_DIR + "=" + escape(p.logsdir));
+	}
+
+	private static String escape(String s) {
+		while(s.endsWith("\\"))
+			s = s.substring(0, s.length() - 1);
+		return s.replaceAll("\\\\", "\\\\\\\\").replaceAll(":", "\\\\:");
 	}
 }
 
