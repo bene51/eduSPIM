@@ -28,6 +28,10 @@ public class Preferences {
 	public static final String PIXEL_WIDTH    = "pixel_width";
 	public static final String SNAPSHOTS_DIR  = "snapshots_dir";
 	public static final String LOGS_DIR       = "logs_dir";
+	public static final String SNAPSHOTS_LINK = "snapshots_link";
+	public static final String LOGS_LINK      = "logs_link";
+	public static final String MAIL_TO        = "mail_to";
+	public static final String MAIL_CC        = "mail_cc";
 
 	private static final double DEFAULT_STACK_ZSTART   = IMotor.POS_MIN_Z;
 	private static final double DEFAULT_STACK_ZEND     = IMotor.POS_MAX_Z;
@@ -51,6 +55,12 @@ public class Preferences {
 															File.separator + "EduSPIM" +
 															File.separator + "Logs";
 
+	private static final String DEFAULT_LOGS_LINK      = "https://www.dropbox.com/sh/bccsscts2gc8i6r/AADQb3myigWu1JoZDVEyANWwa?dl=0";
+	private static final String DEFAULT_SNAPSHOTS_LINK = "https://www.dropbox.com/sh/ooiudayauje1apw/AABzeD851uTbBJb0j-81XBCOa?dl=0";
+	private static final String DEFAULT_MAIL_TO        = "bene.schmid@gmail.com";
+	private static final String DEFAULT_MAIL_CC        = ""; // TODO labhuisken@mpi-cbg.de
+
+
 	private static Preferences instance;
 
 	private final Properties properties;
@@ -60,6 +70,8 @@ public class Preferences {
 	private double mirrorZ1, mirrorM1, mirrorZ2, mirrorM2, mirrorCoeffM, mirrorCoeffT;
 	private double  pixelWidth;
 	private String snapshotsdir, logsdir;
+	private String logslink, snapshotslink;
+	private String mailto, mailcc;
 
 	public static double getStackZStart() {
 		return getInstance().stackZStart;
@@ -111,6 +123,22 @@ public class Preferences {
 
 	public static String getLogsDir() {
 		return getInstance().logsdir;
+	}
+
+	public static String getSnapshotsLink() {
+		return getInstance().snapshotslink;
+	}
+
+	public static String getLogsLink() {
+		return getInstance().logslink;
+	}
+
+	public static String getMailto() {
+		return getInstance().mailto;
+	}
+
+	public static String getMailcc() {
+		return getInstance().mailcc;
 	}
 
 	public static void setStackZStart(double stackZStart) {
@@ -178,6 +206,10 @@ public class Preferences {
 		properties.put(PIXEL_WIDTH,    Double.toString(DEFAULT_PIXEL_WIDHT));
 		properties.put(SNAPSHOTS_DIR,  DEFAULT_SNAPSHOTS_DIR);
 		properties.put(LOGS_DIR,       DEFAULT_LOGS_DIR);
+		properties.put(SNAPSHOTS_LINK, DEFAULT_SNAPSHOTS_LINK);
+		properties.put(LOGS_LINK,      DEFAULT_LOGS_LINK);
+		properties.put(MAIL_TO,        DEFAULT_MAIL_TO);
+		properties.put(MAIL_CC,        DEFAULT_MAIL_CC);
 
 		propertiesFile = new File(PROPERTY_FILE);
 
@@ -195,19 +227,23 @@ public class Preferences {
 				ExceptionHandler.handleException("Error closing properties file", e);
 			}
 		}
-		stackZStart  = Double.parseDouble(properties.getProperty(STACK_Z_START,  Double.toString(DEFAULT_STACK_ZSTART)));
-		stackZEnd    = Double.parseDouble(properties.getProperty(STACK_Z_END,    Double.toString(DEFAULT_STACK_ZEND)));
-		stackYStart  = Double.parseDouble(properties.getProperty(STACK_Y_START,  Double.toString(DEFAULT_STACK_YSTART)));
-		stackYEnd    = Double.parseDouble(properties.getProperty(STACK_Y_END,    Double.toString(DEFAULT_STACK_YEND)));
-		mirrorZ1     = Double.parseDouble(properties.getProperty(MIRROR_Z1,      Double.toString(DEFAULT_MIRROR_Z1)));
-		mirrorM1     = Double.parseDouble(properties.getProperty(MIRROR_M1,      Double.toString(DEFAULT_MIRROR_M1)));
-		mirrorZ2     = Double.parseDouble(properties.getProperty(MIRROR_Z2,      Double.toString(DEFAULT_MIRROR_Z2)));
-		mirrorM2     = Double.parseDouble(properties.getProperty(MIRROR_M2,      Double.toString(DEFAULT_MIRROR_M2)));
-		mirrorCoeffM = Double.parseDouble(properties.getProperty(MIRROR_COEFF_M, Double.toString(DEFAULT_MIRROR_COEFF_M)));
-		mirrorCoeffT = Double.parseDouble(properties.getProperty(MIRROR_COEFF_T, Double.toString(DEFAULT_MIRROR_COEFF_T)));
-		pixelWidth   = Double.parseDouble(properties.getProperty(PIXEL_WIDTH,    Double.toString(DEFAULT_PIXEL_WIDHT)));
-		snapshotsdir = properties.getProperty(SNAPSHOTS_DIR, DEFAULT_SNAPSHOTS_DIR);
-		logsdir      = properties.getProperty(LOGS_DIR, DEFAULT_LOGS_DIR);
+		stackZStart   = Double.parseDouble(properties.getProperty(STACK_Z_START,  Double.toString(DEFAULT_STACK_ZSTART)));
+		stackZEnd     = Double.parseDouble(properties.getProperty(STACK_Z_END,    Double.toString(DEFAULT_STACK_ZEND)));
+		stackYStart   = Double.parseDouble(properties.getProperty(STACK_Y_START,  Double.toString(DEFAULT_STACK_YSTART)));
+		stackYEnd     = Double.parseDouble(properties.getProperty(STACK_Y_END,    Double.toString(DEFAULT_STACK_YEND)));
+		mirrorZ1      = Double.parseDouble(properties.getProperty(MIRROR_Z1,      Double.toString(DEFAULT_MIRROR_Z1)));
+		mirrorM1      = Double.parseDouble(properties.getProperty(MIRROR_M1,      Double.toString(DEFAULT_MIRROR_M1)));
+		mirrorZ2      = Double.parseDouble(properties.getProperty(MIRROR_Z2,      Double.toString(DEFAULT_MIRROR_Z2)));
+		mirrorM2      = Double.parseDouble(properties.getProperty(MIRROR_M2,      Double.toString(DEFAULT_MIRROR_M2)));
+		mirrorCoeffM  = Double.parseDouble(properties.getProperty(MIRROR_COEFF_M, Double.toString(DEFAULT_MIRROR_COEFF_M)));
+		mirrorCoeffT  = Double.parseDouble(properties.getProperty(MIRROR_COEFF_T, Double.toString(DEFAULT_MIRROR_COEFF_T)));
+		pixelWidth    = Double.parseDouble(properties.getProperty(PIXEL_WIDTH,    Double.toString(DEFAULT_PIXEL_WIDHT)));
+		snapshotsdir  = properties.getProperty(SNAPSHOTS_DIR, DEFAULT_SNAPSHOTS_DIR);
+		logsdir       = properties.getProperty(LOGS_DIR, DEFAULT_LOGS_DIR);
+		snapshotslink = properties.getProperty(SNAPSHOTS_LINK, DEFAULT_SNAPSHOTS_LINK);
+		logslink      = properties.getProperty(LOGS_LINK, DEFAULT_LOGS_LINK);
+		mailto        = properties.getProperty(MAIL_TO, DEFAULT_MAIL_TO);
+		mailcc        = properties.getProperty(MAIL_CC, DEFAULT_MAIL_TO);
 	}
 
 	public static HashMap<String, String> backup() {
@@ -223,19 +259,23 @@ public class Preferences {
 
 	public static void restore(HashMap<String, String> backup) {
 		Preferences p = getInstance();
-		p.stackZStart  = Double.parseDouble(backup.get(STACK_Z_START));
-		p.stackZEnd    = Double.parseDouble(backup.get(STACK_Z_END));
-		p.stackYStart  = Double.parseDouble(backup.get(STACK_Y_START));
-		p.stackYEnd    = Double.parseDouble(backup.get(STACK_Y_END));
-		p.mirrorZ1     = Double.parseDouble(backup.get(MIRROR_Z1));
-		p.mirrorM1     = Double.parseDouble(backup.get(MIRROR_M1));
-		p.mirrorZ2     = Double.parseDouble(backup.get(MIRROR_Z2));
-		p.mirrorM2     = Double.parseDouble(backup.get(MIRROR_M2));
-		p.mirrorCoeffM = Double.parseDouble(backup.get(MIRROR_COEFF_M));
-		p.mirrorCoeffT = Double.parseDouble(backup.get(MIRROR_COEFF_T));
-		p.pixelWidth   = Double.parseDouble(backup.get(PIXEL_WIDTH));
-		p.snapshotsdir = backup.get(SNAPSHOTS_DIR);
-		p.logsdir      = backup.get(LOGS_DIR);
+		p.stackZStart   = Double.parseDouble(backup.get(STACK_Z_START));
+		p.stackZEnd     = Double.parseDouble(backup.get(STACK_Z_END));
+		p.stackYStart   = Double.parseDouble(backup.get(STACK_Y_START));
+		p.stackYEnd     = Double.parseDouble(backup.get(STACK_Y_END));
+		p.mirrorZ1      = Double.parseDouble(backup.get(MIRROR_Z1));
+		p.mirrorM1      = Double.parseDouble(backup.get(MIRROR_M1));
+		p.mirrorZ2      = Double.parseDouble(backup.get(MIRROR_Z2));
+		p.mirrorM2      = Double.parseDouble(backup.get(MIRROR_M2));
+		p.mirrorCoeffM  = Double.parseDouble(backup.get(MIRROR_COEFF_M));
+		p.mirrorCoeffT  = Double.parseDouble(backup.get(MIRROR_COEFF_T));
+		p.pixelWidth    = Double.parseDouble(backup.get(PIXEL_WIDTH));
+		p.snapshotsdir  = backup.get(SNAPSHOTS_DIR);
+		p.logsdir       = backup.get(LOGS_DIR);
+		p.snapshotslink = backup.get(SNAPSHOTS_LINK);
+		p.logslink      = backup.get(LOGS_LINK);
+		p.mailto        = backup.get(MAIL_TO);
+		p.mailcc        = backup.get(MAIL_CC);
 		Preferences.setAll(backup);
 	}
 
@@ -312,6 +352,15 @@ public class Preferences {
 		out.println();
 		out.println("# Folder where logs are written to");
 		out.println(LOGS_DIR + "=" + escape(p.logsdir));
+		out.println();
+		out.println("# Links that point a browser to shared logs/snapshots directories,");
+		out.println("# included in some emails");
+		out.println(SNAPSHOTS_LINK + "=" + escape(p.snapshotslink));
+		out.println(LOGS_LINK + "=" + escape(p.logslink));
+		out.println();
+		out.println("# Email addresses");
+		out.println(MAIL_TO + "=" + escape(p.mailto));
+		out.println(MAIL_CC + "=" + escape(p.mailcc));
 	}
 
 	private static String escape(String s) {

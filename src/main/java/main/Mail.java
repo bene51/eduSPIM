@@ -12,14 +12,8 @@ import javax.mail.internet.MimeMessage;
 
 public class Mail {
 
-	private static final String TO = "bschmid@mpi-cbg.de"; // TODO change to huiskenlab@mpi-cbg.de
-
-
 	public static void main(String[] args) throws Exception {
-		// send("EduSPIM error", "test");
-		InternetAddress[] adds = InternetAddress.parse(TO + ", bene.schmid@gmail.com");
-		for(InternetAddress i : adds)
-			System.out.println(i);
+		send("EduSPIM error", "test");
 	}
 
 	public static void sendError(String text) {
@@ -27,10 +21,10 @@ public class Mail {
 	}
 
 	public static void send(String subject, String text) {
-		send(subject, TO, text);
+		send(subject, Preferences.getMailto(), Preferences.getMailcc(), text);
 	}
 
-	public static void send(String subject, String to, String text) {
+	public static void send(String subject, String to, String cc, String text) {
 		final String username = "eduspim@gmail.com";
 		final String password = "cmlc2GFP";
 
@@ -52,7 +46,10 @@ public class Mail {
 			Message message = new MimeMessage(session);
 			message.setFrom(InternetAddress.parse("eduspim@gmail.com")[0]);
 			message.setRecipients(Message.RecipientType.TO,
-					InternetAddress.parse(to)); // TODO CC to huiskenlab
+					InternetAddress.parse(to));
+			if(cc != null && cc.trim().length() != 0)
+				message.setRecipients(Message.RecipientType.CC,
+						InternetAddress.parse(cc));
 			message.setSubject(subject);
 			message.setText(text);
 
