@@ -28,10 +28,6 @@ public class Toptica implements ILaser {
 			port.writeString("en ext"      + TERM_CHAR);
 		} catch(Exception e) {
 			throw new LaserException("Cannot initialize communication to laser ", e);
-		} finally {
-			if(port.isOpened()) {
-				close();
-			}
 		}
 	}
 
