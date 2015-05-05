@@ -78,11 +78,12 @@ public class Microscope implements AdminPanelListener {
 		logger = LoggerFactory.getLogger(Microscope.class);
 	}
 
-	public static final int EXIT_NORMAL         =  0;
-	public static final int EXIT_PREVIEW_ERROR  = -1;
-	public static final int EXIT_STACK_ERROR    = -2;
-	public static final int EXIT_INITIALIZATION = -3;
-	public static final int EXIT_FATAL_ERROR    = -4;
+	public static final int EXIT_NORMAL             =  0;
+	public static final int EXIT_PREVIEW_ERROR      = -1;
+	public static final int EXIT_STACK_ERROR        = -2;
+	public static final int EXIT_MANUAL_LASER_ERROR = -3;
+	public static final int EXIT_INITIALIZATION     = -4;
+	public static final int EXIT_FATAL_ERROR        = -5;
 
 	private static final int STAGE_COM_PORT = 7;
 	private static final int LASER_COM_PORT = 4;
@@ -101,7 +102,7 @@ public class Microscope implements AdminPanelListener {
 	private IMotor motor;
 	private ILaser laser;
 	private ICamera transmissionCamera, fluorescenceCamera;
-	private final AbstractButtons buttons;
+	private AbstractButtons buttons;
 
 	private final SingleElementThreadQueue mirrorQueue;
 
@@ -131,12 +132,7 @@ public class Microscope implements AdminPanelListener {
 		}
 
 		initBeanshell();
-		initMotor(true);
-		initLaser(Preferences.getLaserPower());
-
-		// cameras go last: If anything went wrong, simulated is set to
-		// true and we MUST use the simulated camera.
-		initCameras();
+		initHardware(true);
 
 		double yRel = getCurrentRelativeYPos();
 
@@ -189,12 +185,11 @@ public class Microscope implements AdminPanelListener {
 			}
 		});
 		displayWindow = new DisplayFrame(displayPanel, false);
-		buttons = new AWTButtons();
 		if(buttons instanceof AWTButtons)
 			displayWindow.add(((AWTButtons)buttons).getPanel(), BorderLayout.EAST);
 		displayWindow.pack();
 		displayWindow.setVisible(true);
-//		displayWindow.setFullscreen(true);
+//		displayWindow.setFullscreen(true); // TODO
 		displayPanel.requestFocusInWindow();
 		displayPanel.display(null, null, yRel, 0);
 
@@ -210,7 +205,51 @@ public class Microscope implements AdminPanelListener {
 				+ "Greetings,\nEduSPIM");
 	}
 
-	public void initMotor(boolean moveToStart) {
+	public void initHardware(boolean moveMotorToStart) {
+		initMotor(moveMotorToStart);
+		initLaser(Preferences.getLaserPower());
+		initButtons();
+
+		// cameras go last: If anything went wrong, simulated is set to
+		// true and we MUST use the simulated camera.
+		initCameras();
+	}
+
+	public void closeHardware() {
+		try {
+			motor.close();
+		} catch(MotorException e) {
+			ExceptionHandler.handleException("Error closing the motors", e);
+		}
+		try {
+			fluorescenceCamera.close();
+		} catch (CameraException e) {
+			ExceptionHandler.handleException("Error closing the fluorescence camera", e);
+		}
+		try {
+			transmissionCamera.close();
+		} catch (CameraException e) {
+			ExceptionHandler.handleException("Error closing the transmission camera", e);
+		}
+		try {
+			laser.close();
+		} catch(LaserException e) {
+			ExceptionHandler.handleException("Error closing laser", e);
+		}
+		buttons.close();
+	}
+
+	private void initButtons() {
+		try {
+			buttons = new AWTButtons(); // TODO Arduino buttons
+		} catch(Throwable e) {
+			// We cannot do anything without buttons
+			ExceptionHandler.handleException("Error initializing buttons, exiting...", e);
+			shutdown(EXIT_FATAL_ERROR);
+		}
+	}
+
+	private void initMotor(boolean moveToStart) {
 		try {
 			motor = new NativeMotor(STAGE_COM_PORT); // TODO save parameters in Preferences
 			if(moveToStart) {
@@ -241,7 +280,7 @@ public class Microscope implements AdminPanelListener {
 		}
 	}
 
-	public void initCameras() {
+	private void initCameras() {
 		ImagePlus trans = IJ.openImage(System.getProperty("user.home") + "/transmission.tif");
 		if(!simulated) {
 			try {
@@ -261,7 +300,7 @@ public class Microscope implements AdminPanelListener {
 		transmissionCamera = new SimulatedCamera(trans);
 	}
 
-	public void initLaser(double power) {
+	private void initLaser(double power) {
 		try {
 			laser = new Toptica("COM" + LASER_COM_PORT); // TODO save parameters in Preferences
 			laser.setPower(power);
@@ -499,27 +538,8 @@ public class Microscope implements AdminPanelListener {
 				+ "Greetings,\nEduSPIM");
 		while(!mirrorQueue.isIdle())
 			sleep(100);
-		try {
-			motor.close();
-		} catch(MotorException e) {
-			ExceptionHandler.handleException("Error closing the motors", e);
-		}
-		try {
-			fluorescenceCamera.close();
-		} catch (CameraException e) {
-			ExceptionHandler.handleException("Error closing the fluorescence camera", e);
-		}
-		try {
-			transmissionCamera.close();
-		} catch (CameraException e) {
-			ExceptionHandler.handleException("Error closing the transmission camera", e);
-		}
-		try {
-			laser.close();
-		} catch(LaserException e) {
-			ExceptionHandler.handleException("Error closing laser", e);
-		}
-		buttons.close();
+
+		closeHardware();
 
 		mirrorQueue.shutdown();
 		displayWindow.dispose();
