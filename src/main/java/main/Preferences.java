@@ -25,6 +25,7 @@ public class Preferences {
 	public static final String MIRROR_M2      = "mirror_m2";
 	public static final String MIRROR_COEFF_M = "mirror_coeff_m";
 	public static final String MIRROR_COEFF_T = "mirror_coeff_t";
+	public static final String LASER_POWER    = "laser_power";
 	public static final String PIXEL_WIDTH    = "pixel_width";
 	public static final String SNAPSHOTS_DIR  = "snapshots_dir";
 	public static final String LOGS_DIR       = "logs_dir";
@@ -43,6 +44,7 @@ public class Preferences {
 	private static final double DEFAULT_MIRROR_M2      = 0;
 	private static final double DEFAULT_MIRROR_COEFF_M = 0;
 	private static final double DEFAULT_MIRROR_COEFF_T = 0;
+	private static final double DEFAULT_LASER_POWER    = 50;
 	private static final double DEFAULT_PIXEL_WIDHT    = 5.3 *  // pixel width on sensor
 	                                                     0.1 *  // magnification
 	                                                     0.001; // convert to mm
@@ -68,6 +70,7 @@ public class Preferences {
 
 	private double stackZStart, stackZEnd, stackYStart, stackYEnd;
 	private double mirrorZ1, mirrorM1, mirrorZ2, mirrorM2, mirrorCoeffM, mirrorCoeffT;
+	private double laserpower;
 	private double  pixelWidth;
 	private String snapshotsdir, logsdir;
 	private String logslink, snapshotslink;
@@ -111,6 +114,10 @@ public class Preferences {
 
 	public static double getMirrorCoefficientT() {
 		return getInstance().mirrorCoeffT;
+	}
+
+	public static double getLaserPower() {
+		return getInstance().laserpower;
 	}
 
 	public static double getPixelWidth() {
@@ -191,6 +198,11 @@ public class Preferences {
 		set(MIRROR_COEFF_T, t);
 	}
 
+	public static void setLaserPower(double p) {
+		getInstance().laserpower = p;
+		set(LASER_POWER, p);
+	}
+
 	private Preferences() {
 		properties = new Properties();
 		properties.put(STACK_Z_START,  Double.toString(DEFAULT_STACK_ZSTART));
@@ -203,6 +215,7 @@ public class Preferences {
 		properties.put(MIRROR_M2,      Double.toString(DEFAULT_MIRROR_M2));
 		properties.put(MIRROR_COEFF_M, Double.toString(DEFAULT_MIRROR_COEFF_M));
 		properties.put(MIRROR_COEFF_T, Double.toString(DEFAULT_MIRROR_COEFF_T));
+		properties.put(LASER_POWER,    Double.toString(DEFAULT_LASER_POWER));
 		properties.put(PIXEL_WIDTH,    Double.toString(DEFAULT_PIXEL_WIDHT));
 		properties.put(SNAPSHOTS_DIR,  DEFAULT_SNAPSHOTS_DIR);
 		properties.put(LOGS_DIR,       DEFAULT_LOGS_DIR);
@@ -237,6 +250,7 @@ public class Preferences {
 		mirrorM2      = Double.parseDouble(properties.getProperty(MIRROR_M2,      Double.toString(DEFAULT_MIRROR_M2)));
 		mirrorCoeffM  = Double.parseDouble(properties.getProperty(MIRROR_COEFF_M, Double.toString(DEFAULT_MIRROR_COEFF_M)));
 		mirrorCoeffT  = Double.parseDouble(properties.getProperty(MIRROR_COEFF_T, Double.toString(DEFAULT_MIRROR_COEFF_T)));
+		laserpower    = Double.parseDouble(properties.getProperty(LASER_POWER,    Double.toString(DEFAULT_LASER_POWER)));
 		pixelWidth    = Double.parseDouble(properties.getProperty(PIXEL_WIDTH,    Double.toString(DEFAULT_PIXEL_WIDHT)));
 		snapshotsdir  = properties.getProperty(SNAPSHOTS_DIR, DEFAULT_SNAPSHOTS_DIR);
 		logsdir       = properties.getProperty(LOGS_DIR, DEFAULT_LOGS_DIR);
@@ -269,6 +283,7 @@ public class Preferences {
 		p.mirrorM2      = Double.parseDouble(backup.get(MIRROR_M2));
 		p.mirrorCoeffM  = Double.parseDouble(backup.get(MIRROR_COEFF_M));
 		p.mirrorCoeffT  = Double.parseDouble(backup.get(MIRROR_COEFF_T));
+		p.laserpower    = Double.parseDouble(backup.get(LASER_POWER));
 		p.pixelWidth    = Double.parseDouble(backup.get(PIXEL_WIDTH));
 		p.snapshotsdir  = backup.get(SNAPSHOTS_DIR);
 		p.logsdir       = backup.get(LOGS_DIR);
@@ -343,6 +358,9 @@ public class Preferences {
 		out.println("# Resulting offset and slope");
 		out.println(MIRROR_COEFF_T + "=" + p.mirrorCoeffT);
 		out.println(MIRROR_COEFF_M + "=" + p.mirrorCoeffM);
+		out.println();
+		out.println("# Laser power, in mW");
+		out.println(LASER_POWER + "=" + p.laserpower);
 		out.println();
 		out.println("# Physical width of a pixel, in mm");
 		out.println(PIXEL_WIDTH + "=" + p.pixelWidth);

@@ -2,6 +2,7 @@ package main;
 
 import static stage.IMotor.Y_AXIS;
 import static stage.IMotor.Z_AXIS;
+import laser.LaserException;
 import stage.IMotor;
 import stage.MotorException;
 import buttons.AbstractButtons;
@@ -26,8 +27,7 @@ public class SPIMButtonsListener implements ButtonsListener {
 
 		switch(button) {
 		case AbstractButtons.BUTTON_LASER:
-			// TODO move mirror away and switch laser on
-			// TODO log manual laser
+			manualLaserOn();
 			break;
 		case AbstractButtons.BUTTON_STACK:
 			acquireStack();
@@ -52,7 +52,7 @@ public class SPIMButtonsListener implements ButtonsListener {
 	public void buttonReleased(int button) {
 		switch(button) {
 		case AbstractButtons.BUTTON_LASER:
-			// TODO move mirror back and switch laser to triggered
+			manualLaserOff();
 			break;
 		case AbstractButtons.BUTTON_STACK:
 			break;
@@ -72,13 +72,13 @@ public class SPIMButtonsListener implements ButtonsListener {
 		try {
 			microscope.acquireStack();
 		} catch (MotorException e) {
-			ExceptionHandler.handleException("Motor error during stack acquisition, trying to close and re-opening motors", e);
+			ExceptionHandler.handleException("Motor error during stack acquisition, trying to close and re-open motors", e);
 
 			// close and re-open motor and try again
 			// in case it fails, restart the software
 			microscope.resetBusy();
 			try {
-				microscope.getMotor().close();
+				microscope.getMotor().close(); // TODO not sufficient to only re-initializing motors: have a function (re-)initializeHardware;
 				microscope.initMotor(false);
 				microscope.acquireStack();
 			} catch(Exception ex) {
@@ -87,7 +87,7 @@ public class SPIMButtonsListener implements ButtonsListener {
 			}
 
 		} catch (CameraException e) {
-			ExceptionHandler.handleException("Camera error during stack acquisition, trying to close and re-opening the camera", e);
+			ExceptionHandler.handleException("Camera error during stack acquisition, trying to close and re-open the camera", e);
 
 			// close and re-open the camera and try again
 			// in case it fails, restart the software
@@ -113,7 +113,7 @@ public class SPIMButtonsListener implements ButtonsListener {
 			z = motor.getPosition(Z_AXIS);
 			microscope.startPreview(button, axis, positive,  target);
 		} catch (MotorException e) {
-			ExceptionHandler.handleException("Motor error during preview, trying to close and re-opening motors", e);
+			ExceptionHandler.handleException("Motor error during preview, trying to close and re-open motors", e);
 
 			// close and re-open motor and try again
 			// in case it fails, restart the software
@@ -131,7 +131,7 @@ public class SPIMButtonsListener implements ButtonsListener {
 				microscope.shutdown(Microscope.EXIT_PREVIEW_ERROR);
 			}
 		} catch (CameraException e) {
-			ExceptionHandler.handleException("Camera error during preview, trying to close and re-opening the camera", e);
+			ExceptionHandler.handleException("Camera error during preview, trying to close and re-open the camera", e);
 
 			// close and re-open the camera and try again
 			// in case it fails, restart the software
@@ -143,6 +143,43 @@ public class SPIMButtonsListener implements ButtonsListener {
 				microscope.startPreview(button, axis, positive, target);
 			} catch(Exception ex) {
 				ExceptionHandler.handleException("Error during preview after re-opening the camera, restarting the software", e);
+				microscope.shutdown(Microscope.EXIT_PREVIEW_ERROR);
+			}
+		}
+	}
+
+	private void manualLaserOn() {
+		try {
+			microscope.manualLaserOn();
+		} catch (LaserException e) {
+			ExceptionHandler.handleException("Laser error during manual laser on, trying to close and re-open the laser", e);
+
+			// close and re-open laser and try again
+			// in case it fails, restart the software
+			try {
+				microscope.getLaser().close();
+				microscope.initLaser(Preferences.getLaserPower());
+				microscope.manualLaserOn();
+			} catch(Exception ex) {
+				ExceptionHandler.handleException("Error during manual laser on after re-opening the laser, restarting the software", e);
+				microscope.shutdown(Microscope.EXIT_PREVIEW_ERROR);
+			}
+		}
+	}
+
+	private void manualLaserOff() {
+		try {
+			microscope.manualLaserOff();
+		} catch (LaserException e) {
+			ExceptionHandler.handleException("Laser error during manual laser off, trying to close and re-open the laser", e);
+
+			// close and re-open laser and try again
+			// in case it fails, restart the software
+			try {
+				microscope.getLaser().close();
+				microscope.initLaser(Preferences.getLaserPower());
+			} catch(Exception ex) {
+				ExceptionHandler.handleException("Error during manual laser off after re-opening the laser, restarting the software", e);
 				microscope.shutdown(Microscope.EXIT_PREVIEW_ERROR);
 			}
 		}
