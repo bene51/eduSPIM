@@ -22,6 +22,11 @@ import javax.imageio.ImageIO;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
+import laser.ILaser;
+import laser.LaserException;
+import laser.NoopLaser;
+import laser.Toptica;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.impl.SimpleLogger;
@@ -73,14 +78,15 @@ public class Microscope implements AdminPanelListener {
 		logger = LoggerFactory.getLogger(Microscope.class);
 	}
 
-	public static final int EXIT_NORMAL         =  0;
-	public static final int EXIT_PREVIEW_ERROR  = -1;
-	public static final int EXIT_STACK_ERROR    = -2;
-	public static final int EXIT_INITIALIZATION = -3;
-	public static final int EXIT_FATAL_ERROR    = -4;
+	public static final int EXIT_NORMAL             =  0;
+	public static final int EXIT_PREVIEW_ERROR      = -1;
+	public static final int EXIT_STACK_ERROR        = -2;
+	public static final int EXIT_MANUAL_LASER_ERROR = -3;
+	public static final int EXIT_INITIALIZATION     = -4;
+	public static final int EXIT_FATAL_ERROR        = -5;
 
-	private static final int COM_PORT = 7;
-	private static final int BAUD_RATE = 38400;
+	private static final int STAGE_COM_PORT = 7;
+	private static final int LASER_COM_PORT = 4;
 
 	private static enum Mode {
 		NORMAL,
@@ -94,8 +100,9 @@ public class Microscope implements AdminPanelListener {
 	private boolean busy = false;
 
 	private IMotor motor;
+	private ILaser laser;
 	private ICamera transmissionCamera, fluorescenceCamera;
-	private final AbstractButtons buttons;
+	private AbstractButtons buttons;
 
 	private final SingleElementThreadQueue mirrorQueue;
 
@@ -125,8 +132,7 @@ public class Microscope implements AdminPanelListener {
 		}
 
 		initBeanshell();
-		initMotor(true);
-		initCameras();
+		initHardware(true);
 
 		double yRel = getCurrentRelativeYPos();
 
@@ -179,12 +185,11 @@ public class Microscope implements AdminPanelListener {
 			}
 		});
 		displayWindow = new DisplayFrame(displayPanel, false);
-		buttons = new AWTButtons();
 		if(buttons instanceof AWTButtons)
 			displayWindow.add(((AWTButtons)buttons).getPanel(), BorderLayout.EAST);
 		displayWindow.pack();
 		displayWindow.setVisible(true);
-//		displayWindow.setFullscreen(true);
+//		displayWindow.setFullscreen(true); // TODO
 		displayPanel.requestFocusInWindow();
 		displayPanel.display(null, null, yRel, 0);
 
@@ -200,9 +205,53 @@ public class Microscope implements AdminPanelListener {
 				+ "Greetings,\nEduSPIM");
 	}
 
-	public void initMotor(boolean moveToStart) {
+	public void initHardware(boolean moveMotorToStart) {
+		initMotor(moveMotorToStart);
+		initLaser(Preferences.getLaserPower());
+		initButtons();
+
+		// cameras go last: If anything went wrong, simulated is set to
+		// true and we MUST use the simulated camera.
+		initCameras();
+	}
+
+	public void closeHardware() {
 		try {
-			motor = new NativeMotor(COM_PORT, BAUD_RATE); // TODO save parameters in Preferences
+			motor.close();
+		} catch(MotorException e) {
+			ExceptionHandler.handleException("Error closing the motors", e);
+		}
+		try {
+			fluorescenceCamera.close();
+		} catch (CameraException e) {
+			ExceptionHandler.handleException("Error closing the fluorescence camera", e);
+		}
+		try {
+			transmissionCamera.close();
+		} catch (CameraException e) {
+			ExceptionHandler.handleException("Error closing the transmission camera", e);
+		}
+		try {
+			laser.close();
+		} catch(LaserException e) {
+			ExceptionHandler.handleException("Error closing laser", e);
+		}
+		buttons.close();
+	}
+
+	private void initButtons() {
+		try {
+			buttons = new AWTButtons(); // TODO Arduino buttons
+		} catch(Throwable e) {
+			// We cannot do anything without buttons
+			ExceptionHandler.handleException("Error initializing buttons, exiting...", e);
+			shutdown(EXIT_FATAL_ERROR);
+		}
+	}
+
+	private void initMotor(boolean moveToStart) {
+		try {
+			motor = new NativeMotor(STAGE_COM_PORT); // TODO save parameters in Preferences
 			if(moveToStart) {
 				motor.setVelocity(Y_AXIS, IMotor.VEL_MAX_Y);
 				motor.setVelocity(Z_AXIS, IMotor.VEL_MAX_Z);
@@ -231,7 +280,7 @@ public class Microscope implements AdminPanelListener {
 		}
 	}
 
-	public void initCameras() {
+	private void initCameras() {
 		ImagePlus trans = IJ.openImage(System.getProperty("user.home") + "/transmission.tif");
 		if(!simulated) {
 			try {
@@ -249,6 +298,17 @@ public class Microscope implements AdminPanelListener {
 		System.out.println("image loaded");
 		fluorescenceCamera = new SimulatedCamera(imp);
 		transmissionCamera = new SimulatedCamera(trans);
+	}
+
+	private void initLaser(double power) {
+		try {
+			laser = new Toptica("COM" + LASER_COM_PORT); // TODO save parameters in Preferences
+			laser.setPower(power);
+		} catch(Throwable e) {
+			ExceptionHandler.handleException("Error initializing laser, using simulated laser instead", e);
+			laser = new NoopLaser();
+			simulated = true;
+		}
 	}
 
 	public void initBeanshell() {
@@ -276,6 +336,10 @@ public class Microscope implements AdminPanelListener {
 
 	public IMotor getMotor() {
 		return motor;
+	}
+
+	public ILaser getLaser() {
+		return laser;
 	}
 
 	public ICamera getFluorescenceCamera() {
@@ -438,6 +502,16 @@ public class Microscope implements AdminPanelListener {
 		}
 	}
 
+	public void manualLaserOn() throws LaserException {
+		// TODO move mirror away
+		laser.setOn();
+	}
+
+	public void manualLaserOff() throws LaserException {
+		// TODO move mirror in place
+		laser.setTriggered();
+	}
+
 	public static void sleep(long ms) {
 		try {
 			Thread.sleep(ms);
@@ -464,22 +538,8 @@ public class Microscope implements AdminPanelListener {
 				+ "Greetings,\nEduSPIM");
 		while(!mirrorQueue.isIdle())
 			sleep(100);
-		try {
-			motor.close();
-		} catch(MotorException e) {
-			ExceptionHandler.handleException("Error closing the motors", e);
-		}
-		try {
-			fluorescenceCamera.close();
-		} catch (CameraException e) {
-			ExceptionHandler.handleException("Error closing the fluorescence camera", e);
-		}
-		try {
-			transmissionCamera.close();
-		} catch (CameraException e) {
-			ExceptionHandler.handleException("Error closing the transmission camera", e);
-		}
-		buttons.close();
+
+		closeHardware();
 
 		mirrorQueue.shutdown();
 		displayWindow.dispose();

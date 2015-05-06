@@ -1,7 +1,6 @@
 package laser;
 
 import jssc.SerialPort;
-import jssc.SerialPortException;
 
 public class Toptica implements ILaser {
 
@@ -35,7 +34,7 @@ public class Toptica implements ILaser {
 			try {
 				port.writeString("la off" + TERM_CHAR);
 				port.closePort();
-			} catch(SerialPortException e) {
+			} catch(Exception e) {
 				throw new LaserException("Error closing serial port for laser", e);
 			}
 		}

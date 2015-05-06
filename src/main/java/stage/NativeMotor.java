@@ -6,12 +6,14 @@ import java.io.InputStreamReader;
 
 public class NativeMotor implements IMotor {
 
+	private static final int BAUD_RATE = 38400;
+
 	static {
 		System.loadLibrary("stage_NativeMotor");
 	}
 
-	public NativeMotor(int comPort, int baudRate) throws MotorException {
-		stageConnect(comPort, baudRate);
+	public NativeMotor(int comPort) throws MotorException {
+		stageConnect(comPort, BAUD_RATE);
 		if(stageIsReferenceNeeded()) {
 			boolean allow = true; // TODO check with Wiebke the order of referencing
 			if(allow)
@@ -71,7 +73,7 @@ public class NativeMotor implements IMotor {
 	}
 
 	public static void main(String[] args) throws NumberFormatException, IOException, MotorException {
-		NativeMotor motor = new NativeMotor(7, 38400);
+		NativeMotor motor = new NativeMotor(7);
 		System.out.println("motor initialized");
 		double y = motor.getPosition(Y_AXIS);
 		double z = motor.getPosition(Z_AXIS);
