@@ -40,6 +40,7 @@ import bsh.Interpreter;
 import bsh.util.JConsole;
 import buttons.AWTButtons;
 import buttons.AbstractButtons;
+import buttons.ArduinoButtons;
 import buttons.ButtonsException;
 import cam.CameraException;
 import cam.ICamera;
@@ -89,6 +90,7 @@ public class Microscope implements AdminPanelListener {
 
 	private static final int STAGE_COM_PORT = 7;
 	private static final int LASER_COM_PORT = 4;
+	private static final int ARDUINO_COM_PORT = 3;
 
 	private static enum Mode {
 		NORMAL,
@@ -247,11 +249,15 @@ public class Microscope implements AdminPanelListener {
 
 	private void initButtons() {
 		try {
-			buttons = new AWTButtons(); // TODO Arduino buttons
+			buttons = new ArduinoButtons("COM" + ARDUINO_COM_PORT, this);
 		} catch(Throwable e) {
-			// We cannot do anything without buttons
-			ExceptionHandler.handleException("Error initializing buttons, exiting...", e);
-			shutdown(EXIT_FATAL_ERROR);
+			ExceptionHandler.handleException("Error initializing buttons", e);
+			if(Preferences.getFailWithoutArduino()) {
+				// We cannot do anything without buttons
+				shutdown(EXIT_FATAL_ERROR);
+			} else {
+				buttons = new AWTButtons();
+			}
 		}
 	}
 
