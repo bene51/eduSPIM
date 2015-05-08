@@ -51,13 +51,13 @@ import display.PlaneDisplay;
  * Things to test there:
  * - Sending mail
  *
- * TODO Check all caught exceptions, whether they should exit the program.
+ * TODO change exposure time
  *
  * TODO arduino for buttons
  *
- * TODO include laser
- *
  * TODO include mirror
+ *
+ * TODO automatically switch off and shutdown in the evening
  *
  */
 public class Microscope implements AdminPanelListener {
@@ -189,7 +189,7 @@ public class Microscope implements AdminPanelListener {
 			displayWindow.add(((AWTButtons)buttons).getPanel(), BorderLayout.EAST);
 		displayWindow.pack();
 		displayWindow.setVisible(true);
-//		displayWindow.setFullscreen(true); // TODO
+//		displayWindow.setFullscreen(true); // TODO fullscreen
 		displayPanel.requestFocusInWindow();
 		displayPanel.display(null, null, yRel, 0);
 
