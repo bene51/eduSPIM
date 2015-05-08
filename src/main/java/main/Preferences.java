@@ -15,52 +15,54 @@ public class Preferences {
 	public static final String PROPERTY_FILE =
 		System.getProperty("user.home") + File.separator + ".EduSPIM.props";
 
-	public static final String STACK_Z_START  = "stack_z_start";
-	public static final String STACK_Z_END    = "stack_z_end";
-	public static final String STACK_Y_START  = "stack_y_start";
-	public static final String STACK_Y_END    = "stack_y_end";
-	public static final String MIRROR_Z1      = "mirror_z1";
-	public static final String MIRROR_M1      = "mirror_m1";
-	public static final String MIRROR_Z2      = "mirror_z2";
-	public static final String MIRROR_M2      = "mirror_m2";
-	public static final String MIRROR_COEFF_M = "mirror_coeff_m";
-	public static final String MIRROR_COEFF_T = "mirror_coeff_t";
-	public static final String LASER_POWER    = "laser_power";
-	public static final String PIXEL_WIDTH    = "pixel_width";
-	public static final String SNAPSHOTS_DIR  = "snapshots_dir";
-	public static final String LOGS_DIR       = "logs_dir";
-	public static final String SNAPSHOTS_LINK = "snapshots_link";
-	public static final String LOGS_LINK      = "logs_link";
-	public static final String MAIL_TO        = "mail_to";
-	public static final String MAIL_CC        = "mail_cc";
+	public static final String STACK_Z_START        = "stack_z_start";
+	public static final String STACK_Z_END          = "stack_z_end";
+	public static final String STACK_Y_START        = "stack_y_start";
+	public static final String STACK_Y_END          = "stack_y_end";
+	public static final String MIRROR_Z1            = "mirror_z1";
+	public static final String MIRROR_M1            = "mirror_m1";
+	public static final String MIRROR_Z2            = "mirror_z2";
+	public static final String MIRROR_M2            = "mirror_m2";
+	public static final String MIRROR_COEFF_M       = "mirror_coeff_m";
+	public static final String MIRROR_COEFF_T       = "mirror_coeff_t";
+	public static final String LASER_POWER          = "laser_power";
+	public static final String PIXEL_WIDTH          = "pixel_width";
+	public static final String SNAPSHOTS_DIR        = "snapshots_dir";
+	public static final String LOGS_DIR             = "logs_dir";
+	public static final String SNAPSHOTS_LINK       = "snapshots_link";
+	public static final String LOGS_LINK            = "logs_link";
+	public static final String MAIL_TO              = "mail_to";
+	public static final String MAIL_CC              = "mail_cc";
+	public static final String FAIL_WITHOUT_ARDUINO = "fail_without_arduino";
 
-	private static final double DEFAULT_STACK_ZSTART   = IMotor.POS_MIN_Z;
-	private static final double DEFAULT_STACK_ZEND     = IMotor.POS_MAX_Z;
-	private static final double DEFAULT_STACK_YSTART   = IMotor.POS_MIN_Y;
-	private static final double DEFAULT_STACK_YEND     = IMotor.POS_MAX_Y;
-	private static final double DEFAULT_MIRROR_Z1      = IMotor.POS_MIN_Z;
-	private static final double DEFAULT_MIRROR_M1      = 0;
-	private static final double DEFAULT_MIRROR_Z2      = IMotor.POS_MAX_Z;
-	private static final double DEFAULT_MIRROR_M2      = 0;
-	private static final double DEFAULT_MIRROR_COEFF_M = 0;
-	private static final double DEFAULT_MIRROR_COEFF_T = 0;
-	private static final double DEFAULT_LASER_POWER    = 50;
-	private static final double DEFAULT_PIXEL_WIDHT    = 5.3 *  // pixel width on sensor
-	                                                     0.1 *  // magnification
-	                                                     0.001; // convert to mm
-	private static final String DEFAULT_SNAPSHOTS_DIR  = System.getProperty("user.home") +
-															File.separator + "Dropbox" +
-															File.separator + "EduSPIM" +
-															File.separator + "Snapshots";
-	private static final String DEFAULT_LOGS_DIR       = System.getProperty("user.home") +
-															File.separator + "Dropbox" +
-															File.separator + "EduSPIM" +
-															File.separator + "Logs";
+	private static final double DEFAULT_STACK_ZSTART          = IMotor.POS_MIN_Z;
+	private static final double DEFAULT_STACK_ZEND            = IMotor.POS_MAX_Z;
+	private static final double DEFAULT_STACK_YSTART          = IMotor.POS_MIN_Y;
+	private static final double DEFAULT_STACK_YEND            = IMotor.POS_MAX_Y;
+	private static final double DEFAULT_MIRROR_Z1             = IMotor.POS_MIN_Z;
+	private static final double DEFAULT_MIRROR_M1             = 0;
+	private static final double DEFAULT_MIRROR_Z2             = IMotor.POS_MAX_Z;
+	private static final double DEFAULT_MIRROR_M2             = 0;
+	private static final double DEFAULT_MIRROR_COEFF_M        = 0;
+	private static final double DEFAULT_MIRROR_COEFF_T        = 0;
+	private static final double DEFAULT_LASER_POWER           = 50;
+	private static final double DEFAULT_PIXEL_WIDHT           = 5.3 *  // pixel width on sensor
+	                                                            0.1 *  // magnification
+	                                                            0.001; // convert to mm
+	private static final String DEFAULT_SNAPSHOTS_DIR         = System.getProperty("user.home") +
+																File.separator + "Dropbox" +
+																File.separator + "EduSPIM" +
+																File.separator + "Snapshots";
+	private static final String DEFAULT_LOGS_DIR              = System.getProperty("user.home") +
+																File.separator + "Dropbox" +
+																File.separator + "EduSPIM" +
+																File.separator + "Logs";
 
-	private static final String DEFAULT_LOGS_LINK      = "https://www.dropbox.com/sh/bccsscts2gc8i6r/AADQb3myigWu1JoZDVEyANWwa?dl=0";
-	private static final String DEFAULT_SNAPSHOTS_LINK = "https://www.dropbox.com/sh/ooiudayauje1apw/AABzeD851uTbBJb0j-81XBCOa?dl=0";
-	private static final String DEFAULT_MAIL_TO        = "bene.schmid@gmail.com";
-	private static final String DEFAULT_MAIL_CC        = ""; // TODO labhuisken@mpi-cbg.de
+	private static final String DEFAULT_LOGS_LINK             = "https://www.dropbox.com/sh/bccsscts2gc8i6r/AADQb3myigWu1JoZDVEyANWwa?dl       =0";
+	private static final String DEFAULT_SNAPSHOTS_LINK        = "https://www.dropbox.com/sh/ooiudayauje1apw/AABzeD851uTbBJb0j-81XBCOa?dl       =0";
+	private static final String DEFAULT_MAIL_TO               = "bene.schmid@gmail.com";
+	private static final String DEFAULT_MAIL_CC               = ""; // TODO labhuisken@mpi-cbg.de
+	private static final boolean DEFAULT_FAIL_WITHOUT_ARDUINO = false;
 
 
 	private static Preferences instance;
@@ -75,6 +77,7 @@ public class Preferences {
 	private String snapshotsdir, logsdir;
 	private String logslink, snapshotslink;
 	private String mailto, mailcc;
+	private boolean failWithoutArduino;
 
 	public static double getStackZStart() {
 		return getInstance().stackZStart;
@@ -148,6 +151,10 @@ public class Preferences {
 		return getInstance().mailcc;
 	}
 
+	public static boolean getFailWithoutArduino() {
+		return getInstance().failWithoutArduino;
+	}
+
 	public static void setStackZStart(double stackZStart) {
 		getInstance().stackZStart = stackZStart;
 		set(STACK_Z_START, stackZStart);
@@ -205,24 +212,25 @@ public class Preferences {
 
 	private Preferences() {
 		properties = new Properties();
-		properties.put(STACK_Z_START,  Double.toString(DEFAULT_STACK_ZSTART));
-		properties.put(STACK_Z_END,    Double.toString(DEFAULT_STACK_ZEND));
-		properties.put(STACK_Y_START,  Double.toString(DEFAULT_STACK_YSTART));
-		properties.put(STACK_Y_END,    Double.toString(DEFAULT_STACK_YEND));
-		properties.put(MIRROR_Z1,      Double.toString(DEFAULT_MIRROR_Z1));
-		properties.put(MIRROR_M1,      Double.toString(DEFAULT_MIRROR_M1));
-		properties.put(MIRROR_Z2,      Double.toString(DEFAULT_MIRROR_Z2));
-		properties.put(MIRROR_M2,      Double.toString(DEFAULT_MIRROR_M2));
-		properties.put(MIRROR_COEFF_M, Double.toString(DEFAULT_MIRROR_COEFF_M));
-		properties.put(MIRROR_COEFF_T, Double.toString(DEFAULT_MIRROR_COEFF_T));
-		properties.put(LASER_POWER,    Double.toString(DEFAULT_LASER_POWER));
-		properties.put(PIXEL_WIDTH,    Double.toString(DEFAULT_PIXEL_WIDHT));
-		properties.put(SNAPSHOTS_DIR,  DEFAULT_SNAPSHOTS_DIR);
-		properties.put(LOGS_DIR,       DEFAULT_LOGS_DIR);
-		properties.put(SNAPSHOTS_LINK, DEFAULT_SNAPSHOTS_LINK);
-		properties.put(LOGS_LINK,      DEFAULT_LOGS_LINK);
-		properties.put(MAIL_TO,        DEFAULT_MAIL_TO);
-		properties.put(MAIL_CC,        DEFAULT_MAIL_CC);
+		properties.put(STACK_Z_START,        Double.toString(DEFAULT_STACK_ZSTART));
+		properties.put(STACK_Z_END,          Double.toString(DEFAULT_STACK_ZEND));
+		properties.put(STACK_Y_START,        Double.toString(DEFAULT_STACK_YSTART));
+		properties.put(STACK_Y_END,          Double.toString(DEFAULT_STACK_YEND));
+		properties.put(MIRROR_Z1,            Double.toString(DEFAULT_MIRROR_Z1));
+		properties.put(MIRROR_M1,            Double.toString(DEFAULT_MIRROR_M1));
+		properties.put(MIRROR_Z2,            Double.toString(DEFAULT_MIRROR_Z2));
+		properties.put(MIRROR_M2,            Double.toString(DEFAULT_MIRROR_M2));
+		properties.put(MIRROR_COEFF_M,       Double.toString(DEFAULT_MIRROR_COEFF_M));
+		properties.put(MIRROR_COEFF_T,       Double.toString(DEFAULT_MIRROR_COEFF_T));
+		properties.put(LASER_POWER,          Double.toString(DEFAULT_LASER_POWER));
+		properties.put(PIXEL_WIDTH,          Double.toString(DEFAULT_PIXEL_WIDHT));
+		properties.put(SNAPSHOTS_DIR,        DEFAULT_SNAPSHOTS_DIR);
+		properties.put(LOGS_DIR,             DEFAULT_LOGS_DIR);
+		properties.put(SNAPSHOTS_LINK,       DEFAULT_SNAPSHOTS_LINK);
+		properties.put(LOGS_LINK,            DEFAULT_LOGS_LINK);
+		properties.put(MAIL_TO,              DEFAULT_MAIL_TO);
+		properties.put(MAIL_CC,              DEFAULT_MAIL_CC);
+		properties.put(FAIL_WITHOUT_ARDUINO, Boolean.toString(DEFAULT_FAIL_WITHOUT_ARDUINO));
 
 		propertiesFile = new File(PROPERTY_FILE);
 
@@ -258,6 +266,7 @@ public class Preferences {
 		logslink      = properties.getProperty(LOGS_LINK, DEFAULT_LOGS_LINK);
 		mailto        = properties.getProperty(MAIL_TO, DEFAULT_MAIL_TO);
 		mailcc        = properties.getProperty(MAIL_CC, DEFAULT_MAIL_TO);
+		failWithoutArduino = Boolean.parseBoolean(properties.getProperty(FAIL_WITHOUT_ARDUINO));
 	}
 
 	public static HashMap<String, String> backup() {
@@ -273,24 +282,25 @@ public class Preferences {
 
 	public static void restore(HashMap<String, String> backup) {
 		Preferences p = getInstance();
-		p.stackZStart   = Double.parseDouble(backup.get(STACK_Z_START));
-		p.stackZEnd     = Double.parseDouble(backup.get(STACK_Z_END));
-		p.stackYStart   = Double.parseDouble(backup.get(STACK_Y_START));
-		p.stackYEnd     = Double.parseDouble(backup.get(STACK_Y_END));
-		p.mirrorZ1      = Double.parseDouble(backup.get(MIRROR_Z1));
-		p.mirrorM1      = Double.parseDouble(backup.get(MIRROR_M1));
-		p.mirrorZ2      = Double.parseDouble(backup.get(MIRROR_Z2));
-		p.mirrorM2      = Double.parseDouble(backup.get(MIRROR_M2));
-		p.mirrorCoeffM  = Double.parseDouble(backup.get(MIRROR_COEFF_M));
-		p.mirrorCoeffT  = Double.parseDouble(backup.get(MIRROR_COEFF_T));
-		p.laserpower    = Double.parseDouble(backup.get(LASER_POWER));
-		p.pixelWidth    = Double.parseDouble(backup.get(PIXEL_WIDTH));
-		p.snapshotsdir  = backup.get(SNAPSHOTS_DIR);
-		p.logsdir       = backup.get(LOGS_DIR);
-		p.snapshotslink = backup.get(SNAPSHOTS_LINK);
-		p.logslink      = backup.get(LOGS_LINK);
-		p.mailto        = backup.get(MAIL_TO);
-		p.mailcc        = backup.get(MAIL_CC);
+		p.stackZStart        = Double.parseDouble(backup.get(STACK_Z_START));
+		p.stackZEnd          = Double.parseDouble(backup.get(STACK_Z_END));
+		p.stackYStart        = Double.parseDouble(backup.get(STACK_Y_START));
+		p.stackYEnd          = Double.parseDouble(backup.get(STACK_Y_END));
+		p.mirrorZ1           = Double.parseDouble(backup.get(MIRROR_Z1));
+		p.mirrorM1           = Double.parseDouble(backup.get(MIRROR_M1));
+		p.mirrorZ2           = Double.parseDouble(backup.get(MIRROR_Z2));
+		p.mirrorM2           = Double.parseDouble(backup.get(MIRROR_M2));
+		p.mirrorCoeffM       = Double.parseDouble(backup.get(MIRROR_COEFF_M));
+		p.mirrorCoeffT       = Double.parseDouble(backup.get(MIRROR_COEFF_T));
+		p.laserpower         = Double.parseDouble(backup.get(LASER_POWER));
+		p.pixelWidth         = Double.parseDouble(backup.get(PIXEL_WIDTH));
+		p.snapshotsdir       = backup.get(SNAPSHOTS_DIR);
+		p.logsdir            = backup.get(LOGS_DIR);
+		p.snapshotslink      = backup.get(SNAPSHOTS_LINK);
+		p.logslink           = backup.get(LOGS_LINK);
+		p.mailto             = backup.get(MAIL_TO);
+		p.mailcc             = backup.get(MAIL_CC);
+		p.failWithoutArduino = Boolean.parseBoolean(backup.get(FAIL_WITHOUT_ARDUINO));
 		Preferences.setAll(backup);
 	}
 
@@ -302,14 +312,6 @@ public class Preferences {
 
 	private static synchronized String get(String key) {
 		return getInstance().properties.getProperty(key);
-	}
-
-	private static int getInt(String key) {
-		return Integer.parseInt(get(key));
-	}
-
-	private static double getDouble(String key) {
-		return Double.parseDouble(get(key));
 	}
 
 	private static void setAll(HashMap<String, String> table) {
@@ -379,6 +381,10 @@ public class Preferences {
 		out.println("# Email addresses");
 		out.println(MAIL_TO + "=" + escape(p.mailto));
 		out.println(MAIL_CC + "=" + escape(p.mailcc));
+		out.println();
+		out.println("# Fails if communication to the arduino cannot be established.");
+		out.println("# If false, GUI buttons will be used instead.");
+		out.println(FAIL_WITHOUT_ARDUINO + "=" + p.failWithoutArduino);
 	}
 
 	private static String escape(String s) {

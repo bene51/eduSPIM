@@ -69,6 +69,9 @@ public class AWTButtons extends AbstractButtons {
 		laserButton.addMouseListener(new MouseAdapter(BUTTON_LASER));
 	}
 
+	@Override
+	public void close() {}
+
 	public JPanel getPanel() {
 		return panel;
 	}

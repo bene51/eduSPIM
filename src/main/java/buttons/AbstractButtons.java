@@ -29,7 +29,7 @@ public abstract class AbstractButtons {
 		return buttonDown;
 	}
 
-	public void close() {}
+	public abstract void close() throws ButtonsException;
 
 	protected void fireButtonPressed(final int button) {
 		System.out.println("button pressed: " + button);
@@ -58,7 +58,7 @@ public abstract class AbstractButtons {
 		// This should not happen, let's just be sure
 		synchronized(this) {
 			if(button != buttonDown)
-				System.out.println("Button " + button + " was released but button " + buttonDown + " was pressed before");
+				System.out.println("Button " + button + " was released but button " + buttonDown + " was pressed before"); // TODO throw an exception
 			buttonDown = -1;
 		}
 		new Thread() {

@@ -40,6 +40,8 @@ import bsh.Interpreter;
 import bsh.util.JConsole;
 import buttons.AWTButtons;
 import buttons.AbstractButtons;
+import buttons.ArduinoButtons;
+import buttons.ButtonsException;
 import cam.CameraException;
 import cam.ICamera;
 import cam.NativeCamera;
@@ -84,9 +86,11 @@ public class Microscope implements AdminPanelListener {
 	public static final int EXIT_MANUAL_LASER_ERROR = -3;
 	public static final int EXIT_INITIALIZATION     = -4;
 	public static final int EXIT_FATAL_ERROR        = -5;
+	public static final int EXIT_BUTTON_ERROR       = -6;
 
 	private static final int STAGE_COM_PORT = 7;
 	private static final int LASER_COM_PORT = 4;
+	private static final int ARDUINO_COM_PORT = 3;
 
 	private static enum Mode {
 		NORMAL,
@@ -236,16 +240,24 @@ public class Microscope implements AdminPanelListener {
 		} catch(LaserException e) {
 			ExceptionHandler.handleException("Error closing laser", e);
 		}
-		buttons.close();
+		try {
+			buttons.close();
+		} catch(ButtonsException e) {
+			ExceptionHandler.handleException("Error closing communication to the Arduino", e);
+		}
 	}
 
 	private void initButtons() {
 		try {
-			buttons = new AWTButtons(); // TODO Arduino buttons
+			buttons = new ArduinoButtons("COM" + ARDUINO_COM_PORT, this);
 		} catch(Throwable e) {
-			// We cannot do anything without buttons
-			ExceptionHandler.handleException("Error initializing buttons, exiting...", e);
-			shutdown(EXIT_FATAL_ERROR);
+			ExceptionHandler.handleException("Error initializing buttons", e);
+			if(Preferences.getFailWithoutArduino()) {
+				// We cannot do anything without buttons
+				shutdown(EXIT_FATAL_ERROR);
+			} else {
+				buttons = new AWTButtons();
+			}
 		}
 	}
 

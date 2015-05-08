@@ -105,8 +105,10 @@ camSetup(int camIdx)
 		nCameras = 0;
 		SAVE_CALL(is_GetNumberOfCameras(&nCameras), camIdx);
 		printf("%d camera(s) connected\n", nCameras);
-		if(nCameras == 0)
+		if(nCameras == 0) {
+			error_callback("No camera connected", hparam);
 			return;
+		}
 		cameras = (HCAM *)malloc(nCameras * sizeof(HCAM));
 		// TODO: replace '0' with the camera id
 		cameras[0] = 0;
