@@ -43,6 +43,7 @@ public class AdminPanel extends JPanel {
 	private NumberField mirror1M, mirror2M;
 	private MTextField fCameraExp, fCameraFPS, fCameraGain;
 	private MTextField tCameraExp, tCameraFPS, tCameraGain;
+	private MTextField laserPower;
 	private ArrayList<AdminPanelListener> listeners = new ArrayList<AdminPanelListener>();
 
 	private double yPos, zPos;
@@ -118,6 +119,9 @@ public class AdminPanel extends JPanel {
 		tCameraGain = new MTextField(Integer.toString(Preferences.getTCameraGain()));
 		tCameraGain.setEditable(true);
 
+		laserPower = new MTextField(Double.toString(Preferences.getLaserPower()));
+		laserPower.setEditable(true);
+
 
 
 		cancel = new MButton("Cancel");
@@ -147,7 +151,7 @@ public class AdminPanel extends JPanel {
 
 		setLayout(new GridBagLayout());
 		GridBagConstraints cAll = new GridBagConstraints();
-		cAll.insets = new Insets(5, 5, 5, 5);
+		cAll.insets = new Insets(15, 5, 15, 5);
 
 
 
@@ -291,7 +295,6 @@ public class AdminPanel extends JPanel {
 
 
 
-
 		JPanel tCameraPanel = new JPanel(new GridBagLayout());
 		tCameraPanel.setBackground(Color.BLACK);
 		tCameraPanel.setForeground(Color.WHITE);
@@ -330,7 +333,24 @@ public class AdminPanel extends JPanel {
 
 
 
+		JPanel laserPanel = new JPanel(new GridBagLayout());
+		laserPanel.setBackground(Color.BLACK);
+		laserPanel.setForeground(Color.WHITE);
+		titledBorder = BorderFactory.createTitledBorder(lineBorder, "Illumination");
+		titledBorder.setTitleColor(Color.LIGHT_GRAY);
+		laserPanel.setBorder(titledBorder);
 
+		c.gridx = c.gridy = 0;
+		laserPanel.add(new MLabel("Laser power"), c);
+		c.gridx++;
+		laserPanel.add(laserPower, c);
+
+		cAll.gridx = 0;
+		cAll.gridy++;
+		cAll.fill = GridBagConstraints.BOTH;
+		cAll.weightx = 1;
+		cAll.gridwidth = GridBagConstraints.REMAINDER;
+		add(laserPanel, cAll);
 
 
 
@@ -365,6 +385,7 @@ public class AdminPanel extends JPanel {
 		tCameraExp.setText(df.format(Preferences.getTCameraExposure()));
 		tCameraFPS.setText(df.format(Preferences.getTCameraFramerate()));
 		tCameraGain.setText(Integer.toString(Preferences.getTCameraGain()));
+		laserPower.setText(df.format(Preferences.getLaserPower()));
 
 		oldPreferences = Preferences.backup();
 
@@ -404,6 +425,7 @@ public class AdminPanel extends JPanel {
 		oldPreferences.put(Preferences.CAMERA_T_EXPOSURE,  tCameraExp.getText());
 		oldPreferences.put(Preferences.CAMERA_T_FRAMERATE, tCameraFPS.getText());
 		oldPreferences.put(Preferences.CAMERA_T_GAIN,      tCameraGain.getText());
+		oldPreferences.put(Preferences.LASER_POWER,    laserPower.getText());
 
 		Preferences.restore(oldPreferences);
 		logger.info("Successfully changed EduSPIM settings.");
