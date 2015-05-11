@@ -607,12 +607,24 @@ public class Microscope implements AdminPanelListener {
 	}
 
 	@Override
-	public void adminPanelDone() {
+	public void adminPanelDone(boolean cancelled) {
 		if(mode == Mode.ADMIN) {
 			mode = Mode.NORMAL;
 			displayWindow.remove(adminPanel);
 			displayWindow.validate();
 			displayPanel.requestFocusInWindow();
+			if(!cancelled) {
+				try {
+					transmissionCamera.setFramerate(Preferences.getTCameraFramerate());
+					transmissionCamera.setExposuretime(Preferences.getTCameraExposure());
+					transmissionCamera.setGain(Preferences.getTCameraGain());
+					fluorescenceCamera.setFramerate(Preferences.getFCameraFramerate());
+					fluorescenceCamera.setExposuretime(Preferences.getFCameraExposure());
+					fluorescenceCamera.setGain(Preferences.getFCameraGain());
+				} catch(Throwable t) {
+					ExceptionHandler.showException("Cannot apply camera settings", t);
+				}
+			}
 		}
 	}
 

@@ -66,6 +66,21 @@ JNIEXPORT void JNICALL Java_cam_NativeCamera_camStopSequence
 JNIEXPORT jdouble JNICALL Java_cam_NativeCamera_camGetFramerate
   (JNIEnv *, jclass, jint);
 
+JNIEXPORT jdouble JNICALL Java_cam_NativeCamera_camSetFramerate
+  (JNIEnv *, jclass, jint, jdouble);
+
+JNIEXPORT jdouble JNICALL Java_cam_NativeCamera_camGetExposuretime
+  (JNIEnv *, jclass, jint);
+
+JNIEXPORT jdouble JNICALL Java_cam_NativeCamera_camSetExposuretime
+  (JNIEnv *, jclass, jint, jdouble);
+
+JNIEXPORT jint JNICALL Java_cam_NativeCamera_camGetGain
+  (JNIEnv *, jclass, jint);
+
+JNIEXPORT void JNICALL Java_cam_NativeCamera_camSetGain
+  (JNIEnv *, jclass, jint, jint);
+
 /*
  * Class:     cam_NativeCamera
  * Method:    camClose

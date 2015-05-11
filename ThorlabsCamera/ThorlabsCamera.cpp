@@ -135,41 +135,6 @@ camSetup(int camIdx)
 	int cm = is_SetColorMode(cam, IS_GET_COLOR_MODE);
 	printf("Found previous color mode: %d\n", cm);
 
-	UINT nRange[3];
-	ZeroMemory(nRange, sizeof(nRange));
-	if(!SAVE_CALL(is_PixelClock(cam,
-			IS_PIXELCLOCK_CMD_GET_RANGE,
-			(void *)nRange,
-			sizeof(nRange)), camIdx))
-		return;
-
-	printf("Setting maximum pixel range: %d\n", nRange[1]);
-	if(!SAVE_CALL(is_PixelClock(cam,
-			IS_PIXELCLOCK_CMD_SET,
-			&nRange[1],
-			sizeof(nRange[2])), camIdx))
-		return;
-
-	double min, max, interval;
-	if(!SAVE_CALL(is_GetFrameTimeRange(cam,
-			&min, &max, &interval), camIdx))
-		return;
-	printf("Possible frame times: %f (min), %f (max), %f (interval)\n",
-		       	min, max, interval);
-
-	double tfps = 30, rfps; // 1 / min;
-	if(!SAVE_CALL(is_SetFrameRate(cam, tfps, &rfps), camIdx))
-		return;
-	printf("Setting frame rate to %f, real framerate is %f\n", tfps, rfps);
-
-	double exposure = 0;
-	if(!SAVE_CALL(is_Exposure(cam,
-			IS_EXPOSURE_CMD_SET_EXPOSURE,
-			&exposure,
-			sizeof(exposure)), camIdx))
-		return;
-	printf("Setting maximum exposure time: %f\n", exposure);
-
 	int bpp = 8;
 	cm = IS_CM_MONO8;
 	if(!SAVE_CALL(is_SetColorMode(cam, cm), camIdx))
@@ -209,6 +174,43 @@ camSetup(int camIdx)
 	printf("    flash delay: %d\n", flashParams.s32Delay);
 	printf("    flash duration: %d\n", flashParams.u32Duration);
 
+	UINT nRange[3];
+	ZeroMemory(nRange, sizeof(nRange));
+	if(!SAVE_CALL(is_PixelClock(cam,
+			IS_PIXELCLOCK_CMD_GET_RANGE,
+			(void *)nRange,
+			sizeof(nRange)), camIdx))
+		return;
+
+	printf("Setting maximum pixel range: %d\n", nRange[1]);
+	if(!SAVE_CALL(is_PixelClock(cam,
+			IS_PIXELCLOCK_CMD_SET,
+			&nRange[1],
+			sizeof(nRange[1])), camIdx))
+		return;
+
+	double min, max, interval;
+	if(!SAVE_CALL(is_GetFrameTimeRange(cam,
+			&min, &max, &interval), camIdx))
+		return;
+	printf("Possible frame times: %f (min), %f (max), %f (interval)\n",
+			min, max, interval);
+
+	double tfps = 30, rfps; // 1 / min;
+	if(!SAVE_CALL(is_SetFrameRate(cam, tfps, &rfps), camIdx))
+		return;
+	printf("Minimum framerate = %f\n", 1.0 / max);
+	printf("Maximum framerate = %f\n", 1.0 / min);
+	printf("Setting frame rate to %f, real framerate is %f\n", tfps, rfps);
+
+	double exposure = 0;
+	if(!SAVE_CALL(is_Exposure(cam,
+			IS_EXPOSURE_CMD_SET_EXPOSURE,
+			&exposure,
+			sizeof(exposure)), camIdx))
+		return;
+	printf("Setting maximum exposure time: %f\n", exposure);
+
 	int bid;
 	buffers[camIdx] = (char **)malloc(N_BUFFERS * sizeof(char *));
 
@@ -225,6 +227,26 @@ camSetup(int camIdx)
 				bid), camIdx))
 			return;
 	}
+}
+
+double
+camGetExposuretime(int camIdx)
+{
+	double exposure;
+	SAVE_CALL(is_Exposure(cameras[camIdx],
+			IS_EXPOSURE_CMD_GET_EXPOSURE,
+			&exposure,
+			sizeof(exposure)), camIdx);
+	return exposure;
+}
+
+void
+camSetExposuretime(int camIdx, double *exposure)
+{
+	SAVE_CALL(is_Exposure(cameras[camIdx],
+			IS_EXPOSURE_CMD_SET_EXPOSURE,
+			exposure,
+			8), camIdx);
 }
 
 void
@@ -295,6 +317,37 @@ camGetFramerate(int camIdx)
 	double fps;
 	SAVE_CALL(is_GetFramesPerSecond(cameras[camIdx], &fps), camIdx);
 	return fps;
+}
+
+void
+camSetFramerate(int camIdx, double *fps)
+{
+	double rfps;
+	if(!SAVE_CALL(is_SetFrameRate(cameras[camIdx], *fps, &rfps), camIdx))
+		return;
+	*fps = rfps;
+}
+
+int
+camGetGain(int camIdx)
+{
+	return is_SetHardwareGain(
+			cameras[camIdx],
+			IS_GET_MASTER_GAIN,
+			IS_IGNORE_PARAMETER,
+			IS_IGNORE_PARAMETER,
+			IS_IGNORE_PARAMETER);
+}
+
+void
+camSetGain(int camIdx, int gain)
+{
+	SAVE_CALL(is_SetHardwareGain(
+			cameras[camIdx],
+			gain,
+			IS_IGNORE_PARAMETER,
+			IS_IGNORE_PARAMETER,
+			IS_IGNORE_PARAMETER), camIdx);
 }
 
 void

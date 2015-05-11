@@ -53,5 +53,15 @@ public interface ICamera {
 
 	public double getFramerate() throws CameraException;
 
+	public double setFramerate(double fps) throws CameraException;
+
+	public double getExposuretime() throws CameraException;
+
+	public double setExposuretime(double exposure) throws CameraException;
+
+	public int getGain() throws CameraException;
+
+	public void setGain(int gain) throws CameraException;
+
 	public void close() throws CameraException;
 }

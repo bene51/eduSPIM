@@ -31,6 +31,21 @@ double
 camGetFramerate(int camIdx);
 
 void
+camSetFramerate(int camIdx, double *fps);
+
+double
+camGetExposuretime(int camIdx);
+
+void
+camSetExposuretime(int camIdx, double *exposure);
+
+int
+camGetGain(int camIdx);
+
+void
+camSetGain(int camIdx, int gain);
+
+void
 camClose(int camIdx);
 
 #endif // __THORLABS_CAMERA_H__

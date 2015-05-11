@@ -16,6 +16,7 @@ import java.util.HashMap;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
@@ -40,6 +41,8 @@ public class AdminPanel extends JPanel {
 	private MButton setStart, setEnd, ok, cancel;
 	private MTextField mirror1Z, mirror2Z;
 	private NumberField mirror1M, mirror2M;
+	private MTextField fCameraExp, fCameraFPS, fCameraGain;
+	private MTextField tCameraExp, tCameraFPS, tCameraGain;
 	private ArrayList<AdminPanelListener> listeners = new ArrayList<AdminPanelListener>();
 
 	private double yPos, zPos;
@@ -102,6 +105,21 @@ public class AdminPanel extends JPanel {
 				}
 			}
 		});
+		fCameraExp  = new MTextField(df.format(Preferences.getFCameraExposure()));
+		fCameraExp.setEditable(true);
+		fCameraFPS  = new MTextField(df.format(Preferences.getFCameraFramerate()));
+		fCameraFPS.setEditable(true);
+		fCameraGain = new MTextField(Integer.toString(Preferences.getFCameraGain()));
+		fCameraGain.setEditable(true);
+		tCameraExp  = new MTextField(df.format(Preferences.getTCameraExposure()));
+		tCameraExp.setEditable(true);
+		tCameraFPS  = new MTextField(df.format(Preferences.getTCameraFramerate()));
+		tCameraFPS.setEditable(true);
+		tCameraGain = new MTextField(Integer.toString(Preferences.getTCameraGain()));
+		tCameraGain.setEditable(true);
+
+
+
 		cancel = new MButton("Cancel");
 		cancel.addActionListener(new ActionListener() {
 			@Override
@@ -233,6 +251,90 @@ public class AdminPanel extends JPanel {
 		cAll.weightx = 1;
 		add(mirror2Panel, cAll);
 
+
+
+		JPanel fCameraPanel = new JPanel(new GridBagLayout());
+		fCameraPanel.setBackground(Color.BLACK);
+		fCameraPanel.setForeground(Color.WHITE);
+		titledBorder = BorderFactory.createTitledBorder(lineBorder, "Fluor. camera");
+		titledBorder.setTitleColor(Color.LIGHT_GRAY);
+		fCameraPanel.setBorder(titledBorder);
+
+		c.gridx = c.gridy = 0;
+		fCameraPanel.add(new MLabel("Exp."), c);
+		c.gridx++;
+		fCameraPanel.add(fCameraExp, c);
+
+		c.gridy++;
+		c.gridx = 0;
+		fCameraPanel.add(new MLabel("FPS"), c);
+		c.gridx++;
+		fCameraPanel.add(fCameraFPS, c);
+
+//		c.gridy++;
+//		c.gridx = 0;
+//		fCameraPanel.add(new MLabel("Offs."), c);
+//		c.gridx++;
+//		fCameraPanel.add(fCameraOffs, c);
+
+		c.gridy++;
+		c.gridx = 0;
+		fCameraPanel.add(new MLabel("Gain"), c);
+		c.gridx++;
+		fCameraPanel.add(fCameraGain, c);
+
+		cAll.gridx = 0;
+		cAll.gridy++;
+		cAll.fill = GridBagConstraints.BOTH;
+		cAll.weightx = 1;
+		add(fCameraPanel, cAll);
+
+
+
+
+		JPanel tCameraPanel = new JPanel(new GridBagLayout());
+		tCameraPanel.setBackground(Color.BLACK);
+		tCameraPanel.setForeground(Color.WHITE);
+		titledBorder = BorderFactory.createTitledBorder(lineBorder, "Transm. camera");
+		titledBorder.setTitleColor(Color.LIGHT_GRAY);
+		tCameraPanel.setBorder(titledBorder);
+
+		c.gridx = c.gridy = 0;
+		tCameraPanel.add(new MLabel("Exp."), c);
+		c.gridx++;
+		tCameraPanel.add(tCameraExp, c);
+
+		c.gridy++;
+		c.gridx = 0;
+		tCameraPanel.add(new MLabel("FPS"), c);
+		c.gridx++;
+		tCameraPanel.add(tCameraFPS, c);
+
+//		c.gridy++;
+//		c.gridx = 0;
+//		tCameraPanel.add(new MLabel("Offs."), c);
+//		c.gridx++;
+//		tCameraPanel.add(tCameraOffs, c);
+
+		c.gridy++;
+		c.gridx = 0;
+		tCameraPanel.add(new MLabel("Gain"), c);
+		c.gridx++;
+		tCameraPanel.add(tCameraGain, c);
+
+		cAll.gridx++;
+		cAll.fill = GridBagConstraints.BOTH;
+		cAll.weightx = 1;
+		add(tCameraPanel, cAll);
+
+
+
+
+
+
+
+
+
 		JPanel buttons = new JPanel(new FlowLayout(FlowLayout.CENTER));
 		buttons.setOpaque(true);
 		buttons.setBackground(Color.BLACK);
@@ -257,6 +359,12 @@ public class AdminPanel extends JPanel {
 		mirror2Z.setText(df.format(Preferences.getMirrorZ2()));
 		mirror1M.setText(df.format(Preferences.getMirrorM1()));
 		mirror2M.setText(df.format(Preferences.getMirrorM2()));
+		fCameraExp.setText(df.format(Preferences.getFCameraExposure()));
+		fCameraFPS.setText(df.format(Preferences.getFCameraFramerate()));
+		fCameraGain.setText(Integer.toString(Preferences.getFCameraGain()));
+		tCameraExp.setText(df.format(Preferences.getTCameraExposure()));
+		tCameraFPS.setText(df.format(Preferences.getTCameraFramerate()));
+		tCameraGain.setText(Integer.toString(Preferences.getTCameraGain()));
 
 		oldPreferences = Preferences.backup();
 
@@ -268,7 +376,7 @@ public class AdminPanel extends JPanel {
 
 	public void cancel() {
 		Preferences.restore(oldPreferences);
-		fireDone();
+		fireDone(true);
 	}
 
 	public void apply() {
@@ -290,10 +398,16 @@ public class AdminPanel extends JPanel {
 		oldPreferences.put(Preferences.MIRROR_M2,      Double.toString(y2));
 		oldPreferences.put(Preferences.MIRROR_COEFF_M, Double.toString(m));
 		oldPreferences.put(Preferences.MIRROR_COEFF_T, Double.toString(t));
+		oldPreferences.put(Preferences.CAMERA_F_EXPOSURE,  fCameraExp.getText());
+		oldPreferences.put(Preferences.CAMERA_F_FRAMERATE, fCameraFPS.getText());
+		oldPreferences.put(Preferences.CAMERA_F_GAIN,      fCameraGain.getText());
+		oldPreferences.put(Preferences.CAMERA_T_EXPOSURE,  tCameraExp.getText());
+		oldPreferences.put(Preferences.CAMERA_T_FRAMERATE, tCameraFPS.getText());
+		oldPreferences.put(Preferences.CAMERA_T_GAIN,      tCameraGain.getText());
 
 		Preferences.restore(oldPreferences);
 		logger.info("Successfully changed EduSPIM settings.");
-		fireDone();
+		fireDone(false);
 	}
 
 	public void setPosition(double yPos, double zPos) {
@@ -314,9 +428,9 @@ public class AdminPanel extends JPanel {
 			l.mirrorPositionChanged(pos);
 	}
 
-	private void fireDone() {
+	private void fireDone(boolean cancelled) {
 		for(AdminPanelListener l : listeners)
-			l.adminPanelDone();
+			l.adminPanelDone(cancelled);
 	}
 
 	private static class MTextField extends JTextField {
@@ -334,6 +448,14 @@ public class AdminPanel extends JPanel {
 			super(text);
 			setBackground(Color.black);
 			setForeground(Color.black);
+		}
+	}
+
+	private static class MLabel extends JLabel {
+		public MLabel(String text) {
+			super(text);
+			setBackground(Color.BLACK);
+			setForeground(Color.WHITE);
 		}
 	}
 

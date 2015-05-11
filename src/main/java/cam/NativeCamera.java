@@ -14,6 +14,11 @@ public class NativeCamera implements ICamera {
 	private static native void camGetNextSequenceImage(int camIdx, byte[] ret) throws CameraException;
 	private static native void camStopSequence(int camIdx) throws CameraException;
 	private static native double camGetFramerate(int camIdx) throws CameraException;
+	private static native double camSetFramerate(int camIdx, double fps) throws CameraException;
+	private static native double camGetExposuretime(int camIdx) throws CameraException;
+	private static native double camSetExposuretime(int camIdx, double exposure) throws CameraException;
+	private static native int camGetGain(int camIdx) throws CameraException;
+	private static native void camSetGain(int camIdx, int gain) throws CameraException;
 	private static native void camClose(int camIdx) throws CameraException;
 
 	private boolean previewRunning = false;
@@ -68,6 +73,31 @@ public class NativeCamera implements ICamera {
 	@Override
 	public double getFramerate() throws CameraException {
 		return camGetFramerate(camIdx);
+	}
+
+	@Override
+	public double setFramerate(double fps) throws CameraException {
+		return camSetFramerate(camIdx, fps);
+	}
+
+	@Override
+	public double getExposuretime() throws CameraException {
+		return camGetExposuretime(camIdx);
+	}
+
+	@Override
+	public double setExposuretime(double exposure) throws CameraException {
+		return camSetExposuretime(camIdx, exposure);
+	}
+
+	@Override
+	public int getGain() throws CameraException {
+		return camGetGain(camIdx);
+	}
+
+	@Override
+	public void setGain(int gain) throws CameraException {
+		camSetGain(camIdx, gain);
 	}
 
 	@Override

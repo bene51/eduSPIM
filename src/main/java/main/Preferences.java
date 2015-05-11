@@ -26,6 +26,12 @@ public class Preferences {
 	public static final String MIRROR_COEFF_M       = "mirror_coeff_m";
 	public static final String MIRROR_COEFF_T       = "mirror_coeff_t";
 	public static final String LASER_POWER          = "laser_power";
+	public static final String CAMERA_F_EXPOSURE    = "camera_fluorescence_exposure";
+	public static final String CAMERA_F_FRAMERATE   = "camera_fluorescence_framerate";
+	public static final String CAMERA_F_GAIN        = "camera_fluorescence_gain";
+	public static final String CAMERA_T_EXPOSURE    = "camera_transmission_exposure";
+	public static final String CAMERA_T_FRAMERATE   = "camera_transmission_framerate";
+	public static final String CAMERA_T_GAIN        = "camera_transmission_gain";
 	public static final String PIXEL_WIDTH          = "pixel_width";
 	public static final String SNAPSHOTS_DIR        = "snapshots_dir";
 	public static final String LOGS_DIR             = "logs_dir";
@@ -46,6 +52,12 @@ public class Preferences {
 	private static final double DEFAULT_MIRROR_COEFF_M        = 0;
 	private static final double DEFAULT_MIRROR_COEFF_T        = 0;
 	private static final double DEFAULT_LASER_POWER           = 50;
+	private static final double DEFAULT_CAMERA_F_EXPOSURE     = 33.3;
+	private static final double DEFAULT_CAMERA_F_FRAMERATE    = 30;
+	private static final int    DEFAULT_CAMERA_F_GAIN         = 1;
+	private static final double DEFAULT_CAMERA_T_EXPOSURE     = 33.3;
+	private static final double DEFAULT_CAMERA_T_FRAMERATE    = 30;
+	private static final int    DEFAULT_CAMERA_T_GAIN         = 1;
 	private static final double DEFAULT_PIXEL_WIDHT           = 5.3 *  // pixel width on sensor
 	                                                            0.1 *  // magnification
 	                                                            0.001; // convert to mm
@@ -73,6 +85,8 @@ public class Preferences {
 	private double stackZStart, stackZEnd, stackYStart, stackYEnd;
 	private double mirrorZ1, mirrorM1, mirrorZ2, mirrorM2, mirrorCoeffM, mirrorCoeffT;
 	private double laserpower;
+	private double tCameraFPS, tCameraExp, fCameraFPS, fCameraExp;
+	private int tCameraGain, fCameraGain;
 	private double  pixelWidth;
 	private String snapshotsdir, logsdir;
 	private String logslink, snapshotslink;
@@ -121,6 +135,30 @@ public class Preferences {
 
 	public static double getLaserPower() {
 		return getInstance().laserpower;
+	}
+
+	public static double getTCameraFramerate() {
+		return getInstance().tCameraFPS;
+	}
+
+	public static double getTCameraExposure() {
+		return getInstance().tCameraExp;
+	}
+
+	public static int getTCameraGain() {
+		return getInstance().tCameraGain;
+	}
+
+	public static double getFCameraFramerate() {
+		return getInstance().fCameraFPS;
+	}
+
+	public static double getFCameraExposure() {
+		return getInstance().fCameraExp;
+	}
+
+	public static int getFCameraGain() {
+		return getInstance().fCameraGain;
 	}
 
 	public static double getPixelWidth() {
@@ -210,6 +248,36 @@ public class Preferences {
 		set(LASER_POWER, p);
 	}
 
+	public static void setTCameraFramerate(double fps) {
+		getInstance().tCameraFPS = fps;
+		set(CAMERA_T_FRAMERATE, fps);
+	}
+
+	public static void setTCameraExposure(double t) {
+		getInstance().tCameraExp = t;
+		set(CAMERA_T_EXPOSURE, t);
+	}
+
+	public static void setTCameraGain(int gain) {
+		getInstance().tCameraGain = gain;
+		set(CAMERA_T_GAIN, gain);
+	}
+
+	public static void setFCameraFramerate(double fps) {
+		getInstance().fCameraFPS = fps;
+		set(CAMERA_F_FRAMERATE, fps);
+	}
+
+	public static void setFCameraExposure(double t) {
+		getInstance().fCameraExp = t;
+		set(CAMERA_F_EXPOSURE, t);
+	}
+
+	public static void setFCameraGain(int gain) {
+		getInstance().fCameraGain = gain;
+		set(CAMERA_F_GAIN, gain);
+	}
+
 	private Preferences() {
 		properties = new Properties();
 		properties.put(STACK_Z_START,        Double.toString(DEFAULT_STACK_ZSTART));
@@ -223,6 +291,12 @@ public class Preferences {
 		properties.put(MIRROR_COEFF_M,       Double.toString(DEFAULT_MIRROR_COEFF_M));
 		properties.put(MIRROR_COEFF_T,       Double.toString(DEFAULT_MIRROR_COEFF_T));
 		properties.put(LASER_POWER,          Double.toString(DEFAULT_LASER_POWER));
+		properties.put(CAMERA_T_FRAMERATE,   Double.toString(DEFAULT_CAMERA_T_FRAMERATE));
+		properties.put(CAMERA_T_EXPOSURE,    Double.toString(DEFAULT_CAMERA_T_EXPOSURE));
+		properties.put(CAMERA_T_GAIN,        Integer.toString(DEFAULT_CAMERA_T_GAIN));
+		properties.put(CAMERA_F_FRAMERATE,   Double.toString(DEFAULT_CAMERA_F_FRAMERATE));
+		properties.put(CAMERA_F_EXPOSURE,    Double.toString(DEFAULT_CAMERA_F_EXPOSURE));
+		properties.put(CAMERA_F_GAIN,        Integer.toString(DEFAULT_CAMERA_F_GAIN));
 		properties.put(PIXEL_WIDTH,          Double.toString(DEFAULT_PIXEL_WIDHT));
 		properties.put(SNAPSHOTS_DIR,        DEFAULT_SNAPSHOTS_DIR);
 		properties.put(LOGS_DIR,             DEFAULT_LOGS_DIR);
@@ -259,6 +333,12 @@ public class Preferences {
 		mirrorCoeffM  = Double.parseDouble(properties.getProperty(MIRROR_COEFF_M, Double.toString(DEFAULT_MIRROR_COEFF_M)));
 		mirrorCoeffT  = Double.parseDouble(properties.getProperty(MIRROR_COEFF_T, Double.toString(DEFAULT_MIRROR_COEFF_T)));
 		laserpower    = Double.parseDouble(properties.getProperty(LASER_POWER,    Double.toString(DEFAULT_LASER_POWER)));
+		tCameraFPS    = Double.parseDouble(properties.getProperty(CAMERA_T_FRAMERATE, Double.toString(DEFAULT_CAMERA_T_FRAMERATE)));
+		tCameraExp    = Double.parseDouble(properties.getProperty(CAMERA_T_EXPOSURE,  Double.toString(DEFAULT_CAMERA_T_EXPOSURE)));
+		tCameraGain   = Integer.parseInt(  properties.getProperty(CAMERA_T_GAIN,      Double.toString(DEFAULT_CAMERA_T_GAIN)));
+		fCameraFPS    = Double.parseDouble(properties.getProperty(CAMERA_F_FRAMERATE, Double.toString(DEFAULT_CAMERA_F_FRAMERATE)));
+		fCameraExp    = Double.parseDouble(properties.getProperty(CAMERA_F_EXPOSURE,  Double.toString(DEFAULT_CAMERA_F_EXPOSURE)));
+		fCameraGain   = Integer.parseInt(  properties.getProperty(CAMERA_F_GAIN,      Double.toString(DEFAULT_CAMERA_F_GAIN)));
 		pixelWidth    = Double.parseDouble(properties.getProperty(PIXEL_WIDTH,    Double.toString(DEFAULT_PIXEL_WIDHT)));
 		snapshotsdir  = properties.getProperty(SNAPSHOTS_DIR, DEFAULT_SNAPSHOTS_DIR);
 		logsdir       = properties.getProperty(LOGS_DIR, DEFAULT_LOGS_DIR);
@@ -293,6 +373,12 @@ public class Preferences {
 		p.mirrorCoeffM       = Double.parseDouble(backup.get(MIRROR_COEFF_M));
 		p.mirrorCoeffT       = Double.parseDouble(backup.get(MIRROR_COEFF_T));
 		p.laserpower         = Double.parseDouble(backup.get(LASER_POWER));
+		p.tCameraFPS         = Double.parseDouble(backup.get(CAMERA_T_FRAMERATE));
+		p.tCameraExp         = Double.parseDouble(backup.get(CAMERA_T_EXPOSURE));
+		p.tCameraGain        = Integer.parseInt(  backup.get(CAMERA_T_GAIN));
+		p.fCameraFPS         = Double.parseDouble(backup.get(CAMERA_F_FRAMERATE));
+		p.fCameraExp         = Double.parseDouble(backup.get(CAMERA_F_EXPOSURE));
+		p.fCameraGain        = Integer.parseInt(  backup.get(CAMERA_F_GAIN));
 		p.pixelWidth         = Double.parseDouble(backup.get(PIXEL_WIDTH));
 		p.snapshotsdir       = backup.get(SNAPSHOTS_DIR);
 		p.logsdir            = backup.get(LOGS_DIR);
@@ -363,6 +449,16 @@ public class Preferences {
 		out.println();
 		out.println("# Laser power, in mW");
 		out.println(LASER_POWER + "=" + p.laserpower);
+		out.println();
+		out.println("# Settings for the fluorescence camera");
+		out.println(CAMERA_F_FRAMERATE + "=" + p.fCameraFPS);
+		out.println(CAMERA_F_EXPOSURE  + "=" + p.fCameraExp);
+		out.println(CAMERA_F_GAIN      + "=" + p.fCameraGain);
+		out.println();
+		out.println("# Settings for the transmission camera");
+		out.println(CAMERA_T_FRAMERATE + "=" + p.tCameraFPS);
+		out.println(CAMERA_T_EXPOSURE  + "=" + p.tCameraExp);
+		out.println(CAMERA_T_GAIN      + "=" + p.tCameraGain);
 		out.println();
 		out.println("# Physical width of a pixel, in mm");
 		out.println(PIXEL_WIDTH + "=" + p.pixelWidth);

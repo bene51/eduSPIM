@@ -5,7 +5,9 @@ import main.ExceptionHandler;
 
 public class SimulatedCamera implements ICamera {
 
-	private final double FRAMERATE = 30;
+	private double framerate = 30;
+	private double exposure = 33.3;
+	private int gain = 1;
 
 	private final ImagePlus image;
 	private final byte[][] ips;
@@ -74,7 +76,7 @@ public class SimulatedCamera implements ICamera {
 		if(currentSequenceIndex == 0) {
 			sequenceStartTime = time;
 		} else {
-			long targetTime = (long)(sequenceStartTime + currentSequenceIndex * 1000 / FRAMERATE);
+			long targetTime = (long)(sequenceStartTime + currentSequenceIndex * 1000 / framerate);
 			if(targetTime > time) {
 				try {
 					Thread.sleep(targetTime - time);
@@ -94,7 +96,34 @@ public class SimulatedCamera implements ICamera {
 
 	@Override
 	public double getFramerate() {
-		return FRAMERATE;
+		return framerate;
+	}
+
+	@Override
+	public double setFramerate(double fps) {
+		framerate = fps;
+		return fps;
+	}
+
+	@Override
+	public double getExposuretime() {
+		return exposure;
+	}
+
+	@Override
+	public double setExposuretime(double exposure) {
+		this.exposure = exposure;
+		return exposure;
+	}
+
+	@Override
+	public int getGain() {
+		return gain;
+	}
+
+	@Override
+	public void setGain(int gain) {
+		this.gain = gain;
 	}
 
 	@Override

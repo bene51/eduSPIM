@@ -69,6 +69,38 @@ JNIEXPORT jdouble JNICALL Java_cam_NativeCamera_camGetFramerate
     return camGetFramerate(camIdx);
 }
 
+JNIEXPORT jdouble JNICALL Java_cam_NativeCamera_camSetFramerate
+  (JNIEnv *, jclass, jint camIdx, jdouble fps)
+{
+    camSetFramerate(camIdx, &fps);
+    return fps;
+}
+
+JNIEXPORT jdouble JNICALL Java_cam_NativeCamera_camGetExposuretime
+  (JNIEnv *, jclass, jint camIdx)
+{
+    return camGetExposuretime(camIdx);
+}
+
+JNIEXPORT jdouble JNICALL Java_cam_NativeCamera_camSetExposuretime
+  (JNIEnv *, jclass, jint camIdx, jdouble exposure)
+{
+    camSetExposuretime(camIdx, &exposure);
+    return exposure;
+}
+
+JNIEXPORT jint JNICALL Java_cam_NativeCamera_camGetGain
+  (JNIEnv *, jclass, jint camIdx)
+{
+    return camGetGain(camIdx);
+}
+
+JNIEXPORT void JNICALL Java_cam_NativeCamera_camSetGain
+  (JNIEnv *, jclass, jint camIdx, jint gain)
+{
+    camSetGain(camIdx, gain);
+}
+
 JNIEXPORT void JNICALL Java_cam_NativeCamera_camClose
   (JNIEnv *, jclass, jint camIdx)
 {
