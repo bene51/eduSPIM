@@ -8,7 +8,7 @@ public class Toptica implements ILaser {
 
 	private final SerialPort port;
 
-	public Toptica(String portname) throws LaserException {
+	public Toptica(String portname, double power) throws LaserException {
 		port = new SerialPort(portname);
 		try {
 			port.openPort();
@@ -19,7 +19,7 @@ public class Toptica implements ILaser {
 					SerialPort.FLOWCONTROL_NONE);
 			port.writeString("la on"       + TERM_CHAR);
 			port.writeString("ch 1 pow 0"  + TERM_CHAR);
-			port.writeString("ch 2 pow 50" + TERM_CHAR);
+			port.writeString("ch 2 pow "   + (int)Math.round(power) + TERM_CHAR);
 			port.writeString("en 1"        + TERM_CHAR);
 			port.writeString("en 2"        + TERM_CHAR);
 			port.writeString("en ext"      + TERM_CHAR);

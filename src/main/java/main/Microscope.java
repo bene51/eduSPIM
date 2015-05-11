@@ -318,8 +318,7 @@ public class Microscope implements AdminPanelListener {
 
 	private void initLaser(double power) {
 		try {
-			laser = new Toptica("COM" + LASER_COM_PORT); // TODO save parameters in Preferences
-			laser.setPower(power);
+			laser = new Toptica("COM" + LASER_COM_PORT, power); // TODO save parameters in Preferences
 		} catch(Throwable e) {
 			ExceptionHandler.handleException("Error initializing laser, using simulated laser instead", e);
 			laser = new NoopLaser();
