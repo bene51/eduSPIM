@@ -28,9 +28,12 @@ public class NativeCamera implements ICamera {
 		System.loadLibrary("cam_NativeCamera");
 	}
 
-	public NativeCamera(int camIdx) throws CameraException {
+	public NativeCamera(int camIdx, double fps, double exp, int gain) throws CameraException {
 		System.out.println("NativeCamera: constructor");
 		camSetup(camIdx);
+		setFramerate(fps);
+		setExposuretime(exp);
+		setGain(gain);
 	}
 
 	@Override
@@ -106,7 +109,7 @@ public class NativeCamera implements ICamera {
 	}
 
 	public static void main(String... args) throws IOException, CameraException {
-		NativeCamera cam = new NativeCamera(0);
+		NativeCamera cam = new NativeCamera(0, 30, 33.3, 1);
 
 		byte[] frame = new byte[WIDTH * HEIGHT];
 

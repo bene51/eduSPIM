@@ -296,7 +296,11 @@ public class Microscope implements AdminPanelListener {
 		ImagePlus trans = IJ.openImage(System.getProperty("user.home") + "/transmission.tif");
 		if(!simulated) {
 			try {
-				fluorescenceCamera = new NativeCamera(0); // TODO which camera has which index
+				// TODO which camera has which index
+				fluorescenceCamera = new NativeCamera(0,
+						Preferences.getFCameraFramerate(),
+						Preferences.getFCameraExposure(),
+						Preferences.getFCameraGain());
 				transmissionCamera = new SimulatedCamera(trans); // TODO new NativeCamera(1);
 				return;
 			} catch(Throwable e) {
