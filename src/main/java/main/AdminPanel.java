@@ -42,9 +42,9 @@ public class AdminPanel extends JPanel {
 	private MButton setStart, setEnd, ok, cancel;
 	private MTextField mirror1Z, mirror2Z;
 	private NumberField mirror1M, mirror2M;
-	private NumberField fCameraGain;
+	private NumberField fCameraGain, tCameraGain;
 	private MTextField fCameraExp, fCameraFPS;
-	private MTextField tCameraExp, tCameraFPS, tCameraGain;
+	private MTextField tCameraExp, tCameraFPS;
 	private MTextField laserPower;
 	private ArrayList<AdminPanelListener> listeners = new ArrayList<AdminPanelListener>();
 
@@ -112,8 +112,6 @@ public class AdminPanel extends JPanel {
 		fCameraExp.setEditable(true);
 		fCameraFPS  = new MTextField(df.format(Preferences.getFCameraFramerate()));
 		fCameraFPS.setEditable(true);
-		// fCameraGain = new MTextField(Integer.toString(Preferences.getFCameraGain()));
-		// fCameraGain.setEditable(true);
 		fCameraGain = new NumberField(6);
 		fCameraGain.setText(df.format(Preferences.getFCameraGain()));
 		fCameraGain.setForeground(Color.black);
@@ -125,11 +123,11 @@ public class AdminPanel extends JPanel {
 						code == KeyEvent.VK_UP ||
 						code == KeyEvent.VK_DOWN) {
 					try {
-						Microscope.getInstance().getFluorescenceCamera().setGain((int)Math.round(Double.parseDouble(fCameraGain.getText())));
+						int gain = (int)Math.round(Double.parseDouble(fCameraGain.getText()));
+						Microscope.getInstance().getFluorescenceCamera().setGain(gain);
 						Microscope.getInstance().singlePreview(true, true);
 					} catch (CameraException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
+						ExceptionHandler.showException("Error changing the gain of the fluorescence camera", e1);
 					}
 				}
 			}
@@ -138,8 +136,26 @@ public class AdminPanel extends JPanel {
 		tCameraExp.setEditable(true);
 		tCameraFPS  = new MTextField(df.format(Preferences.getTCameraFramerate()));
 		tCameraFPS.setEditable(true);
-		tCameraGain = new MTextField(Integer.toString(Preferences.getTCameraGain()));
-		tCameraGain.setEditable(true);
+		tCameraGain = new NumberField(6);
+		tCameraGain.setText(df.format(Preferences.getFCameraGain()));
+		tCameraGain.setForeground(Color.black);
+		tCameraGain.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				int code = e.getKeyCode();
+				if(code == KeyEvent.VK_ENTER||
+						code == KeyEvent.VK_UP ||
+						code == KeyEvent.VK_DOWN) {
+					try {
+						int gain = (int)Math.round(Double.parseDouble(tCameraGain.getText()));
+						Microscope.getInstance().getTransmissionCamera().setGain(gain);
+						Microscope.getInstance().singlePreview(true, true);
+					} catch (CameraException e1) {
+						ExceptionHandler.showException("Error changing the gain of the transmission camera", e1);
+					}
+				}
+			}
+		});
 
 		laserPower = new MTextField(Double.toString(Preferences.getLaserPower()));
 		laserPower.setEditable(true);
