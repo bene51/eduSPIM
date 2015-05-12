@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import stage.IMotor;
+import cam.CameraException;
 
 @SuppressWarnings("serial")
 public class AdminPanel extends JPanel {
@@ -41,7 +42,8 @@ public class AdminPanel extends JPanel {
 	private MButton setStart, setEnd, ok, cancel;
 	private MTextField mirror1Z, mirror2Z;
 	private NumberField mirror1M, mirror2M;
-	private MTextField fCameraExp, fCameraFPS, fCameraGain;
+	private NumberField fCameraGain;
+	private MTextField fCameraExp, fCameraFPS;
 	private MTextField tCameraExp, tCameraFPS, tCameraGain;
 	private MTextField laserPower;
 	private ArrayList<AdminPanelListener> listeners = new ArrayList<AdminPanelListener>();
@@ -110,8 +112,28 @@ public class AdminPanel extends JPanel {
 		fCameraExp.setEditable(true);
 		fCameraFPS  = new MTextField(df.format(Preferences.getFCameraFramerate()));
 		fCameraFPS.setEditable(true);
-		fCameraGain = new MTextField(Integer.toString(Preferences.getFCameraGain()));
-		fCameraGain.setEditable(true);
+		// fCameraGain = new MTextField(Integer.toString(Preferences.getFCameraGain()));
+		// fCameraGain.setEditable(true);
+		fCameraGain = new NumberField(6);
+		fCameraGain.setText(df.format(Preferences.getFCameraGain()));
+		fCameraGain.setForeground(Color.black);
+		fCameraGain.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				int code = e.getKeyCode();
+				if(code == KeyEvent.VK_ENTER||
+						code == KeyEvent.VK_UP ||
+						code == KeyEvent.VK_DOWN) {
+					try {
+						Microscope.getInstance().getFluorescenceCamera().setGain((int)Math.round(Double.parseDouble(fCameraGain.getText())));
+						Microscope.getInstance().singlePreview(true, true);
+					} catch (CameraException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				}
+			}
+		});
 		tCameraExp  = new MTextField(df.format(Preferences.getTCameraExposure()));
 		tCameraExp.setEditable(true);
 		tCameraFPS  = new MTextField(df.format(Preferences.getTCameraFramerate()));
