@@ -2,6 +2,8 @@ package laser;
 
 public class NoopLaser implements ILaser {
 
+	public static final double MAX_POWER = 200;
+
 	@Override
 	public void close() {}
 
@@ -16,4 +18,9 @@ public class NoopLaser implements ILaser {
 
 	@Override
 	public void setOff() {}
+
+	@Override
+	public double getMaxPower() {
+		return MAX_POWER;
+	}
 }

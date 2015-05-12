@@ -11,4 +11,6 @@ public interface ILaser {
 	public void setTriggered() throws LaserException;
 
 	public void setOff() throws LaserException;
+
+	public double getMaxPower();
 }

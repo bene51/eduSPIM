@@ -4,6 +4,8 @@ import jssc.SerialPort;
 
 public class Toptica implements ILaser {
 
+	private static final double MAX_POWER = 200; // TODO query this from the device
+
 	private static final char TERM_CHAR = '\r';
 
 	private final SerialPort port;
@@ -76,5 +78,10 @@ public class Toptica implements ILaser {
 		} catch (Exception e) {
 			throw new LaserException("Error switching laser off", e);
 		}
+	}
+
+	@Override
+	public double getMaxPower() {
+		return MAX_POWER;
 	}
 }
