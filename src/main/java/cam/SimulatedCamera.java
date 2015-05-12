@@ -46,7 +46,7 @@ public class SimulatedCamera implements ICamera {
 
 	@Override
 	public void getPreviewImage(byte[] ret) {
-		System.out.println("SimulatedCamera.getPreviewImage: y = " + yPos);
+		System.out.println("SimulatedCamera.getPreviewImage: y = " + yPos + " zPos = " + zPos);
 		int y1 = Math.min(yPos + HEIGHT, image.getHeight());
 		System.arraycopy(ips[zPos], WIDTH * yPos, ret, 0, WIDTH * (y1 - yPos));
 	}

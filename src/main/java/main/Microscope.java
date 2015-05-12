@@ -388,7 +388,6 @@ public class Microscope implements AdminPanelListener {
 		int plane = getCurrentPlane();
 		double yPos = motor.getPosition(Y_AXIS);
 		double yRel = (yPos - Preferences.getStackYStart()) / (Preferences.getStackYEnd() - Preferences.getStackYStart());
-		System.out.println("start plane = " + plane);
 
 		// set the speed of the motor according to the frame rate
 		double framerate = fluorescenceCamera.getFramerate();
@@ -435,7 +434,7 @@ public class Microscope implements AdminPanelListener {
 		fluorescenceCamera.stopSequence();
 		transmissionCamera.stopSequence();
 		int mz = getCurrentPlane();
-		System.out.println("plane = " + plane + " mz = " + mz);
+		System.out.println("plane = " + plane + " mz = " + mz + " ypos = " + yPos);
 
 		// move to theoretic position?
 		plane = Math.max(0, Math.min(plane, ICamera.DEPTH - 1));
