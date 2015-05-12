@@ -441,7 +441,6 @@ public class Microscope implements AdminPanelListener {
 		double zPos = Preferences.getStackZStart() + plane * dz;
 		double tgt = axis == Y_AXIS ? yPos : zPos;
 		motor.setTarget(axis, tgt);
-		motor.stop();
 		while(motor.isMoving(axis))
 			sleep(50);
 
