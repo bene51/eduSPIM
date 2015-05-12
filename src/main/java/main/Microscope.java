@@ -119,7 +119,9 @@ public class Microscope implements AdminPanelListener {
 
 	private final byte[] fluorescenceFrame, transmissionFrame;
 
-	public Microscope(boolean fatal) throws IOException, MotorException {
+	private static Microscope instance;
+
+	private Microscope(boolean fatal) throws IOException, MotorException {
 
 		logger.info("Initializing microscope");
 
@@ -136,6 +138,8 @@ public class Microscope implements AdminPanelListener {
 			logger.info("Initialized fatal screen");
 			return;
 		}
+
+		instance = this;
 
 		initBeanshell();
 		initHardware(true);
@@ -209,6 +213,10 @@ public class Microscope implements AdminPanelListener {
 				+ "and snapshots:\n"
 				+ Preferences.getSnapshotsLink() + " \n\n"
 				+ "Greetings,\nEduSPIM");
+	}
+
+	public static Microscope getInstance() {
+		return instance;
 	}
 
 	public void initHardware(boolean moveMotorToStart) {
