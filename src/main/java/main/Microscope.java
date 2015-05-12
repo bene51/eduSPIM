@@ -671,6 +671,7 @@ public class Microscope implements AdminPanelListener {
 				fluorescenceCamera.setFramerate(Preferences.getFCameraFramerate());
 				fluorescenceCamera.setExposuretime(Preferences.getFCameraExposure());
 				fluorescenceCamera.setGain(Preferences.getFCameraGain());
+				laser.setPower(Preferences.getLaserPower());
 			} catch(Throwable t) {
 				ExceptionHandler.showException("Cannot apply camera settings", t);
 			}

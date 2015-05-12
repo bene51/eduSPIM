@@ -23,6 +23,8 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 
+import laser.LaserException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,9 +45,9 @@ public class AdminPanel extends JPanel {
 	private MTextField mirror1Z, mirror2Z;
 	private NumberField mirror1M, mirror2M;
 	private NumberField fCameraGain, tCameraGain;
-	private MTextField laserPower;
 	private NumberField fCameraExp, fCameraFPS;
 	private NumberField tCameraExp, tCameraFPS;
+	private NumberField laserPower;
 	private ArrayList<AdminPanelListener> listeners = new ArrayList<AdminPanelListener>();
 
 	private double yPos, zPos;
@@ -211,9 +213,24 @@ public class AdminPanel extends JPanel {
 			}
 		});
 
-		laserPower = new MTextField(Double.toString(Preferences.getLaserPower()));
-		laserPower.setEditable(true);
-
+//		laserPower = new MTextField(Double.toString(Preferences.getLaserPower()));
+//		laserPower.setEditable(true);
+		laserPower = new NumberField(6);
+		laserPower.setLimits(1, Microscope.getInstance().getLaser().getMaxPower());
+		laserPower.setIntegersOnly(true);
+		laserPower.setText(Integer.toString((int)Math.round(Preferences.getLaserPower())));
+		laserPower.setForeground(Color.black);
+		laserPower.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				int code = e.getKeyCode();
+				if(code == KeyEvent.VK_ENTER||
+						code == KeyEvent.VK_UP ||
+						code == KeyEvent.VK_DOWN) {
+					updateLaserpower();
+				}
+			}
+		});
 
 
 		cancel = new MButton("Cancel");
@@ -595,6 +612,18 @@ public class AdminPanel extends JPanel {
 			Microscope.getInstance().singlePreview(true, true);
 		} catch (CameraException e1) {
 			ExceptionHandler.showException("Error changing the frame rate of the fluorescence camera", e1);
+		}
+	}
+
+	private void updateLaserpower() {
+		try {
+			double power = Double.parseDouble(laserPower.getText());
+			Microscope.getInstance().getLaser().setPower(power);
+			Microscope.getInstance().singlePreview(true, true);
+		} catch (LaserException e1) {
+			ExceptionHandler.showException("Error changing the laser power", e1);
+		} catch(CameraException e2) {
+			ExceptionHandler.showException("Error showing preview image after changing laser power", e2);
 		}
 	}
 
