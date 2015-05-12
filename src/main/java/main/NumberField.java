@@ -13,6 +13,11 @@ import javax.swing.KeyStroke;
 @SuppressWarnings("serial")
 public class NumberField extends JTextField {
 
+	private double min = Double.NEGATIVE_INFINITY;
+	private double max = Double.POSITIVE_INFINITY;
+
+	private boolean integersOnly = false;
+
 	private ArrayList<KeyListener> listener = new ArrayList<KeyListener>();
 
 	@Override
@@ -41,11 +46,24 @@ public class NumberField extends JTextField {
 	}
 
 	public static void main(String[] args) {
+		NumberField nf = new NumberField(8);
+		nf.setText("5.88");
+		nf.setLimits(0, 10);
+		// nf.setIntegersOnly(true);
 		JFrame frame = new JFrame("");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.getContentPane().add(new NumberField(8));
+		frame.getContentPane().add(nf);
 		frame.pack();
 		frame.setVisible(true);
+	}
+
+	public void setLimits(double min, double max) {
+		this.min = min;
+		this.max = max;
+	}
+
+	public void setIntegersOnly(boolean b) {
+		this.integersOnly = b;
 	}
 
 	public NumberField(int n) {
@@ -81,6 +99,15 @@ public class NumberField extends JTextField {
 							setCaretPosition(originalCar + 1);
 						}
 					}
+					double val = Double.parseDouble(getText());
+					if(val < min)
+						setText(Double.toString(min));
+					if(val > max)
+						setText(Double.toString(max));
+					if(integersOnly && getText().contains(".")) {
+						int intVal = (int)Math.round(Double.parseDouble(getText()));
+						setText(Integer.toString(intVal));
+					}
 					e.consume();
 				} // VK_UP
 				else if(e.getKeyCode() == KeyEvent.VK_DOWN) {
@@ -97,7 +124,7 @@ public class NumberField extends JTextField {
 						int digit = Integer.parseInt(Character.toString(ch));
 						if(digit > 0) {
 							int carP = 0;
-							if(car == 0 && digit == 1 && text.charAt(1) != '.') {
+							if(car == 0 && digit == 1 && (text.length() > 1 && text.charAt(1) != '.')) {
 								text.deleteCharAt(0);
 								carP = Math.max(0, originalCar - 1);
 							} else {
@@ -109,11 +136,20 @@ public class NumberField extends JTextField {
 							break;
 						}
 						text.setCharAt(car, '9');
-						if(car == 0 && text.charAt(1) != '.') {
+						if(car == 0 && text.length() > 1 && text.charAt(1) != '.') {
 							text.deleteCharAt(0);
 							setText(text.toString());
 							setCaretPosition(Math.max(0, originalCar - 1));
 						}
+					}
+					double val = Double.parseDouble(getText());
+					if(val < min)
+						setText(Double.toString(min));
+					if(val > max)
+						setText(Double.toString(max));
+					if(integersOnly && getText().contains(".")) {
+						int intVal = (int)Math.round(Double.parseDouble(getText()));
+						setText(Integer.toString(intVal));
 					}
 					e.consume();
 				} // VK_DOWN
@@ -127,6 +163,12 @@ public class NumberField extends JTextField {
 
 			@Override
 			public void keyTyped(KeyEvent e) {
+				char c = e.getKeyChar();
+				if(Character.isDigit(c) || (c == '.' && !integersOnly)) {
+					;
+				} else {
+					e.consume();
+				}
 				fireKeyTyped(e);
 			}
 		});
