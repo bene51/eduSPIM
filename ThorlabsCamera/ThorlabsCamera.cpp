@@ -315,7 +315,7 @@ double
 camGetFramerate(int camIdx)
 {
 	double fps;
-	SAVE_CALL(is_GetFramesPerSecond(cameras[camIdx], &fps), camIdx);
+	SAVE_CALL(is_SetFrameRate(cameras[camIdx], IS_GET_FRAMERATE, &fps), camIdx);
 	return fps;
 }
 
