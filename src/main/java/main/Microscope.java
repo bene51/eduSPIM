@@ -304,7 +304,7 @@ public class Microscope implements AdminPanelListener {
 
 	private void initCameras() {
 		ImagePlus trans = IJ.openImage(System.getProperty("user.home") + "/transmission.tif");
-		if(!simulated) {
+//		if(!simulated) {
 			try {
 				// TODO which camera has which index
 				fluorescenceCamera = new NativeCamera(0,
@@ -316,7 +316,7 @@ public class Microscope implements AdminPanelListener {
 			} catch(Throwable e) {
 				ExceptionHandler.handleException("Error initializing the camera, using simulated camera instead instead", e);
 			}
-		}
+//		}
 
 		simulated = true;
 		System.out.println("Loading the image");
@@ -664,17 +664,15 @@ public class Microscope implements AdminPanelListener {
 			displayWindow.remove(adminPanel);
 			displayWindow.validate();
 			displayPanel.requestFocusInWindow();
-			if(!cancelled) {
-				try {
-					transmissionCamera.setFramerate(Preferences.getTCameraFramerate());
-					transmissionCamera.setExposuretime(Preferences.getTCameraExposure());
-					transmissionCamera.setGain(Preferences.getTCameraGain());
-					fluorescenceCamera.setFramerate(Preferences.getFCameraFramerate());
-					fluorescenceCamera.setExposuretime(Preferences.getFCameraExposure());
-					fluorescenceCamera.setGain(Preferences.getFCameraGain());
-				} catch(Throwable t) {
-					ExceptionHandler.showException("Cannot apply camera settings", t);
-				}
+			try {
+				transmissionCamera.setFramerate(Preferences.getTCameraFramerate());
+				transmissionCamera.setExposuretime(Preferences.getTCameraExposure());
+				transmissionCamera.setGain(Preferences.getTCameraGain());
+				fluorescenceCamera.setFramerate(Preferences.getFCameraFramerate());
+				fluorescenceCamera.setExposuretime(Preferences.getFCameraExposure());
+				fluorescenceCamera.setGain(Preferences.getFCameraGain());
+			} catch(Throwable t) {
+				ExceptionHandler.showException("Cannot apply camera settings", t);
 			}
 		}
 	}

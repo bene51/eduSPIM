@@ -43,9 +43,9 @@ public class AdminPanel extends JPanel {
 	private MTextField mirror1Z, mirror2Z;
 	private NumberField mirror1M, mirror2M;
 	private NumberField fCameraGain, tCameraGain;
-	private MTextField fCameraExp, fCameraFPS;
-	private MTextField tCameraExp, tCameraFPS;
 	private MTextField laserPower;
+	private NumberField fCameraExp, fCameraFPS;
+	private NumberField tCameraExp, tCameraFPS;
 	private ArrayList<AdminPanelListener> listeners = new ArrayList<AdminPanelListener>();
 
 	private double yPos, zPos;
@@ -108,11 +108,44 @@ public class AdminPanel extends JPanel {
 				}
 			}
 		});
-		fCameraExp  = new MTextField(df.format(Preferences.getFCameraExposure()));
-		fCameraExp.setEditable(true);
-		fCameraFPS  = new MTextField(df.format(Preferences.getFCameraFramerate()));
-		fCameraFPS.setEditable(true);
+
+//		fCameraExp  = new MTextField(df.format(Preferences.getFCameraExposure()));
+//		fCameraExp.setEditable(true);
+		fCameraExp = new NumberField(6);
+		fCameraExp.setText(df.format(Preferences.getFCameraExposure()));
+		fCameraExp.setForeground(Color.black);
+		fCameraExp.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				int code = e.getKeyCode();
+				if(code == KeyEvent.VK_ENTER||
+						code == KeyEvent.VK_UP ||
+						code == KeyEvent.VK_DOWN) {
+					updateFluorescenceExposure();
+				}
+			}
+		});
+
+//		fCameraFPS  = new MTextField(df.format(Preferences.getFCameraFramerate()));
+//		fCameraFPS.setEditable(true);
+		fCameraFPS = new NumberField(6);
+		fCameraFPS.setText(df.format(Preferences.getFCameraFramerate()));
+		fCameraFPS.setForeground(Color.black);
+		fCameraFPS.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				int code = e.getKeyCode();
+				if(code == KeyEvent.VK_ENTER||
+						code == KeyEvent.VK_UP ||
+						code == KeyEvent.VK_DOWN) {
+					updateFluorescenceFramerate();
+				}
+			}
+		});
+
 		fCameraGain = new NumberField(6);
+		fCameraGain.setLimits(1, 100);
+		fCameraGain.setIntegersOnly(true);
 		fCameraGain.setText(df.format(Preferences.getFCameraGain()));
 		fCameraGain.setForeground(Color.black);
 		fCameraGain.addKeyListener(new KeyAdapter() {
@@ -122,22 +155,49 @@ public class AdminPanel extends JPanel {
 				if(code == KeyEvent.VK_ENTER||
 						code == KeyEvent.VK_UP ||
 						code == KeyEvent.VK_DOWN) {
-					try {
-						int gain = (int)Math.round(Double.parseDouble(fCameraGain.getText()));
-						Microscope.getInstance().getFluorescenceCamera().setGain(gain);
-						Microscope.getInstance().singlePreview(true, true);
-					} catch (CameraException e1) {
-						ExceptionHandler.showException("Error changing the gain of the fluorescence camera", e1);
-					}
+					updateFluorescenceGain();
 				}
 			}
 		});
-		tCameraExp  = new MTextField(df.format(Preferences.getTCameraExposure()));
-		tCameraExp.setEditable(true);
-		tCameraFPS  = new MTextField(df.format(Preferences.getTCameraFramerate()));
-		tCameraFPS.setEditable(true);
+
+//		tCameraExp  = new MTextField(df.format(Preferences.getTCameraExposure()));
+//		tCameraExp.setEditable(true);
+		tCameraExp = new NumberField(6);
+		tCameraExp.setText(df.format(Preferences.getTCameraExposure()));
+		tCameraExp.setForeground(Color.black);
+		tCameraExp.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				int code = e.getKeyCode();
+				if(code == KeyEvent.VK_ENTER||
+						code == KeyEvent.VK_UP ||
+						code == KeyEvent.VK_DOWN) {
+					updateTransmissionExposure();
+				}
+			}
+		});
+
+//		tCameraFPS  = new MTextField(df.format(Preferences.getTCameraFramerate()));
+//		tCameraFPS.setEditable(true);
+		tCameraFPS = new NumberField(6);
+		tCameraFPS.setText(df.format(Preferences.getTCameraFramerate()));
+		tCameraFPS.setForeground(Color.black);
+		tCameraFPS.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				int code = e.getKeyCode();
+				if(code == KeyEvent.VK_ENTER||
+						code == KeyEvent.VK_UP ||
+						code == KeyEvent.VK_DOWN) {
+					updateTransmissionFramerate();
+				}
+			}
+		});
+
 		tCameraGain = new NumberField(6);
-		tCameraGain.setText(df.format(Preferences.getFCameraGain()));
+		tCameraGain.setLimits(1, 100);
+		tCameraGain.setIntegersOnly(true);
+		tCameraGain.setText(df.format(Preferences.getTCameraGain()));
 		tCameraGain.setForeground(Color.black);
 		tCameraGain.addKeyListener(new KeyAdapter() {
 			@Override
@@ -146,13 +206,7 @@ public class AdminPanel extends JPanel {
 				if(code == KeyEvent.VK_ENTER||
 						code == KeyEvent.VK_UP ||
 						code == KeyEvent.VK_DOWN) {
-					try {
-						int gain = (int)Math.round(Double.parseDouble(tCameraGain.getText()));
-						Microscope.getInstance().getTransmissionCamera().setGain(gain);
-						Microscope.getInstance().singlePreview(true, true);
-					} catch (CameraException e1) {
-						ExceptionHandler.showException("Error changing the gain of the transmission camera", e1);
-					}
+					updateTransmissionGain();
 				}
 			}
 		});
@@ -468,6 +522,80 @@ public class AdminPanel extends JPanel {
 		Preferences.restore(oldPreferences);
 		logger.info("Successfully changed EduSPIM settings.");
 		fireDone(false);
+	}
+
+	private void updateTransmissionGain() {
+		try {
+			int gain = (int)Math.round(Double.parseDouble(tCameraGain.getText()));
+			Microscope.getInstance().getTransmissionCamera().setGain(gain);
+			Microscope.getInstance().singlePreview(true, true);
+		} catch (CameraException e1) {
+			try {
+				int gain = Microscope.getInstance().getTransmissionCamera().getGain();
+				tCameraGain.setText(Integer.toString(gain));
+			} catch(Throwable t) {
+				ExceptionHandler.showException("Error changing the gain of the transmission camera", e1);
+			}
+		}
+	}
+
+	private void updateTransmissionExposure() {
+		try {
+			double exp = Double.parseDouble(tCameraExp.getText());
+			exp = Microscope.getInstance().getTransmissionCamera().setExposuretime(exp);
+			tCameraExp.setText(df.format(exp));
+			Microscope.getInstance().singlePreview(true, true);
+		} catch (CameraException e1) {
+			ExceptionHandler.showException("Error changing the exposure time of the transmission camera", e1);
+		}
+	}
+
+	private void updateTransmissionFramerate() {
+		try {
+			double fps = Double.parseDouble(tCameraFPS.getText());
+			fps = Microscope.getInstance().getTransmissionCamera().setFramerate(fps);
+			tCameraExp.setText(df.format(fps));
+			Microscope.getInstance().singlePreview(true, true);
+		} catch (CameraException e1) {
+			ExceptionHandler.showException("Error changing the frame rate of the transmission camera", e1);
+		}
+	}
+
+	private void updateFluorescenceGain() {
+		try {
+			int gain = (int)Math.round(Double.parseDouble(fCameraGain.getText()));
+			Microscope.getInstance().getFluorescenceCamera().setGain(gain);
+			Microscope.getInstance().singlePreview(true, true);
+		} catch (CameraException e1) {
+			try {
+				int gain = Microscope.getInstance().getFluorescenceCamera().getGain();
+				fCameraGain.setText(Integer.toString(gain));
+			} catch(Throwable t) {
+				ExceptionHandler.showException("Error changing the gain of the fluorescence camera", e1);
+			}
+		}
+	}
+
+	private void updateFluorescenceExposure() {
+		try {
+			double exp = Double.parseDouble(fCameraExp.getText());
+			exp = Microscope.getInstance().getFluorescenceCamera().setExposuretime(exp);
+			fCameraExp.setText(df.format(exp));
+			Microscope.getInstance().singlePreview(true, true);
+		} catch (CameraException e1) {
+			ExceptionHandler.showException("Error changing the exposure time of the fluorescence camera", e1);
+		}
+	}
+
+	private void updateFluorescenceFramerate() {
+		try {
+			double fps = Double.parseDouble(fCameraFPS.getText());
+			fps = Microscope.getInstance().getFluorescenceCamera().setFramerate(fps);
+			fCameraExp.setText(df.format(fps));
+			Microscope.getInstance().singlePreview(true, true);
+		} catch (CameraException e1) {
+			ExceptionHandler.showException("Error changing the frame rate of the fluorescence camera", e1);
+		}
 	}
 
 	public void setPosition(double yPos, double zPos) {
