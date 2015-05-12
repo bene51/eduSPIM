@@ -57,6 +57,8 @@ import display.PlaneDisplay;
  *
  * TODO arduino for buttons
  *
+ * TODO alive signal from arduino
+ *
  * TODO include mirror
  *
  * TODO automatically switch off and shutdown in the evening
@@ -587,7 +589,7 @@ public class Microscope implements AdminPanelListener {
 									// display it as transmission image to avoid the translucent
 									// lookup table:
 									displayPanel.display(null, fluorescenceFrame, yRel, z);
-								} while(!mirrorQueue.isIdle()); // || mirror.isMoving()
+								} while(!mirrorQueue.isIdle()); // || TODO mirror.isMoving()
 
 								fluorescenceCamera.stopPreview();
 								System.out.println("Stopped preview");
