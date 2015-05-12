@@ -54,6 +54,14 @@ public class PlaneDisplay extends JPanel {
 		return new Dimension(WIDTH, HEIGHT);
 	}
 
+	public int getCurrentPlane() {
+		return z;
+	}
+
+	public double getCurrentRelativeYPos() {
+		return yRel;
+	}
+
 	public void display(byte[] fluorescence, byte[] transmission, double yRel, int z) {
 		this.fluorescence = fluorescence;
 		this.transmission = transmission;

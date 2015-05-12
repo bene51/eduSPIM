@@ -525,6 +525,46 @@ public class Microscope implements AdminPanelListener {
 		}
 	}
 
+	void singlePreview(boolean trans, boolean fluor) throws CameraException {
+		if(!trans && !fluor)
+			return;
+
+		double yRel = displayPanel.getCurrentRelativeYPos();
+		int z = displayPanel.getCurrentPlane();
+		displayPanel.setStackMode(false);
+
+		if(trans) {
+			transmissionCamera.startPreview();
+			if(transmissionCamera instanceof SimulatedCamera) {
+				((SimulatedCamera) transmissionCamera).setYPosition(yRel);
+				((SimulatedCamera) transmissionCamera).setZPosition(0);
+			}
+			transmissionCamera.getPreviewImage(transmissionFrame);
+			transmissionCamera.stopPreview();
+		}
+
+		if(fluor) {
+			fluorescenceCamera.startSequence();
+			if(fluorescenceCamera instanceof SimulatedCamera) {
+				((SimulatedCamera) fluorescenceCamera).setYPosition(yRel);
+				((SimulatedCamera) fluorescenceCamera).setZPosition(z);
+			}
+			fluorescenceCamera.getNextSequenceImage(fluorescenceFrame);
+			fluorescenceCamera.stopSequence();
+		}
+
+		// if both are acquired, display it normally
+		if(trans && fluor)
+			displayPanel.display(fluorescenceFrame, transmissionFrame, yRel, z);
+
+		// if only one is present, display it as transmission image,
+		// to avoid the translucent lookup table:
+		else if(trans)
+			displayPanel.display(null, transmissionFrame, yRel, z);
+		else if(fluor)
+			displayPanel.display(null, fluorescenceFrame, yRel, z);
+	}
+
 	public void manualLaserOn() throws LaserException {
 		// TODO move mirror away
 		laser.setOn();
