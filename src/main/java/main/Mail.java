@@ -1,6 +1,10 @@
 package main;
 
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -11,6 +15,8 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 public class Mail {
+
+	private static final ExecutorService exec = Executors.newSingleThreadExecutor();
 
 	public static void main(String[] args) throws Exception {
 		send("EduSPIM error", "test");
@@ -24,38 +30,57 @@ public class Mail {
 		send(subject, Preferences.getMailto(), Preferences.getMailcc(), text);
 	}
 
-	public static void send(String subject, String to, String cc, String text) {
-		final String username = "eduspim@gmail.com";
-		final String password = "cmlc2GFP";
+	public static void send(final String subject, final String to, final String cc, final String text) {
+		send(subject, to, cc, text, false);
+	}
 
-		Properties props = new Properties();
-		props.put("mail.smtp.auth", "true");
-		props.put("mail.smtp.starttls.enable", "true");
-		props.put("mail.smtp.host", "smtp.gmail.com");
-		props.put("mail.smtp.port", "587");
 
-		Session session = Session.getInstance(props,
-				new javax.mail.Authenticator() {
-					@Override
-					protected PasswordAuthentication getPasswordAuthentication() {
-						return new PasswordAuthentication(username, password);
-					}
-				});
+	public static void send(final String subject, final String to, final String cc, final String text, boolean wait) {
+		Future<?> fut = exec.submit(new Runnable() {
+			@Override
+			public void run() {
+				final String username = "eduspim@gmail.com";
+				final String password = "cmlc2GFP";
 
-		try {
-			Message message = new MimeMessage(session);
-			message.setFrom(InternetAddress.parse("eduspim@gmail.com")[0]);
-			message.setRecipients(Message.RecipientType.TO,
-					InternetAddress.parse(to));
-			if(cc != null && cc.trim().length() != 0)
-				message.setRecipients(Message.RecipientType.CC,
-						InternetAddress.parse(cc));
-			message.setSubject(subject);
-			message.setText(text);
+				Properties props = new Properties();
+				props.put("mail.smtp.auth", "true");
+				props.put("mail.smtp.starttls.enable", "true");
+				props.put("mail.smtp.host", "smtp.gmail.com");
+				props.put("mail.smtp.port", "587");
 
-			Transport.send(message);
-		} catch (MessagingException e) {
-			ExceptionHandler.handleException("Error sending mail", e);
+				Session session = Session.getInstance(props,
+						new javax.mail.Authenticator() {
+							@Override
+							protected PasswordAuthentication getPasswordAuthentication() {
+								return new PasswordAuthentication(username, password);
+							}
+						});
+
+				try {
+					Message message = new MimeMessage(session);
+					message.setFrom(InternetAddress.parse("eduspim@gmail.com")[0]);
+					message.setRecipients(Message.RecipientType.TO,
+							InternetAddress.parse(to));
+					if(cc != null && cc.trim().length() != 0)
+						message.setRecipients(Message.RecipientType.CC,
+								InternetAddress.parse(cc));
+					message.setSubject(subject);
+					message.setText(text);
+
+					Transport.send(message);
+				} catch (MessagingException e) {
+					ExceptionHandler.handleException("Error sending mail", e);
+				}
+			} // run
+		});
+		if(wait) {
+			try {
+				fut.get();
+			} catch (InterruptedException e) {
+				ExceptionHandler.handleException("Sending mail interrupted", e);
+			} catch (ExecutionException e) {
+				ExceptionHandler.handleException("Error sending mail", e);
+			}
 		}
 	}
 }
