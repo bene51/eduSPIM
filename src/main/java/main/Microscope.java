@@ -216,9 +216,11 @@ public class Microscope implements AdminPanelListener {
 				"Hi,\n\n"
 				+ "EduSPIM was just started successfully.\n\n"
 				+ "Logs are here:\n"
-				+ Preferences.getLogsLink() + " \n\n"
-				+ "and snapshots:\n"
-				+ Preferences.getSnapshotsLink() + " \n\n"
+				+ Preferences.getLogsLink() + "\n\n"
+				+ "snapshots:\n"
+				+ Preferences.getSnapshotsLink() + "\n\n"
+				+ "and statistics:\n"
+				+ Preferences.getStatisticsLink() + "\n\n"
 				+ "Greetings,\nEduSPIM");
 	}
 
@@ -614,9 +616,11 @@ public class Microscope implements AdminPanelListener {
 				"Hi,\n\n"
 				+ "EduSPIM was just shut down with exit status " + exitcode + ".\n\n"
 				+ "Logs are here:\n"
-				+ Preferences.getLogsLink() + " \n\n"
-				+ "and snapshots:\n"
-				+ Preferences.getSnapshotsLink() + " \n\n"
+				+ Preferences.getLogsLink() + "\n\n"
+				+ "snapshots:\n"
+				+ Preferences.getSnapshotsLink() + "\n\n"
+				+ "and statistics:\n"
+				+ Preferences.getStatisticsLink() + "\n\n"
 				+ "Greetings,\nEduSPIM",
 				true);
 		while(!mirrorQueue.isIdle())
