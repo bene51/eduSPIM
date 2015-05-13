@@ -19,6 +19,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import javax.imageio.ImageIO;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
@@ -67,12 +68,8 @@ import display.PlaneDisplay;
  *
  * TODO differ between stack snapshots in head regions and current snapshot
  *
- * TODO log not only 'preview', but also the direction
  *
- * TODO save a statistics file including (as table, csv):
- *          - one line per day
- *          - date | #stacks | #moves | #laser | #info
- *
+ * TODO Autostart, auto close software, auto open software...
  */
 public class Microscope implements AdminPanelListener {
 
@@ -400,8 +397,10 @@ public class Microscope implements AdminPanelListener {
 		synchronized(this) {
 			busy = true;
 		}
-		logger.info("Starting preview");
-		System.out.println("startPreview: axis = " + axis + " target = " + target);
+		if(mode == Mode.NORMAL) {
+			logger.info("Starting preview: axis = " + axis + " going " + (positive ? "up" : "down"));
+			Statistics.incrementMoves();
+		}
 		// get current plane
 		int plane = getCurrentPlane();
 		double yPos = motor.getPosition(Y_AXIS);
@@ -479,7 +478,11 @@ public class Microscope implements AdminPanelListener {
 		synchronized(this) {
 			busy = true;
 		}
-		logger.info("Acquiring stack");
+
+		if(mode == Mode.NORMAL) {
+			logger.info("Acquiring stack");
+			Statistics.incrementStacks();
+		}
 
 		double yRel = getCurrentRelativeYPos();
 
@@ -576,11 +579,17 @@ public class Microscope implements AdminPanelListener {
 	}
 
 	public void manualLaserOn() throws LaserException {
+		if(mode == Mode.NORMAL) {
+			logger.info("Manual laser on");
+			Statistics.incrementLasers();
+		}
 		// TODO move mirror away
 		laser.setOn();
 	}
 
 	public void manualLaserOff() throws LaserException {
+		if(mode == Mode.NORMAL)
+			logger.info("Manual laser off");
 		// TODO move mirror in place
 		laser.setTriggered();
 	}
@@ -608,7 +617,8 @@ public class Microscope implements AdminPanelListener {
 				+ Preferences.getLogsLink() + " \n\n"
 				+ "and snapshots:\n"
 				+ Preferences.getSnapshotsLink() + " \n\n"
-				+ "Greetings,\nEduSPIM");
+				+ "Greetings,\nEduSPIM",
+				true);
 		while(!mirrorQueue.isIdle())
 			sleep(100);
 
@@ -670,6 +680,17 @@ public class Microscope implements AdminPanelListener {
 	@Override
 	public void adminPanelDone(boolean cancelled) {
 		if(mode == Mode.ADMIN) {
+			boolean sampleExchanged = JOptionPane.showConfirmDialog(
+					displayWindow,
+					"Did you exchange the sample?\n\nThis information is needed for logs and statistics.",
+					"Sample exchange",
+					JOptionPane.YES_NO_OPTION,
+					JOptionPane.QUESTION_MESSAGE,
+					null) == JOptionPane.YES_OPTION;
+			if(sampleExchanged) {
+				logger.info("Exchanged sample");
+				Statistics.changeSample();
+			}
 			mode = Mode.NORMAL;
 			displayWindow.remove(adminPanel);
 			displayWindow.validate();
