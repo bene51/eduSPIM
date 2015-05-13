@@ -21,9 +21,6 @@ public class Statistics {
 			"Sample_change";
 
 
-	public static String PATH = "C:\\Users\\huiskenlab\\Dropbox\\EduSPIM\\Statistics.csv"; // TODO save this in Preferences
-
-
 	public static void incrementStacks() {
 		try {
 			getInstance().getTodaysEntry().stacks++;
@@ -87,12 +84,13 @@ public class Statistics {
 
 	private void load() throws Exception {
 		allEntries = new ArrayList<Entry>();
-		File f = new File(PATH);
+		String path = Preferences.getStatisticsPath();
+		File f = new File(path);
 		if(!f.exists()) {
 			Mail.send("eduSPIM statistics file not found",
 						Preferences.getMailto(),
 						null, // CC
-						"Couldn't find statistics file at\n" + PATH +
+						"Couldn't find statistics file at\n" + path +
 						"\nCreating new file");
 		} else {
 			BufferedReader reader = new BufferedReader(new FileReader(f));
@@ -108,9 +106,10 @@ public class Statistics {
 	}
 
 	private void save() {
+		String path = Preferences.getStatisticsPath();
 		PrintWriter out = null;
 		try {
-			out = new PrintWriter(new File(PATH));
+			out = new PrintWriter(new File(path));
 			doWrite(out);
 		} catch(Exception e) {
 			ExceptionHandler.handleException("Error saving statistics file", e);

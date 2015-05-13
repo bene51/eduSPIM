@@ -35,8 +35,10 @@ public class Preferences {
 	public static final String PIXEL_WIDTH          = "pixel_width";
 	public static final String SNAPSHOTS_DIR        = "snapshots_dir";
 	public static final String LOGS_DIR             = "logs_dir";
+	public static final String STATISTICS_PATH      = "statistics_path";
 	public static final String SNAPSHOTS_LINK       = "snapshots_link";
 	public static final String LOGS_LINK            = "logs_link";
+	public static final String STATISTICS_LINK      = "statistics_link";
 	public static final String MAIL_TO              = "mail_to";
 	public static final String MAIL_CC              = "mail_cc";
 	public static final String FAIL_WITHOUT_ARDUINO = "fail_without_arduino";
@@ -69,9 +71,14 @@ public class Preferences {
 																File.separator + "Dropbox" +
 																File.separator + "EduSPIM" +
 																File.separator + "Logs";
+	private static final String DEFAULT_STATISTICS_PATH       = System.getProperty("user.home") +
+																File.separator + "Dropbox" +
+																File.separator + "EduSPIM" +
+																File.separator + "Statistics.csv";
 
-	private static final String DEFAULT_LOGS_LINK             = "https://www.dropbox.com/sh/bccsscts2gc8i6r/AADQb3myigWu1JoZDVEyANWwa?dl       =0";
-	private static final String DEFAULT_SNAPSHOTS_LINK        = "https://www.dropbox.com/sh/ooiudayauje1apw/AABzeD851uTbBJb0j-81XBCOa?dl       =0";
+	private static final String DEFAULT_LOGS_LINK             = "https://www.dropbox.com/sh/bccsscts2gc8i6r/AADQb3myigWu1JoZDVEyANWwa?dl=0";
+	private static final String DEFAULT_SNAPSHOTS_LINK        = "https://www.dropbox.com/sh/ooiudayauje1apw/AABzeD851uTbBJb0j-81XBCOa?dl=0";
+	private static final String DEFAULT_STATISTICS_LINK       = "https://www.dropbox.com/s/jt6mw71s6zk635m/Statistics.csv?dl=0";
 	private static final String DEFAULT_MAIL_TO               = "bene.schmid@gmail.com";
 	private static final String DEFAULT_MAIL_CC               = ""; // TODO labhuisken@mpi-cbg.de
 	private static final boolean DEFAULT_FAIL_WITHOUT_ARDUINO = false;
@@ -88,8 +95,8 @@ public class Preferences {
 	private double tCameraFPS, tCameraExp, fCameraFPS, fCameraExp;
 	private int tCameraGain, fCameraGain;
 	private double  pixelWidth;
-	private String snapshotsdir, logsdir;
-	private String logslink, snapshotslink;
+	private String snapshotsdir, logsdir, statisticspath;
+	private String logslink, snapshotslink, statisticslink;
 	private String mailto, mailcc;
 	private boolean failWithoutArduino;
 
@@ -173,12 +180,20 @@ public class Preferences {
 		return getInstance().logsdir;
 	}
 
+	public static String getStatisticsPath() {
+		return getInstance().statisticspath;
+	}
+
 	public static String getSnapshotsLink() {
 		return getInstance().snapshotslink;
 	}
 
 	public static String getLogsLink() {
 		return getInstance().logslink;
+	}
+
+	public static String getStatisticsLink() {
+		return getInstance().statisticslink;
 	}
 
 	public static String getMailto() {
@@ -300,8 +315,10 @@ public class Preferences {
 		properties.put(PIXEL_WIDTH,          Double.toString(DEFAULT_PIXEL_WIDHT));
 		properties.put(SNAPSHOTS_DIR,        DEFAULT_SNAPSHOTS_DIR);
 		properties.put(LOGS_DIR,             DEFAULT_LOGS_DIR);
+		properties.put(STATISTICS_PATH,      DEFAULT_STATISTICS_PATH);
 		properties.put(SNAPSHOTS_LINK,       DEFAULT_SNAPSHOTS_LINK);
 		properties.put(LOGS_LINK,            DEFAULT_LOGS_LINK);
+		properties.put(STATISTICS_LINK,      DEFAULT_STATISTICS_LINK);
 		properties.put(MAIL_TO,              DEFAULT_MAIL_TO);
 		properties.put(MAIL_CC,              DEFAULT_MAIL_CC);
 		properties.put(FAIL_WITHOUT_ARDUINO, Boolean.toString(DEFAULT_FAIL_WITHOUT_ARDUINO));
@@ -342,8 +359,10 @@ public class Preferences {
 		pixelWidth    = Double.parseDouble(properties.getProperty(PIXEL_WIDTH,    Double.toString(DEFAULT_PIXEL_WIDHT)));
 		snapshotsdir  = properties.getProperty(SNAPSHOTS_DIR, DEFAULT_SNAPSHOTS_DIR);
 		logsdir       = properties.getProperty(LOGS_DIR, DEFAULT_LOGS_DIR);
+		statisticspath= properties.getProperty(STATISTICS_PATH, DEFAULT_STATISTICS_PATH);
 		snapshotslink = properties.getProperty(SNAPSHOTS_LINK, DEFAULT_SNAPSHOTS_LINK);
 		logslink      = properties.getProperty(LOGS_LINK, DEFAULT_LOGS_LINK);
+		statisticslink= properties.getProperty(STATISTICS_LINK, DEFAULT_STATISTICS_LINK);
 		mailto        = properties.getProperty(MAIL_TO, DEFAULT_MAIL_TO);
 		mailcc        = properties.getProperty(MAIL_CC, DEFAULT_MAIL_TO);
 		failWithoutArduino = Boolean.parseBoolean(properties.getProperty(FAIL_WITHOUT_ARDUINO));
@@ -382,8 +401,10 @@ public class Preferences {
 		p.pixelWidth         = Double.parseDouble(backup.get(PIXEL_WIDTH));
 		p.snapshotsdir       = backup.get(SNAPSHOTS_DIR);
 		p.logsdir            = backup.get(LOGS_DIR);
+		p.statisticspath     = backup.get(STATISTICS_PATH);
 		p.snapshotslink      = backup.get(SNAPSHOTS_LINK);
 		p.logslink           = backup.get(LOGS_LINK);
+		p.statisticslink     = backup.get(STATISTICS_LINK);
 		p.mailto             = backup.get(MAIL_TO);
 		p.mailcc             = backup.get(MAIL_CC);
 		p.failWithoutArduino = Boolean.parseBoolean(backup.get(FAIL_WITHOUT_ARDUINO));
@@ -469,10 +490,14 @@ public class Preferences {
 		out.println("# Folder where logs are written to");
 		out.println(LOGS_DIR + "=" + escape(p.logsdir));
 		out.println();
+		out.println("# Path to a statistics file");
+		out.println(STATISTICS_PATH + "=" + escape(p.statisticspath));
+		out.println();
 		out.println("# Links that point a browser to shared logs/snapshots directories,");
 		out.println("# included in some emails");
 		out.println(SNAPSHOTS_LINK + "=" + escape(p.snapshotslink));
 		out.println(LOGS_LINK + "=" + escape(p.logslink));
+		out.println(STATISTICS_LINK + "=" + escape(p.statisticslink));
 		out.println();
 		out.println("# Email addresses");
 		out.println(MAIL_TO + "=" + escape(p.mailto));
