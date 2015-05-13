@@ -571,7 +571,7 @@ public class AdminPanel extends JPanel {
 		try {
 			double fps = Double.parseDouble(tCameraFPS.getText());
 			fps = Microscope.getInstance().getTransmissionCamera().setFramerate(fps);
-			tCameraExp.setText(df.format(fps));
+			tCameraFPS.setText(df.format(fps));
 			Microscope.getInstance().singlePreview(true, true);
 		} catch (CameraException e1) {
 			ExceptionHandler.showException("Error changing the frame rate of the transmission camera", e1);
@@ -608,7 +608,7 @@ public class AdminPanel extends JPanel {
 		try {
 			double fps = Double.parseDouble(fCameraFPS.getText());
 			fps = Microscope.getInstance().getFluorescenceCamera().setFramerate(fps);
-			fCameraExp.setText(df.format(fps));
+			fCameraFPS.setText(df.format(fps));
 			Microscope.getInstance().singlePreview(true, true);
 		} catch (CameraException e1) {
 			ExceptionHandler.showException("Error changing the frame rate of the fluorescence camera", e1);
