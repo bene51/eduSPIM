@@ -494,7 +494,7 @@ public class AdminPanel extends JPanel {
 		tCameraExp.setText(df.format(Preferences.getTCameraExposure()));
 		tCameraFPS.setText(df.format(Preferences.getTCameraFramerate()));
 		tCameraGain.setText(Integer.toString(Preferences.getTCameraGain()));
-		laserPower.setText(df.format(Preferences.getLaserPower()));
+		laserPower.setText(Integer.toString((int)Math.round(Preferences.getLaserPower())));
 
 		oldPreferences = Preferences.backup();
 
