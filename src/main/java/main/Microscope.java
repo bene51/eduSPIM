@@ -63,6 +63,16 @@ import display.PlaneDisplay;
  *
  * TODO automatically switch off and shutdown in the evening
  *
+ * TODO display a properties editor in case no properties file is found.
+ *
+ * TODO differ between stack snapshots in head regions and current snapshot
+ *
+ * TODO log not only 'preview', but also the direction
+ *
+ * TODO save a statistics file including (as table, csv):
+ *          - one line per day
+ *          - date | #stacks | #moves | #laser | #info
+ *
  */
 public class Microscope implements AdminPanelListener {
 
