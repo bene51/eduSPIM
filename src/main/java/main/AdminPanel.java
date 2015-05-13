@@ -7,6 +7,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.text.DecimalFormat;
@@ -127,6 +129,12 @@ public class AdminPanel extends JPanel {
 				}
 			}
 		});
+		fCameraExp.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent e) {
+				updateFluorescenceExposure();
+			}
+		});
 
 //		fCameraFPS  = new MTextField(df.format(Preferences.getFCameraFramerate()));
 //		fCameraFPS.setEditable(true);
@@ -142,6 +150,12 @@ public class AdminPanel extends JPanel {
 						code == KeyEvent.VK_DOWN) {
 					updateFluorescenceFramerate();
 				}
+			}
+		});
+		fCameraFPS.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent e) {
+				updateFluorescenceFramerate();
 			}
 		});
 
@@ -161,6 +175,12 @@ public class AdminPanel extends JPanel {
 				}
 			}
 		});
+		fCameraGain.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent e) {
+				updateFluorescenceGain();
+			}
+		});
 
 //		tCameraExp  = new MTextField(df.format(Preferences.getTCameraExposure()));
 //		tCameraExp.setEditable(true);
@@ -176,6 +196,12 @@ public class AdminPanel extends JPanel {
 						code == KeyEvent.VK_DOWN) {
 					updateTransmissionExposure();
 				}
+			}
+		});
+		tCameraExp.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent e) {
+				updateTransmissionExposure();
 			}
 		});
 
@@ -195,6 +221,12 @@ public class AdminPanel extends JPanel {
 				}
 			}
 		});
+		tCameraFPS.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent e) {
+				updateTransmissionFramerate();
+			}
+		});
 
 		tCameraGain = new NumberField(6);
 		tCameraGain.setLimits(1, 100);
@@ -210,6 +242,12 @@ public class AdminPanel extends JPanel {
 						code == KeyEvent.VK_DOWN) {
 					updateTransmissionGain();
 				}
+			}
+		});
+		tCameraGain.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent e) {
+				updateTransmissionGain();
 			}
 		});
 
@@ -229,6 +267,12 @@ public class AdminPanel extends JPanel {
 						code == KeyEvent.VK_DOWN) {
 					updateLaserpower();
 				}
+			}
+		});
+		laserPower.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent e) {
+				updateLaserpower();
 			}
 		});
 
