@@ -74,6 +74,8 @@ import display.PlaneDisplay;
  * TODO Autostart, auto close software, auto open software...
  *
  * TODO continuous preview mode in the admin panel for alignment
+ *
+ * TODO re-direct logs for today to a shared dropbox file
  */
 public class Microscope implements AdminPanelListener {
 
@@ -134,7 +136,7 @@ public class Microscope implements AdminPanelListener {
 
 	private static Microscope instance;
 
-	// for saving snapshots
+	// for saving snapshots TODO check whether that's necessary.
 	private final ExecutorService exec = Executors.newSingleThreadExecutor();
 
 	private Microscope(boolean fatal) throws IOException, MotorException {
