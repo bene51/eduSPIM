@@ -1,20 +1,22 @@
+#ifdef _MSC_VER
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #include <windows.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <time.h>
 
 #include "PI_GCS2_DLL.h"
 #include "Stage.h"
-
-#define NSTAGES 2
-
-#define STAGE_0 "M-111.1DG-NEW"
-#define STAGE_1 "M-111.1DG-NEW"
 
 #define AXIS "1"
 
 #define SAVE_CALL(ans, id) __save_call((ans), id, __FILE__, __LINE__)
 
-static int ID[NSTAGES];
+
+static int n_stages;
+static int *ID;
 static int daisyChain = -1;
 
 static void print_error(const char *msg, void *)
@@ -46,20 +48,23 @@ void stageSetErrorCallback(void (*callback)(const char *, void *), void *param)
 	hparam = param;
 }
 
-void stageConnect(int com_port, int baud)
+void stageConnect(int com_port, int baud, int nstages, const char **stages)
 {
 	printf("Connecting with RS-232...\n");
+	n_stages = nstages;
+	ID = (int *)malloc(n_stages * sizeof(int));
 
 	int nrDevices;
 	char szDevices[16 * 128];
 	printf("Trying to open daisy chain on port %d\n", com_port);
 	while(daisyChain < 0) {
 		daisyChain = PI_OpenRS232DaisyChain(com_port, baud, &nrDevices, szDevices, 16 * 128);
+		// daisyChain = PI_OpenUSBDaisyChain("PI C-863 Mercury SN 0125500219", &nrDevices, szDevices, 16 * 128);
 		printf("Trying again\n");
 	}
 	printf("daisyChain = %d: %d devices\n", daisyChain, nrDevices);
 
-	for(int i = 0, j = 1; i < NSTAGES; i++) {
+	for(int i = 0; i < n_stages; i++) {
 		ID[i] = PI_ConnectDaisyChainDevice(daisyChain, i + 1);
 		if (ID[i] < 0) {
 			char msg[1024];
@@ -70,11 +75,10 @@ void stageConnect(int com_port, int baud)
 	}
 
 	char buffer[255];
-	const char *stages[NSTAGES] = {STAGE_0, STAGE_1};
 	unsigned int PARAM_MAX_VEL = 0xA;
 	unsigned int PARAM_MAX_ACC = 0x4A;
 
-	for(int i = 0; i < NSTAGES; i++) {
+	for(int i = 0; i < n_stages; i++) {
 		int id = ID[i];
 		SAVE_CALL(PI_qIDN(id, buffer, 255), id);
 		SAVE_CALL(PI_qSAI_ALL(id, buffer, 255), id);
@@ -107,98 +111,74 @@ void stageConnect(int com_port, int baud)
 	}
 }
 
-bool stageIsReferenceNeeded()
+bool stageIsReferenceNeeded(int axis)
 {
-	int axis;
-	for (axis = 0; axis < NSTAGES; axis++) {
-		BOOL bFlag = TRUE;
-		int id = ID[axis];
-		BOOL bRefOK = FALSE;
+	BOOL bFlag = TRUE;
+	int id = ID[axis];
+	BOOL bRefOK = FALSE;
 
-		SAVE_CALL(PI_SVO(id, AXIS, &bFlag), id);
-		SAVE_CALL(PI_qFRF(id, AXIS, &bRefOK), id);
-		if (!bRefOK)
-			return TRUE;
-	}
-	return FALSE;
+	SAVE_CALL(PI_SVO(id, AXIS, &bFlag), id);
+	SAVE_CALL(PI_qFRF(id, AXIS, &bRefOK), id);
+	return (!bRefOK);
 }
 
-void stageStopMoving()
+void stageStopMoving(int axis)
 {
-	for (int axis = 0; axis < NSTAGES; axis++)
-		SAVE_CALL(PI_HLT(ID[axis], AXIS), ID[axis]);
+	SAVE_CALL(PI_HLT(ID[axis], AXIS), ID[axis]);
 }
 
 void stageClose()
 {
-	for (int axis = 0; axis < NSTAGES; axis++)
+	for (int axis = 0; axis < n_stages; axis++)
 		PI_CloseConnection(ID[axis]);
 	PI_CloseDaisyChain(daisyChain);
+	free(ID);
 }
 
-void stageReferenceIfNeeded()
+void stageReferenceIfNeeded(int axis)
 {
-	BOOL bRefOK[NSTAGES];
-	BOOL allOK = TRUE;
-	int axis;
-	for (axis = 0; axis < NSTAGES; axis++) {
-		BOOL bFlag = TRUE;
-		int id = ID[axis];
-		SAVE_CALL(PI_SVO(id, AXIS, &bFlag), id);
-		SAVE_CALL(PI_qFRF(id, AXIS, &bRefOK[axis]), id);
-		if (bRefOK[axis])
-			printf("device %d, Axis %s already referenced\n", id, AXIS);
-		else
-			allOK = FALSE;
+	BOOL bRefOK = FALSE;
+	BOOL bFlag = TRUE;
+	int id = ID[axis];
+
+	SAVE_CALL(PI_SVO(id, AXIS, &bFlag), id);
+	SAVE_CALL(PI_qFRF(id, AXIS, &bRefOK), id);
+	if (bRefOK) {
+		printf("device %d, Axis %s already referenced\n", id, AXIS);
+		return;
 	}
 
-	if (allOK)
-		return;
-
-	for(axis = 0; axis < NSTAGES; axis++) {
-		if(bRefOK[axis])
-			continue;
-
-		BOOL bFlag = FALSE;
-		int id = ID[axis];
-		SAVE_CALL(PI_qTRS(id, AXIS, &bFlag), id);
-		if(bFlag) { // stage has reference switch
-			SAVE_CALL(PI_FRF(id, AXIS), id);
-			printf("device %d, Reference stage for axis %s by reference switch ", id, AXIS);
+	bFlag = FALSE;
+	SAVE_CALL(PI_qTRS(id, AXIS, &bFlag), id);
+	if(bFlag) { // stage has reference switch
+		SAVE_CALL(PI_FRF(id, AXIS), id);
+		printf("device %d, Reference stage for axis %s by reference switch ", id, AXIS);
+	} else {
+		SAVE_CALL(PI_qLIM(id, AXIS, &bFlag), id);
+		if(bFlag) {
+			SAVE_CALL(!PI_FNL(id, AXIS), id);
+			printf("device %d, Reference stage for axis %s by negative limit switch ", id, AXIS);
 		} else {
-			SAVE_CALL(PI_qLIM(id, AXIS, &bFlag), id);
-			if(bFlag) {
-				SAVE_CALL(!PI_FNL(id, AXIS), id);
-				printf("device %d, Reference stage for axis %s by negative limit switch ", id, AXIS);
-			} else {
-				char msg[1024];
-				sprintf(msg, "Error (Stage has no reference or limit switch) in %s, line %d\n", __FILE__, __LINE__);
-				error_callback(msg, hparam);
-				return;
-			}
+			char msg[1024];
+			sprintf(msg, "Error (Stage has no reference or limit switch) in %s, line %d\n", __FILE__, __LINE__);
+			error_callback(msg, hparam);
+			return;
 		}
 	}
 
 	do {
 		Sleep(500);
-		allOK = TRUE;
-		for(axis = 0; axis < NSTAGES; axis++) {
-			SAVE_CALL(PI_IsControllerReady(ID[axis], &bRefOK[axis]), ID[axis]);
-			if(!bRefOK[axis])
-				allOK = FALSE;
-		}
+		SAVE_CALL(PI_IsControllerReady(ID[axis], &bRefOK), ID[axis]);
 		printf(".");
-	} while (! allOK);
+	} while (!bRefOK);
 	printf("\n");
 
-	for(axis = 0; axis < NSTAGES; axis++) {
-		SAVE_CALL(PI_qFRF(ID[axis], AXIS, &bRefOK[axis]), ID[axis]);
-		if (!bRefOK[axis]) {
-			char msg[1024];
-			sprintf(msg, "Error (Stage not referenced) in %s, line %d\n", __FILE__, __LINE__);
-			error_callback(msg, hparam);
-			return;
-		}
+	SAVE_CALL(PI_qFRF(ID[axis], AXIS, &bRefOK), ID[axis]);
+	if (!bRefOK) {
+		char msg[1024];
+		sprintf(msg, "Error (Stage not referenced) in %s, line %d\n", __FILE__, __LINE__);
+		error_callback(msg, hparam);
+		return;
 	}
 }
 
@@ -233,9 +213,32 @@ bool stageIsMoving(int axis)
 	return moving;
 }
 
-void main(void)
+void main(int argc, char *argv[])
 {
-	stageConnect(7, 38400);
+	printf("argc = %d\n", argc);
+	char buf[2048];
+	int r = PI_EnumerateUSB(buf, sizeof(buf), NULL);
+	printf("Found: %s\n", buf);
+
+	const int n_stages = 2;
+	const char *stages[n_stages];
+	stages[0] = "M-111.1DG-NEW";
+	stages[1] = "M-111.1DG-NEW";
+
+	stageConnect(7, 38400, n_stages, stages);
+	for(int i = 0; i < n_stages; i++)
+		stageReferenceIfNeeded(i);
+	int axis = 0;
+	srand((unsigned)time(NULL));
+	double y = 15.0 * (double)rand() / double(RAND_MAX);
+	printf("moving to %f\n", y);
+	if(argc > 1)
+		y = atof(argv[1]);
+	stageSetTarget(axis, y);
+	while(stageIsMoving(axis)) {
+		int t = GetTickCount();
+		printf("time: %d\n", t);
+	}
 	stageClose();
 }
 

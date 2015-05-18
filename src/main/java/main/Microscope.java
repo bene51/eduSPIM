@@ -433,14 +433,11 @@ public class Microscope implements AdminPanelListener {
 		fluorescenceCamera.startSequence();
 		transmissionCamera.startSequence();
 		do {
-			switch(axis) {
-			case Y_AXIS:
+			if(axis == Y_AXIS) {
 				yPos = positive ? yPos + dz : yPos - dz;
 				yRel = (yPos - Preferences.getStackYStart()) / (Preferences.getStackYEnd() - Preferences.getStackYStart());
-				break;
-			case Z_AXIS:
+			} else if(axis == Z_AXIS) {
 				plane = positive ? plane + 1 : plane - 1;
-				break;
 			}
 
 			// stop if moving out of area
@@ -523,7 +520,7 @@ public class Microscope implements AdminPanelListener {
 		// move the motor back
 		motor.setTarget(Z_AXIS, Preferences.getStackZEnd());
 		displayPanel.setStackMode(false);
-		while(motor.isMoving()) {
+		while(motor.isMoving(Z_AXIS)) {
 			int plane = getCurrentPlane();
 			displayPanel.display(null, null, yRel, plane);
 		}

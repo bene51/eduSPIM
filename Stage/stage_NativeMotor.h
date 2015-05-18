@@ -13,7 +13,7 @@ extern "C" {
  * Signature: (II)V
  */
 JNIEXPORT void JNICALL Java_stage_NativeMotor_stageConnect
-  (JNIEnv *, jclass, jint, jint);
+  (JNIEnv *, jclass, jint, jobjectArray stages);
 
 /*
  * Class:     stage_NativeMotor
@@ -21,7 +21,7 @@ JNIEXPORT void JNICALL Java_stage_NativeMotor_stageConnect
  * Signature: ()Z
  */
 JNIEXPORT jboolean JNICALL Java_stage_NativeMotor_stageIsReferenceNeeded
-  (JNIEnv *, jclass);
+  (JNIEnv *, jclass, jint);
 
 /*
  * Class:     stage_NativeMotor
@@ -29,7 +29,7 @@ JNIEXPORT jboolean JNICALL Java_stage_NativeMotor_stageIsReferenceNeeded
  * Signature: ()Z
  */
 JNIEXPORT void JNICALL Java_stage_NativeMotor_stageReferenceIfNeeded
-  (JNIEnv *, jclass);
+  (JNIEnv *, jclass, jint);
 
 /*
  * Class:     stage_NativeMotor
@@ -72,7 +72,7 @@ JNIEXPORT void JNICALL Java_stage_NativeMotor_stageSetTarget
   (JNIEnv *, jclass, jint, jdouble);
 
 JNIEXPORT void JNICALL Java_stage_NativeMotor_stageStopMoving
-  (JNIEnv *, jclass);
+  (JNIEnv *, jclass, jint);
 
 /*
  * Class:     stage_NativeMotor

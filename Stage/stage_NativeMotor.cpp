@@ -1,4 +1,6 @@
 #include "stage_NativeMotor.h"
+
+#include <stdlib.h>
 #include "Stage.h"
 
 static void
@@ -18,22 +20,33 @@ setExceptionHandler(JNIEnv *env)
 }
 
 JNIEXPORT void JNICALL Java_stage_NativeMotor_stageConnect
-  (JNIEnv *env, jclass, jint comport, jint baudrate)
+  (JNIEnv *env, jclass, jint comport, jint baudrate, jobjectArray stages)
 {
 	setExceptionHandler(env);
-	stageConnect(comport, baudrate);
+	int nstages = env->GetArrayLength(stages);
+	const char **c_stages = (const char **)malloc(nstages * sizeof(const char*));
+	for(int i = 0; i < nstages; i++) {
+		jobject obj = env->GetObjectArrayElement(stages, i);
+		c_stages[i] = env->GetStringUTFChars((jstring)obj, NULL);
+	}
+	stageConnect(comport, baudrate, nstages, c_stages);
+	for(int i = 0; i < nstages; i++) {
+		jobject obj = env->GetObjectArrayElement(stages, i);
+		env->ReleaseStringUTFChars((jstring)obj, c_stages[i]);
+	}
+	free(c_stages);
 }
 
 JNIEXPORT jboolean JNICALL Java_stage_NativeMotor_stageIsReferenceNeeded
-  (JNIEnv *, jclass)
+  (JNIEnv *, jclass, jint axis)
 {
-	return stageIsReferenceNeeded();
+	return stageIsReferenceNeeded(axis);
 }
 
 JNIEXPORT void JNICALL Java_stage_NativeMotor_stageReferenceIfNeeded
-  (JNIEnv *, jclass)
+  (JNIEnv *, jclass, jint axis)
 {
-	stageReferenceIfNeeded();
+	stageReferenceIfNeeded(axis);
 }
 
 JNIEXPORT jdouble JNICALL Java_stage_NativeMotor_stageGetPosition
@@ -67,9 +80,9 @@ JNIEXPORT void JNICALL Java_stage_NativeMotor_stageSetTarget
 }
 
 JNIEXPORT void JNICALL Java_stage_NativeMotor_stageStopMoving
-  (JNIEnv *, jclass)
+  (JNIEnv *, jclass, jint axis)
 {
-	stageStopMoving();
+	stageStopMoving(axis);
 }
 
 JNIEXPORT void JNICALL Java_stage_NativeMotor_stageClose

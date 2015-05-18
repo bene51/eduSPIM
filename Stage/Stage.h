@@ -3,13 +3,13 @@
 
 void stageSetErrorCallback(void (*callback)(const char *, void *), void *param);
 
-void stageConnect(int com_port, int baud);
+void stageConnect(int com_port, int baud, int n_stages, const char *stages[]);
 
-bool stageIsReferenceNeeded();
+bool stageIsReferenceNeeded(int axis);
 
 void stageClose();
 
-void stageReferenceIfNeeded();
+void stageReferenceIfNeeded(int axis);
 
 void stageSetTarget(int axis, double pos);
 
@@ -21,7 +21,7 @@ double stageGetVelocity(int axis);
 
 bool stageIsMoving(int axis);
 
-void stageStopMoving();
+void stageStopMoving(int axis);
 
 #endif // _STAGE_H_
 

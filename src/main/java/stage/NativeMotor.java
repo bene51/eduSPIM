@@ -6,6 +6,15 @@ import java.io.InputStreamReader;
 
 public class NativeMotor implements IMotor {
 
+	public static final String STAGE_Y = "M-111.1DG-NEW";
+	public static final String STAGE_Z = "M-111.1DG-NEW";
+
+	private static final String[] STAGES = new String[N_AXES];
+	static {
+		if(Y_AXIS < STAGES.length) STAGES[Y_AXIS] = STAGE_Y;
+		if(Z_AXIS < STAGES.length) STAGES[Z_AXIS] = STAGE_Z;
+	};
+
 	private static final int BAUD_RATE = 38400;
 
 	static {
@@ -13,23 +22,26 @@ public class NativeMotor implements IMotor {
 	}
 
 	public NativeMotor(int comPort) throws MotorException {
-		stageConnect(comPort, BAUD_RATE);
-		if(stageIsReferenceNeeded()) {
-			boolean allow = true; // TODO check with Wiebke the order of referencing
-			if(allow)
-				stageReferenceIfNeeded();
+		stageConnect(comPort, BAUD_RATE, STAGES);
+		for(int axis = 0; axis < STAGES.length; axis++) {
+			if(stageIsReferenceNeeded(axis)) {
+				boolean allow = true; // TODO check with Wiebke the order of referencing
+				if(allow)
+					stageReferenceIfNeeded(axis);
+			}
+			// TODO move to the middle: check with Wiebke
 		}
 	}
 
-	private static native void stageConnect(int comport, int baudrate) throws MotorException;
-	private static native boolean stageIsReferenceNeeded() throws MotorException;
-	private static native void stageReferenceIfNeeded() throws MotorException;
+	private static native void stageConnect(int comport, int baudrate, String[] stages) throws MotorException;
+	private static native boolean stageIsReferenceNeeded(int axis) throws MotorException;
+	private static native void stageReferenceIfNeeded(int axis) throws MotorException;
 	private static native double stageGetPosition(int axis) throws MotorException;
 	private static native double stageGetVelocity(int axis) throws MotorException;
 	private static native boolean stageIsMoving(int axis) throws MotorException;
 	private static native void stageSetVelocity(int axis, double vel) throws MotorException;
 	private static native void stageSetTarget(int axis, double pos) throws MotorException;
-	private static native void stageStopMoving() throws MotorException;
+	private static native void stageStopMoving(int axis) throws MotorException;
 	private static native void stageClose() throws MotorException;
 
 	@Override
@@ -44,7 +56,11 @@ public class NativeMotor implements IMotor {
 
 	@Override
 	public boolean isMoving() throws MotorException {
-		return isMoving(IMotor.Y_AXIS) || isMoving(IMotor.Z_AXIS);
+		for(int axis = 0; axis < N_AXES; axis++) {
+			if(isMoving(axis))
+				return true;
+		}
+		return false;
 	}
 
 	@Override
@@ -63,8 +79,8 @@ public class NativeMotor implements IMotor {
 	}
 
 	@Override
-	public void stop() throws MotorException {
-		stageStopMoving();
+	public void stop(int axis) throws MotorException {
+		stageStopMoving(axis);
 	}
 
 	@Override

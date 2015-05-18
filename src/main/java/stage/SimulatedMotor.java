@@ -12,17 +12,17 @@ import main.ExceptionHandler;
 
 public class SimulatedMotor implements IMotor {
 
-	public static final int DIMS = 2;
+	public static final int DIMS = N_AXES;
 
-	private double[] pos = new double[2];
-	private double[] vel = new double[2];
-	private double[] tar = new double[2];
+	private double[] pos = new double[DIMS];
+	private double[] vel = new double[DIMS];
+	private double[] tar = new double[DIMS];
 
 	private boolean closed = false;
 	private final Object lock = new Object();
 	private double epsilon = 1e-7;
 	private Thread movingThread;
-	private boolean stopMoving = false;
+	private boolean[] stopMoving = new boolean[DIMS];
 
 	public SimulatedMotor() {
 		movingThread = new Thread(new MovingThread());
@@ -93,8 +93,8 @@ public class SimulatedMotor implements IMotor {
 	}
 
 	@Override
-	public void stop() {
-		stopMoving = true;
+	public void stop(int axis) {
+		stopMoving[axis] = true;
 	}
 
 	@Override
@@ -145,13 +145,11 @@ public class SimulatedMotor implements IMotor {
 				prevTimestamp = timestamp;
 				boolean moving = false;
 				synchronized(lock) {
-					if(stopMoving) {
-						for(int d = 0; d < DIMS; d++)
-							tar[d] = pos[d];
-						stopMoving = false;
-					}
-
 					for(int d = 0; d < DIMS; d++) {
+						if(stopMoving[d]) {
+							tar[d] = pos[d];
+							stopMoving[d] = false;
+						}
 						double diff = tar[d] - pos[d];
 						if(diff != 0) {
 							moving = true;
