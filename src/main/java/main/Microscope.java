@@ -1,5 +1,6 @@
 package main;
 
+import static stage.IMotor.MIRROR;
 import static stage.IMotor.Y_AXIS;
 import static stage.IMotor.Z_AXIS;
 import ij.IJ;
@@ -397,7 +398,11 @@ public class Microscope implements AdminPanelListener {
 
 	int getCurrentPlane() throws MotorException {
 		double zpos = motor.getPosition(Z_AXIS);
-		double zrel = (zpos - Preferences.getStackZStart()) / (Preferences.getStackZEnd() - Preferences.getStackZStart());
+		return getPlaneForZ(zpos);
+	}
+
+	int getPlaneForZ(double zPos) {
+		double zrel = (zPos - Preferences.getStackZStart()) / (Preferences.getStackZEnd() - Preferences.getStackZStart());
 		return (int)Math.round(zrel * ICamera.DEPTH);
 	}
 
@@ -406,12 +411,17 @@ public class Microscope implements AdminPanelListener {
 		return (ypos - Preferences.getStackYStart()) / (Preferences.getStackYEnd() - Preferences.getStackYStart());
 	}
 
+	double getMirrorPositionForZ(double zPos) {
+		return Preferences.getMirrorCoefficientM() * zPos + Preferences.getMirrorCoefficientT();
+	}
+
 	void startPreview(int button, int axis, boolean positive, double target) throws MotorException, CameraException {
 		synchronized(this) {
 			busy = true;
 		}
 		// get current plane
-		int plane = getCurrentPlane();
+		double zPos = motor.getPosition(Z_AXIS);
+		int plane = getPlaneForZ(zPos);
 		double yPos = motor.getPosition(Y_AXIS);
 		double yRel = (yPos - Preferences.getStackYStart()) / (Preferences.getStackYEnd() - Preferences.getStackYStart());
 
@@ -419,16 +429,35 @@ public class Microscope implements AdminPanelListener {
 		double yRelOrg = yRel;
 		double planeOrg = plane;
 
+		// move mirror to start pos and wait until it's done
+		if(axis == Z_AXIS) {
+			double mirrorPos = getMirrorPositionForZ(zPos);
+			motor.setTarget(MIRROR, getMirrorPositionForZ(zPos));
+			while(motor.isMoving(MIRROR))
+				; // do nothing
+		}
+
 		// set the speed of the motor according to the frame rate
 		double framerate = fluorescenceCamera.getFramerate();
 		double dz = (Preferences.getStackZEnd() - Preferences.getStackZStart()) / ICamera.DEPTH;
 		motor.setVelocity(axis, dz * framerate);
 
-		for(int i = 0; i < transmissionFrame.length; i++)
-			transmissionFrame[i] = 100;
+		// set the speed of the mirror
+		if(axis == Z_AXIS) {
+			double dMirror = Math.abs(
+					getMirrorPositionForZ(Preferences.getStackZEnd()) -
+					getMirrorPositionForZ(Preferences.getStackZStart())
+				) / ICamera.DEPTH;
+			motor.setVelocity(MIRROR, dMirror * framerate);
+		}
 
 		displayPanel.setStackMode(false);
 		motor.setTarget(axis, target);
+		// set the mirror target position
+		if(axis == Z_AXIS) {
+			double mirrorTgt = getMirrorPositionForZ(target);
+			motor.setTarget(MIRROR, mirrorTgt);
+		}
 
 		fluorescenceCamera.startSequence();
 		transmissionCamera.startSequence();
@@ -467,15 +496,19 @@ public class Microscope implements AdminPanelListener {
 		plane = Math.max(0, Math.min(plane, ICamera.DEPTH - 1));
 		yPos = Math.max(Preferences.getStackYStart(), Math.min(yPos, Preferences.getStackYEnd()));
 		yRel = (yPos - Preferences.getStackYStart()) / (Preferences.getStackYEnd() - Preferences.getStackYStart());
-		double zPos = Preferences.getStackZStart() + plane * dz;
+		zPos = Preferences.getStackZStart() + plane * dz;
 		double tgt = axis == Y_AXIS ? yPos : zPos;
 		motor.setTarget(axis, tgt);
-		while(motor.isMoving(axis))
+		if(axis == Z_AXIS)
+			motor.setTarget(MIRROR, getMirrorPositionForZ(tgt));
+
+		while(motor.isMoving())
 			sleep(50);
 
 		// reset the motor speed
 		motor.setVelocity(Y_AXIS, IMotor.VEL_MAX_Y);
 		motor.setVelocity(Z_AXIS, IMotor.VEL_MAX_Z);
+		motor.setVelocity(MIRROR, IMotor.VEL_MAX_M);
 
 		// log the move
 		if(mode == Mode.NORMAL) {
@@ -517,10 +550,12 @@ public class Microscope implements AdminPanelListener {
 			Statistics.incrementStacks();
 		}
 
-		// move the motor back
-		motor.setTarget(Z_AXIS, Preferences.getStackZEnd());
+		// move motor and mirror back
+		double zStart = Preferences.getStackZEnd();
+		motor.setTarget(Z_AXIS, zStart);
+		motor.setTarget(MIRROR, getMirrorPositionForZ(zStart));
 		displayPanel.setStackMode(false);
-		while(motor.isMoving(Z_AXIS)) {
+		while(motor.isMoving(Z_AXIS) || motor.isMoving(MIRROR)) {
 			int plane = getCurrentPlane();
 			displayPanel.display(null, null, yRel, plane);
 		}
@@ -530,10 +565,19 @@ public class Microscope implements AdminPanelListener {
 		double dz = (Preferences.getStackZEnd() - Preferences.getStackZStart()) / ICamera.DEPTH;
 		motor.setVelocity(Z_AXIS, dz * framerate);
 
+		// set the speed of the mirror
+		double dMirror = Math.abs(
+				getMirrorPositionForZ(Preferences.getStackZEnd()) -
+				getMirrorPositionForZ(Preferences.getStackZStart())
+			) / ICamera.DEPTH;
+		motor.setVelocity(MIRROR, dMirror * framerate);
+
 		displayPanel.display(null, null, yRel, ICamera.DEPTH - 1);
 		sleep(100); // delay to ensure rendering before changing stack mode
 		displayPanel.setStackMode(true);
-		motor.setTarget(Z_AXIS, Preferences.getStackZStart());
+		double zEnd = Preferences.getStackZStart();
+		motor.setTarget(Z_AXIS, zEnd);
+		motor.setTarget(MIRROR, getMirrorPositionForZ(zEnd));
 
 		fluorescenceCamera.startSequence();
 		for(int i = ICamera.DEPTH - 1; i >= 0; i--) {
@@ -549,6 +593,7 @@ public class Microscope implements AdminPanelListener {
 		// reset the motor speed
 		motor.setVelocity(Y_AXIS, IMotor.VEL_MAX_Y);
 		motor.setVelocity(Z_AXIS, IMotor.VEL_MAX_Z);
+		motor.setVelocity(MIRROR, IMotor.VEL_MAX_M);
 
 		adminPanel.setPosition(motor.getPosition(Y_AXIS), motor.getPosition(Z_AXIS));
 
@@ -622,20 +667,30 @@ public class Microscope implements AdminPanelListener {
 			displayPanel.display(null, fluorescenceFrame, yRel, z);
 	}
 
-	public void manualLaserOn() throws LaserException {
+	public void manualLaserOn() throws LaserException, MotorException {
 		if(mode == Mode.NORMAL) {
 			logger.info("Manual laser on");
 			Statistics.incrementLasers();
 		}
-		// TODO move mirror away
+		// move mirror away
+		double mirror = getMirrorPositionForZ(Preferences.getStackZStart());
+		motor.setTarget(MIRROR, mirror);
+		while(motor.isMoving(MIRROR))
+			; // wait
+
 		laser.setOn();
 	}
 
-	public void manualLaserOff() throws LaserException {
+	public void manualLaserOff() throws LaserException, MotorException {
 		if(mode == Mode.NORMAL)
 			logger.info("Manual laser off");
-		// TODO move mirror in place
+
 		laser.setTriggered();
+		// move mirror in place
+		double mirror = getMirrorPositionForZ(motor.getPosition(Z_AXIS));
+		motor.setTarget(MIRROR, mirror);
+		while(motor.isMoving(MIRROR))
+			; // wait
 	}
 
 	public static void sleep(long ms) {
@@ -702,7 +757,7 @@ public class Microscope implements AdminPanelListener {
 									// display it as transmission image to avoid the translucent
 									// lookup table:
 									displayPanel.display(null, fluorescenceFrame, yRel, z);
-								} while(!mirrorQueue.isIdle()); // || TODO mirror.isMoving()
+								} while(!mirrorQueue.isIdle() || motor.isMoving(MIRROR));
 
 								fluorescenceCamera.stopPreview();
 								System.out.println("Stopped preview");
@@ -718,8 +773,12 @@ public class Microscope implements AdminPanelListener {
 					};
 					previewThread.start();
 				}
-				// TODO set mirror target pos to mirrorPos
-			}
+				try {
+					motor.setTarget(MIRROR, pos);
+				} catch(Exception e) {
+					ExceptionHandler.showException("Error setting mirror position", e);
+				}
+			} // run
 		});
 	}
 

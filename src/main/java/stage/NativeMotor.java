@@ -8,11 +8,13 @@ public class NativeMotor implements IMotor {
 
 	public static final String STAGE_Y = "M-111.1DG-NEW";
 	public static final String STAGE_Z = "M-111.1DG-NEW";
+	public static final String STAGE_M = "M-111.1DG-NEW"; // TODO
 
 	private static final String[] STAGES = new String[N_AXES];
 	static {
 		if(Y_AXIS < STAGES.length) STAGES[Y_AXIS] = STAGE_Y;
 		if(Z_AXIS < STAGES.length) STAGES[Z_AXIS] = STAGE_Z;
+		if(MIRROR < STAGES.length) STAGES[MIRROR] = STAGE_M;
 	};
 
 	private static final int BAUD_RATE = 38400;
