@@ -70,7 +70,7 @@ import display.PlaneDisplay;
  *
  * TODO stack logging: at pos
  *
- *
+ * TODO move the sample back to the 'home position' after some idle time.
  *
  * TODO Autostart, auto close software, auto open software...
  *
