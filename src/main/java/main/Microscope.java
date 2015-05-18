@@ -54,8 +54,6 @@ import display.PlaneDisplay;
  * Things to test there:
  * - Sending mail
  *
- * TODO change exposure time
- *
  * TODO arduino for buttons
  *
  * TODO alive signal from arduino
