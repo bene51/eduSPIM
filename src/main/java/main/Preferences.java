@@ -33,11 +33,11 @@ public class Preferences {
 	public static final String CAMERA_T_FRAMERATE   = "camera_transmission_framerate";
 	public static final String CAMERA_T_GAIN        = "camera_transmission_gain";
 	public static final String PIXEL_WIDTH          = "pixel_width";
-	public static final String SNAPSHOTS_DIR        = "snapshots_dir";
+	public static final String STACKS_DIR           = "stacks_dir";
 	public static final String LOGS_DIR             = "logs_dir";
 	public static final String PROPERTIES_DIR       = "properties_dir";
 	public static final String STATISTICS_PATH      = "statistics_path";
-	public static final String SNAPSHOTS_LINK       = "snapshots_link";
+	public static final String STACKS_LINK          = "stacks_link";
 	public static final String LOGS_LINK            = "logs_link";
 	public static final String STATISTICS_LINK      = "statistics_link";
 	public static final String MAIL_TO              = "mail_to";
@@ -64,10 +64,10 @@ public class Preferences {
 	private static final double DEFAULT_PIXEL_WIDHT           = 5.3 *  // pixel width on sensor
 	                                                            0.1 *  // magnification
 	                                                            0.001; // convert to mm
-	private static final String DEFAULT_SNAPSHOTS_DIR         = System.getProperty("user.home") +
+	private static final String DEFAULT_STACKS_DIR            = System.getProperty("user.home") +
 																File.separator + "Dropbox" +
 																File.separator + "EduSPIM" +
-																File.separator + "Snapshots";
+																File.separator + "Stacks";
 	private static final String DEFAULT_LOGS_DIR              = System.getProperty("user.home") +
 																File.separator + "Dropbox" +
 																File.separator + "EduSPIM" +
@@ -82,7 +82,7 @@ public class Preferences {
 																File.separator + "Statistics.csv";
 
 	private static final String DEFAULT_LOGS_LINK             = "https://www.dropbox.com/sh/bccsscts2gc8i6r/AADQb3myigWu1JoZDVEyANWwa?dl=0";
-	private static final String DEFAULT_SNAPSHOTS_LINK        = "https://www.dropbox.com/sh/ooiudayauje1apw/AABzeD851uTbBJb0j-81XBCOa?dl=0";
+	private static final String DEFAULT_STACKS_LINK           = "https://www.dropbox.com/sh/2guke4kp2ff43xi/AAANS6pPXvphxwCu6SclSh6Ua?dl=0";
 	private static final String DEFAULT_STATISTICS_LINK       = "https://www.dropbox.com/s/jt6mw71s6zk635m/Statistics.csv?dl=0";
 	private static final String DEFAULT_MAIL_TO               = "bene.schmid@gmail.com";
 	private static final String DEFAULT_MAIL_CC               = ""; // TODO labhuisken@mpi-cbg.de
@@ -100,8 +100,8 @@ public class Preferences {
 	private double tCameraFPS, tCameraExp, fCameraFPS, fCameraExp;
 	private int tCameraGain, fCameraGain;
 	private double  pixelWidth;
-	private String snapshotsdir, logsdir, propertiesdir, statisticspath;
-	private String logslink, snapshotslink, statisticslink;
+	private String stacksdir, logsdir, propertiesdir, statisticspath;
+	private String logslink, stackslink, statisticslink;
 	private String mailto, mailcc;
 	private boolean failWithoutArduino;
 
@@ -177,8 +177,8 @@ public class Preferences {
 		return getInstance().pixelWidth;
 	}
 
-	public static String getSnapshotsDir() {
-		return getInstance().snapshotsdir;
+	public static String getStacksDir() {
+		return getInstance().stacksdir;
 	}
 
 	public static String getLogsDir() {
@@ -193,8 +193,8 @@ public class Preferences {
 		return getInstance().statisticspath;
 	}
 
-	public static String getSnapshotsLink() {
-		return getInstance().snapshotslink;
+	public static String getStacksLink() {
+		return getInstance().stackslink;
 	}
 
 	public static String getLogsLink() {
@@ -322,11 +322,11 @@ public class Preferences {
 		properties.put(CAMERA_F_EXPOSURE,    Double.toString(DEFAULT_CAMERA_F_EXPOSURE));
 		properties.put(CAMERA_F_GAIN,        Integer.toString(DEFAULT_CAMERA_F_GAIN));
 		properties.put(PIXEL_WIDTH,          Double.toString(DEFAULT_PIXEL_WIDHT));
-		properties.put(SNAPSHOTS_DIR,        DEFAULT_SNAPSHOTS_DIR);
+		properties.put(STACKS_DIR,           DEFAULT_STACKS_DIR);
 		properties.put(LOGS_DIR,             DEFAULT_LOGS_DIR);
 		properties.put(PROPERTIES_DIR,       DEFAULT_PROPERTIES_DIR);
 		properties.put(STATISTICS_PATH,      DEFAULT_STATISTICS_PATH);
-		properties.put(SNAPSHOTS_LINK,       DEFAULT_SNAPSHOTS_LINK);
+		properties.put(STACKS_LINK,          DEFAULT_STACKS_LINK);
 		properties.put(LOGS_LINK,            DEFAULT_LOGS_LINK);
 		properties.put(STATISTICS_LINK,      DEFAULT_STATISTICS_LINK);
 		properties.put(MAIL_TO,              DEFAULT_MAIL_TO);
@@ -367,11 +367,11 @@ public class Preferences {
 		fCameraExp    = Double.parseDouble(properties.getProperty(CAMERA_F_EXPOSURE,  Double.toString(DEFAULT_CAMERA_F_EXPOSURE)));
 		fCameraGain   = Integer.parseInt(  properties.getProperty(CAMERA_F_GAIN,      Double.toString(DEFAULT_CAMERA_F_GAIN)));
 		pixelWidth    = Double.parseDouble(properties.getProperty(PIXEL_WIDTH,    Double.toString(DEFAULT_PIXEL_WIDHT)));
-		snapshotsdir  = properties.getProperty(SNAPSHOTS_DIR, DEFAULT_SNAPSHOTS_DIR);
+		stacksdir     = properties.getProperty(STACKS_DIR, DEFAULT_STACKS_DIR);
 		logsdir       = properties.getProperty(LOGS_DIR, DEFAULT_LOGS_DIR);
 		propertiesdir = properties.getProperty(PROPERTIES_DIR, DEFAULT_PROPERTIES_DIR);
 		statisticspath= properties.getProperty(STATISTICS_PATH, DEFAULT_STATISTICS_PATH);
-		snapshotslink = properties.getProperty(SNAPSHOTS_LINK, DEFAULT_SNAPSHOTS_LINK);
+		stackslink    = properties.getProperty(STACKS_LINK, DEFAULT_STACKS_LINK);
 		logslink      = properties.getProperty(LOGS_LINK, DEFAULT_LOGS_LINK);
 		statisticslink= properties.getProperty(STATISTICS_LINK, DEFAULT_STATISTICS_LINK);
 		mailto        = properties.getProperty(MAIL_TO, DEFAULT_MAIL_TO);
@@ -410,11 +410,11 @@ public class Preferences {
 		p.fCameraExp         = Double.parseDouble(backup.get(CAMERA_F_EXPOSURE));
 		p.fCameraGain        = Integer.parseInt(  backup.get(CAMERA_F_GAIN));
 		p.pixelWidth         = Double.parseDouble(backup.get(PIXEL_WIDTH));
-		p.snapshotsdir       = backup.get(SNAPSHOTS_DIR);
+		p.stacksdir          = backup.get(STACKS_DIR);
 		p.logsdir            = backup.get(LOGS_DIR);
 		p.propertiesdir      = backup.get(PROPERTIES_DIR);
 		p.statisticspath     = backup.get(STATISTICS_PATH);
-		p.snapshotslink      = backup.get(SNAPSHOTS_LINK);
+		p.stackslink         = backup.get(STACKS_LINK);
 		p.logslink           = backup.get(LOGS_LINK);
 		p.statisticslink     = backup.get(STATISTICS_LINK);
 		p.mailto             = backup.get(MAIL_TO);
@@ -496,8 +496,8 @@ public class Preferences {
 		out.println("# Physical width of a pixel, in mm");
 		out.println(PIXEL_WIDTH + "=" + p.pixelWidth);
 		out.println();
-		out.println("# Folder where snapshots are written to");
-		out.println(SNAPSHOTS_DIR + "=" + escape(p.snapshotsdir));
+		out.println("# Folder where stack projections are written to");
+		out.println(STACKS_DIR + "=" + escape(p.stacksdir));
 		out.println();
 		out.println("# Folder where logs are written to");
 		out.println(LOGS_DIR + "=" + escape(p.logsdir));
@@ -510,7 +510,7 @@ public class Preferences {
 		out.println();
 		out.println("# Links that point a browser to shared logs/snapshots directories,");
 		out.println("# included in some emails");
-		out.println(SNAPSHOTS_LINK + "=" + escape(p.snapshotslink));
+		out.println(STACKS_LINK + "=" + escape(p.stackslink));
 		out.println(LOGS_LINK + "=" + escape(p.logslink));
 		out.println(STATISTICS_LINK + "=" + escape(p.statisticslink));
 		out.println();

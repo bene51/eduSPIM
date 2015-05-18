@@ -220,8 +220,8 @@ public class Microscope implements AdminPanelListener {
 				+ "EduSPIM was just started successfully.\n\n"
 				+ "Logs are here:\n"
 				+ Preferences.getLogsLink() + "\n\n"
-				+ "snapshots:\n"
-				+ Preferences.getSnapshotsLink() + "\n\n"
+				+ "stack projections:\n"
+				+ Preferences.getStacksLink() + "\n\n"
 				+ "and statistics:\n"
 				+ Preferences.getStatisticsLink() + "\n\n"
 				+ "Greetings,\nEduSPIM");
@@ -537,7 +537,7 @@ public class Microscope implements AdminPanelListener {
 		// save the rendered projection // TODO only if we are in a head region
 		try {
 			BufferedImage im = displayPanel.getSnapshot();
-			File f = new File(Preferences.getSnapshotsDir());
+			File f = new File(Preferences.getStacksDir());
 			if(!f.exists())
 				f.mkdirs();
 			String date = new SimpleDateFormat("yyyMMdd").format(new Date());
@@ -628,8 +628,8 @@ public class Microscope implements AdminPanelListener {
 				+ "EduSPIM was just shut down with exit status " + exitcode + ".\n\n"
 				+ "Logs are here:\n"
 				+ Preferences.getLogsLink() + "\n\n"
-				+ "snapshots:\n"
-				+ Preferences.getSnapshotsLink() + "\n\n"
+				+ "stack projections:\n"
+				+ Preferences.getStacksLink() + "\n\n"
 				+ "and statistics:\n"
 				+ Preferences.getStatisticsLink() + "\n\n"
 				+ "Greetings,\nEduSPIM",
