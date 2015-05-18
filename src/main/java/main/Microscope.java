@@ -476,7 +476,7 @@ public class Microscope implements AdminPanelListener {
 
 		// log the move
 		if(mode == Mode.NORMAL) {
-			logger.info("Starting preview: (" + yRelOrg + ", " + planeOrg + ") -> (" + yRel + ", " + plane + ")");
+			logger.info("Starting preview move: (" + yRelOrg + ", " + planeOrg + ") -> (" + yRel + ", " + plane + ")");
 			Statistics.incrementMoves();
 		}
 
