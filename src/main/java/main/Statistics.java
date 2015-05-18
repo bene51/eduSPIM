@@ -157,7 +157,7 @@ public class Statistics {
 					(sampleChange ? 1 : 0);
 		}
 
-		public static Entry parseLine(String line) throws Exception { // TODO make more specific exception
+		public static Entry parseLine(String line) throws Exception {
 			Entry entry = new Entry();
 			String[] toks = line.split("\t");
 			try {
