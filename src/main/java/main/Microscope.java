@@ -68,8 +68,6 @@ import display.PlaneDisplay;
  *
  * TODO screensaver
  *
- * TODO preview logging: from-to
- *
  * TODO stack logging: at pos
  *
  *
@@ -406,14 +404,14 @@ public class Microscope implements AdminPanelListener {
 		synchronized(this) {
 			busy = true;
 		}
-		if(mode == Mode.NORMAL) {
-			logger.info("Starting preview: axis = " + axis + " going " + (positive ? "up" : "down"));
-			Statistics.incrementMoves();
-		}
 		// get current plane
 		int plane = getCurrentPlane();
 		double yPos = motor.getPosition(Y_AXIS);
 		double yRel = (yPos - Preferences.getStackYStart()) / (Preferences.getStackYEnd() - Preferences.getStackYStart());
+
+		// remember old values
+		double yRelOrg = yRel;
+		double planeOrg = plane;
 
 		// set the speed of the motor according to the frame rate
 		double framerate = fluorescenceCamera.getFramerate();
@@ -465,6 +463,7 @@ public class Microscope implements AdminPanelListener {
 		// move to theoretic position?
 		plane = Math.max(0, Math.min(plane, ICamera.DEPTH - 1));
 		yPos = Math.max(Preferences.getStackYStart(), Math.min(yPos, Preferences.getStackYEnd()));
+		yRel = (yPos - Preferences.getStackYStart()) / (Preferences.getStackYEnd() - Preferences.getStackYStart());
 		double zPos = Preferences.getStackZStart() + plane * dz;
 		double tgt = axis == Y_AXIS ? yPos : zPos;
 		motor.setTarget(axis, tgt);
@@ -474,6 +473,13 @@ public class Microscope implements AdminPanelListener {
 		// reset the motor speed
 		motor.setVelocity(Y_AXIS, IMotor.VEL_MAX_Y);
 		motor.setVelocity(Z_AXIS, IMotor.VEL_MAX_Z);
+
+		// log the move
+		if(mode == Mode.NORMAL) {
+			logger.info("Starting preview: (" + yRelOrg + ", " + planeOrg + ") -> (" + yRel + ", " + plane + ")");
+			Statistics.incrementMoves();
+		}
+
 
 		adminPanel.setPosition(motor.getPosition(Y_AXIS), motor.getPosition(Z_AXIS));
 		displayPanel.requestFocusInWindow();
