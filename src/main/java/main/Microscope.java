@@ -18,6 +18,8 @@ import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
@@ -131,6 +133,9 @@ public class Microscope implements AdminPanelListener {
 	private final byte[] fluorescenceFrame, transmissionFrame;
 
 	private static Microscope instance;
+
+	// for saving snapshots
+	private final ExecutorService exec = Executors.newSingleThreadExecutor();
 
 	private Microscope(boolean fatal) throws IOException, MotorException {
 
@@ -479,15 +484,19 @@ public class Microscope implements AdminPanelListener {
 			Statistics.incrementMoves();
 		}
 
-		// save the current snapshot
-		try {
-			BufferedImage im = displayPanel.getSnapshot();
-			File f = new File(Preferences.getSnapshotPath());
-			ImageIO.write(im, "png", f);
-		} catch(Throwable e) {
-			ExceptionHandler.handleException("Error saving snapshot", e);
-		}
-
+		exec.submit(new Runnable() {
+			@Override
+			public void run() {
+				// save the current snapshot
+				try {
+					BufferedImage im = displayPanel.getSnapshot();
+					File f = new File(Preferences.getSnapshotPath());
+					ImageIO.write(im, "png", f);
+				} catch(Throwable e) {
+					ExceptionHandler.handleException("Error saving snapshot", e);
+				}
+			}
+		});
 
 		adminPanel.setPosition(motor.getPosition(Y_AXIS), motor.getPosition(Z_AXIS));
 		displayPanel.requestFocusInWindow();
@@ -545,26 +554,30 @@ public class Microscope implements AdminPanelListener {
 		adminPanel.setPosition(motor.getPosition(Y_AXIS), motor.getPosition(Z_AXIS));
 
 		// save the rendered projection // TODO only if we are in a head region
-		try {
-			BufferedImage im = displayPanel.getSnapshot();
-			File f = new File(Preferences.getStacksDir());
-			if(!f.exists())
-				f.mkdirs();
-			String date = new SimpleDateFormat("yyyMMdd").format(new Date());
-			ImageIO.write(im, "png", new File(f, date + ".png"));
-		} catch(Throwable e) {
-			ExceptionHandler.handleException("Error saving projected stack", e);
-		}
+		exec.submit(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					BufferedImage im = displayPanel.getSnapshot();
+					File f = new File(Preferences.getStacksDir());
+					if(!f.exists())
+						f.mkdirs();
+					String date = new SimpleDateFormat("yyyMMdd").format(new Date());
+					ImageIO.write(im, "png", new File(f, date + ".png"));
+				} catch(Throwable e) {
+					ExceptionHandler.handleException("Error saving projected stack", e);
+				}
 
-		// save the current snapshot
-		try {
-			BufferedImage im = displayPanel.getSnapshot();
-			File f = new File(Preferences.getSnapshotPath());
-			ImageIO.write(im, "png", f);
-		} catch(Throwable e) {
-			ExceptionHandler.handleException("Error saving snapshot", e);
-		}
-
+				// save the current snapshot
+				try {
+					BufferedImage im = displayPanel.getSnapshot();
+					File f = new File(Preferences.getSnapshotPath());
+					ImageIO.write(im, "png", f);
+				} catch(Throwable e) {
+					ExceptionHandler.handleException("Error saving snapshot", e);
+				}
+			}
+		});
 		synchronized(this) {
 			busy = false;
 		}
