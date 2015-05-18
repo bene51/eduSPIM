@@ -68,8 +68,6 @@ import display.PlaneDisplay;
  *
  * TODO screensaver
  *
- * TODO stack logging: at pos
- *
  * TODO move the sample back to the 'home position' after some idle time.
  *
  * TODO Autostart, auto close software, auto open software...
@@ -494,12 +492,12 @@ public class Microscope implements AdminPanelListener {
 			busy = true;
 		}
 
+		double yRel = getCurrentRelativeYPos();
+
 		if(mode == Mode.NORMAL) {
-			logger.info("Acquiring stack");
+			logger.info("Acquiring stack: y = " + yRel);
 			Statistics.incrementStacks();
 		}
-
-		double yRel = getCurrentRelativeYPos();
 
 		// move the motor back
 		motor.setTarget(Z_AXIS, Preferences.getStackZEnd());
