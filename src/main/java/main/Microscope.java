@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -108,6 +109,8 @@ public class Microscope implements AdminPanelListener {
 		NORMAL,
 		ADMIN,
 	}
+
+	private final DecimalFormat df = new DecimalFormat("0.0000");
 
 	private boolean simulated = false;
 
@@ -474,7 +477,7 @@ public class Microscope implements AdminPanelListener {
 
 		// log the move
 		if(mode == Mode.NORMAL) {
-			logger.info("Starting preview move: (" + yRelOrg + ", " + planeOrg + ") -> (" + yRel + ", " + plane + ")");
+			logger.info("Starting preview move: (" + df.format(yRelOrg) + ", " + planeOrg + ") -> (" + df.format(yRel) + ", " + plane + ")");
 			Statistics.incrementMoves();
 		}
 
@@ -495,7 +498,7 @@ public class Microscope implements AdminPanelListener {
 		double yRel = getCurrentRelativeYPos();
 
 		if(mode == Mode.NORMAL) {
-			logger.info("Acquiring stack: y = " + yRel);
+			logger.info("Acquiring stack: y = " + df.format(yRel));
 			Statistics.incrementStacks();
 		}
 
@@ -543,7 +546,7 @@ public class Microscope implements AdminPanelListener {
 			String date = new SimpleDateFormat("yyyMMdd").format(new Date());
 			ImageIO.write(im, "png", new File(f, date + ".png"));
 		} catch(Throwable e) {
-			ExceptionHandler.handleException("Error saving rendered snapshot", e);
+			ExceptionHandler.handleException("Error saving projected stack", e);
 		}
 
 		synchronized(this) {
