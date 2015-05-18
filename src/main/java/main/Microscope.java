@@ -72,7 +72,6 @@ import display.PlaneDisplay;
  *
  * TODO stack logging: at pos
  *
- * TODO admin-panel apply: log changes.
  *
  *
  * TODO Autostart, auto close software, auto open software...
@@ -702,6 +701,20 @@ public class Microscope implements AdminPanelListener {
 			if(sampleExchanged) {
 				logger.info("Exchanged sample");
 				Statistics.changeSample();
+			}
+			if(!cancelled) {
+				logger.info("Successfully changed EduSPIM settings.");
+				try {
+					File propdir = new File(Preferences.getPropertiesDir());
+					if(!propdir.exists()) {
+						propdir.mkdirs();
+					}
+					String date = new SimpleDateFormat("yyyMMdd").format(new Date());
+					String name = "EduSPIM." + date + ".props";
+					Preferences.save(new File(propdir, name));
+				} catch(Exception e) {
+					ExceptionHandler.showException("Error saving properties in the property history folder", e);
+				}
 			}
 			mode = Mode.NORMAL;
 			displayWindow.remove(adminPanel);

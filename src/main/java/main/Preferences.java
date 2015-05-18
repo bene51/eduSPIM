@@ -35,6 +35,7 @@ public class Preferences {
 	public static final String PIXEL_WIDTH          = "pixel_width";
 	public static final String SNAPSHOTS_DIR        = "snapshots_dir";
 	public static final String LOGS_DIR             = "logs_dir";
+	public static final String PROPERTIES_DIR       = "properties_dir";
 	public static final String STATISTICS_PATH      = "statistics_path";
 	public static final String SNAPSHOTS_LINK       = "snapshots_link";
 	public static final String LOGS_LINK            = "logs_link";
@@ -71,6 +72,10 @@ public class Preferences {
 																File.separator + "Dropbox" +
 																File.separator + "EduSPIM" +
 																File.separator + "Logs";
+	private static final String DEFAULT_PROPERTIES_DIR        = System.getProperty("user.home") +
+																File.separator + "Dropbox" +
+																File.separator + "EduSPIM" +
+																File.separator + "Properties";
 	private static final String DEFAULT_STATISTICS_PATH       = System.getProperty("user.home") +
 																File.separator + "Dropbox" +
 																File.separator + "EduSPIM" +
@@ -95,7 +100,7 @@ public class Preferences {
 	private double tCameraFPS, tCameraExp, fCameraFPS, fCameraExp;
 	private int tCameraGain, fCameraGain;
 	private double  pixelWidth;
-	private String snapshotsdir, logsdir, statisticspath;
+	private String snapshotsdir, logsdir, propertiesdir, statisticspath;
 	private String logslink, snapshotslink, statisticslink;
 	private String mailto, mailcc;
 	private boolean failWithoutArduino;
@@ -178,6 +183,10 @@ public class Preferences {
 
 	public static String getLogsDir() {
 		return getInstance().logsdir;
+	}
+
+	public static String getPropertiesDir() {
+		return getInstance().propertiesdir;
 	}
 
 	public static String getStatisticsPath() {
@@ -315,6 +324,7 @@ public class Preferences {
 		properties.put(PIXEL_WIDTH,          Double.toString(DEFAULT_PIXEL_WIDHT));
 		properties.put(SNAPSHOTS_DIR,        DEFAULT_SNAPSHOTS_DIR);
 		properties.put(LOGS_DIR,             DEFAULT_LOGS_DIR);
+		properties.put(PROPERTIES_DIR,       DEFAULT_PROPERTIES_DIR);
 		properties.put(STATISTICS_PATH,      DEFAULT_STATISTICS_PATH);
 		properties.put(SNAPSHOTS_LINK,       DEFAULT_SNAPSHOTS_LINK);
 		properties.put(LOGS_LINK,            DEFAULT_LOGS_LINK);
@@ -359,6 +369,7 @@ public class Preferences {
 		pixelWidth    = Double.parseDouble(properties.getProperty(PIXEL_WIDTH,    Double.toString(DEFAULT_PIXEL_WIDHT)));
 		snapshotsdir  = properties.getProperty(SNAPSHOTS_DIR, DEFAULT_SNAPSHOTS_DIR);
 		logsdir       = properties.getProperty(LOGS_DIR, DEFAULT_LOGS_DIR);
+		propertiesdir = properties.getProperty(PROPERTIES_DIR, DEFAULT_PROPERTIES_DIR);
 		statisticspath= properties.getProperty(STATISTICS_PATH, DEFAULT_STATISTICS_PATH);
 		snapshotslink = properties.getProperty(SNAPSHOTS_LINK, DEFAULT_SNAPSHOTS_LINK);
 		logslink      = properties.getProperty(LOGS_LINK, DEFAULT_LOGS_LINK);
@@ -401,6 +412,7 @@ public class Preferences {
 		p.pixelWidth         = Double.parseDouble(backup.get(PIXEL_WIDTH));
 		p.snapshotsdir       = backup.get(SNAPSHOTS_DIR);
 		p.logsdir            = backup.get(LOGS_DIR);
+		p.propertiesdir      = backup.get(PROPERTIES_DIR);
 		p.statisticspath     = backup.get(STATISTICS_PATH);
 		p.snapshotslink      = backup.get(SNAPSHOTS_LINK);
 		p.logslink           = backup.get(LOGS_LINK);
@@ -432,7 +444,7 @@ public class Preferences {
 		save(getInstance().propertiesFile);
 	}
 
-	private static void save(File file) {
+	public static void save(File file) {
 		PrintWriter out = null;
 		try {
 			out = new PrintWriter(file);
@@ -489,6 +501,9 @@ public class Preferences {
 		out.println();
 		out.println("# Folder where logs are written to");
 		out.println(LOGS_DIR + "=" + escape(p.logsdir));
+		out.println();
+		out.println("# Folder where properties files are written to on change");
+		out.println(PROPERTIES_DIR + "=" + escape(p.propertiesdir));
 		out.println();
 		out.println("# Path to a statistics file");
 		out.println(STATISTICS_PATH + "=" + escape(p.statisticspath));
