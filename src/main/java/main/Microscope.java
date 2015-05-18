@@ -66,8 +66,18 @@ import display.PlaneDisplay;
  *
  * TODO differ between stack snapshots in head regions and current snapshot
  *
+ * TODO screensaver
+ *
+ * TODO preview logging: from-to
+ *
+ * TODO stack logging: at pos
+ *
+ * TODO admin-panel apply: log changes.
+ *
  *
  * TODO Autostart, auto close software, auto open software...
+ *
+ * TODO continuous preview mode in the admin panel for alignment
  */
 public class Microscope implements AdminPanelListener {
 
