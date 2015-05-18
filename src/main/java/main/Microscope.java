@@ -65,8 +65,6 @@ import display.PlaneDisplay;
  *
  * TODO display a properties editor in case no properties file is found.
  *
- * TODO differ between stack snapshots in head regions and current snapshot
- *
  * TODO screensaver
  *
  * TODO move the sample back to the 'home position' after some idle time.
@@ -481,6 +479,15 @@ public class Microscope implements AdminPanelListener {
 			Statistics.incrementMoves();
 		}
 
+		// save the current snapshot
+		try {
+			BufferedImage im = displayPanel.getSnapshot();
+			File f = new File(Preferences.getSnapshotPath());
+			ImageIO.write(im, "png", f);
+		} catch(Throwable e) {
+			ExceptionHandler.handleException("Error saving snapshot", e);
+		}
+
 
 		adminPanel.setPosition(motor.getPosition(Y_AXIS), motor.getPosition(Z_AXIS));
 		displayPanel.requestFocusInWindow();
@@ -547,6 +554,15 @@ public class Microscope implements AdminPanelListener {
 			ImageIO.write(im, "png", new File(f, date + ".png"));
 		} catch(Throwable e) {
 			ExceptionHandler.handleException("Error saving projected stack", e);
+		}
+
+		// save the current snapshot
+		try {
+			BufferedImage im = displayPanel.getSnapshot();
+			File f = new File(Preferences.getSnapshotPath());
+			ImageIO.write(im, "png", f);
+		} catch(Throwable e) {
+			ExceptionHandler.handleException("Error saving snapshot", e);
 		}
 
 		synchronized(this) {

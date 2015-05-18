@@ -37,6 +37,7 @@ public class Preferences {
 	public static final String LOGS_DIR             = "logs_dir";
 	public static final String PROPERTIES_DIR       = "properties_dir";
 	public static final String STATISTICS_PATH      = "statistics_path";
+	public static final String SNAPSHOT_PATH        = "snapshot_path";
 	public static final String STACKS_LINK          = "stacks_link";
 	public static final String LOGS_LINK            = "logs_link";
 	public static final String STATISTICS_LINK      = "statistics_link";
@@ -80,6 +81,10 @@ public class Preferences {
 																File.separator + "Dropbox" +
 																File.separator + "EduSPIM" +
 																File.separator + "Statistics.csv";
+	private static final String DEFAULT_SNAPSHOT_PATH         = System.getProperty("user.home") +
+																File.separator + "Dropbox" +
+																File.separator + "EduSPIM" +
+																File.separator + "Snapshot.png";
 
 	private static final String DEFAULT_LOGS_LINK             = "https://www.dropbox.com/sh/bccsscts2gc8i6r/AADQb3myigWu1JoZDVEyANWwa?dl=0";
 	private static final String DEFAULT_STACKS_LINK           = "https://www.dropbox.com/sh/2guke4kp2ff43xi/AAANS6pPXvphxwCu6SclSh6Ua?dl=0";
@@ -100,7 +105,7 @@ public class Preferences {
 	private double tCameraFPS, tCameraExp, fCameraFPS, fCameraExp;
 	private int tCameraGain, fCameraGain;
 	private double  pixelWidth;
-	private String stacksdir, logsdir, propertiesdir, statisticspath;
+	private String stacksdir, logsdir, propertiesdir, statisticspath, snapshotpath;
 	private String logslink, stackslink, statisticslink;
 	private String mailto, mailcc;
 	private boolean failWithoutArduino;
@@ -191,6 +196,10 @@ public class Preferences {
 
 	public static String getStatisticsPath() {
 		return getInstance().statisticspath;
+	}
+
+	public static String getSnapshotPath() {
+		return getInstance().snapshotpath;
 	}
 
 	public static String getStacksLink() {
@@ -326,6 +335,7 @@ public class Preferences {
 		properties.put(LOGS_DIR,             DEFAULT_LOGS_DIR);
 		properties.put(PROPERTIES_DIR,       DEFAULT_PROPERTIES_DIR);
 		properties.put(STATISTICS_PATH,      DEFAULT_STATISTICS_PATH);
+		properties.put(SNAPSHOT_PATH,        DEFAULT_SNAPSHOT_PATH);
 		properties.put(STACKS_LINK,          DEFAULT_STACKS_LINK);
 		properties.put(LOGS_LINK,            DEFAULT_LOGS_LINK);
 		properties.put(STATISTICS_LINK,      DEFAULT_STATISTICS_LINK);
@@ -371,6 +381,7 @@ public class Preferences {
 		logsdir       = properties.getProperty(LOGS_DIR, DEFAULT_LOGS_DIR);
 		propertiesdir = properties.getProperty(PROPERTIES_DIR, DEFAULT_PROPERTIES_DIR);
 		statisticspath= properties.getProperty(STATISTICS_PATH, DEFAULT_STATISTICS_PATH);
+		snapshotpath  = properties.getProperty(SNAPSHOT_PATH, DEFAULT_SNAPSHOT_PATH);
 		stackslink    = properties.getProperty(STACKS_LINK, DEFAULT_STACKS_LINK);
 		logslink      = properties.getProperty(LOGS_LINK, DEFAULT_LOGS_LINK);
 		statisticslink= properties.getProperty(STATISTICS_LINK, DEFAULT_STATISTICS_LINK);
@@ -414,6 +425,7 @@ public class Preferences {
 		p.logsdir            = backup.get(LOGS_DIR);
 		p.propertiesdir      = backup.get(PROPERTIES_DIR);
 		p.statisticspath     = backup.get(STATISTICS_PATH);
+		p.snapshotpath       = backup.get(SNAPSHOT_PATH);
 		p.stackslink         = backup.get(STACKS_LINK);
 		p.logslink           = backup.get(LOGS_LINK);
 		p.statisticslink     = backup.get(STATISTICS_LINK);
@@ -498,6 +510,9 @@ public class Preferences {
 		out.println();
 		out.println("# Folder where stack projections are written to");
 		out.println(STACKS_DIR + "=" + escape(p.stacksdir));
+		out.println();
+		out.println("# File to which the current snapshot is written to");
+		out.println(SNAPSHOT_PATH + "=" + escape(p.snapshotpath));
 		out.println();
 		out.println("# Folder where logs are written to");
 		out.println(LOGS_DIR + "=" + escape(p.logsdir));
