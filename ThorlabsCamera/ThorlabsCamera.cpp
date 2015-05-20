@@ -360,7 +360,7 @@ camClose(int camIdx)
 		SAVE_CALL(is_FreeImageMem(cam, buffers[camIdx][i], i + 1), camIdx);
 
 	free(buffers[camIdx]);
-	buffers = NULL;
+	buffers[camIdx] = NULL;
 
 	SAVE_CALL(is_ExitCamera(cam), camIdx);
 	cameras[camIdx] = 0;
@@ -371,6 +371,7 @@ camClose(int camIdx)
 		if(cameras[i] != 0)
 			connectedCameras++;
 	}
+
 	if(connectedCameras == 0) {
 		free(cameras);
 		cameras = NULL;
