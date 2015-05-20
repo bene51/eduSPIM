@@ -30,6 +30,7 @@ public class NativeCamera implements ICamera {
 
 	public NativeCamera(int camIdx, double fps, double exp, int gain) throws CameraException {
 		System.out.println("NativeCamera: constructor");
+		this.camIdx = camIdx;
 		camSetup(camIdx);
 		setFramerate(fps);
 		setExposuretime(exp);
