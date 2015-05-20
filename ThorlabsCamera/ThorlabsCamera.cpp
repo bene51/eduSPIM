@@ -110,9 +110,8 @@ camSetup(int camIdx)
 			return;
 		}
 		cameras = (HCAM *)malloc(nCameras * sizeof(HCAM));
-		// TODO: replace '0' with the camera id
-		cameras[0] = 0;
-		cameras[1] = 0;
+		cameras[0] = 1;
+		cameras[1] = 2;
 		buffers = (char ***)malloc(nCameras * sizeof(char *));
 	}
 	if(!SAVE_CALL(is_InitCamera(&cameras[camIdx], NULL), camIdx))

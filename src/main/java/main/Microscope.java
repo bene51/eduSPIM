@@ -332,7 +332,11 @@ public class Microscope implements AdminPanelListener {
 						Preferences.getFCameraFramerate(),
 						Preferences.getFCameraExposure(),
 						Preferences.getFCameraGain());
-				transmissionCamera = new SimulatedCamera(trans); // TODO new NativeCamera(1);
+				transmissionCamera = new NativeCamera(1,
+						Preferences.getFCameraFramerate(),
+						Preferences.getFCameraExposure(),
+						Preferences.getFCameraGain());
+				// transmissionCamera = new SimulatedCamera(trans);
 				return;
 			} catch(Throwable e) {
 				ExceptionHandler.handleException("Error initializing the camera, using simulated camera instead instead", e);
