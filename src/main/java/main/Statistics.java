@@ -94,6 +94,7 @@ public class Statistics {
 						"\nCreating new file");
 		} else {
 			BufferedReader reader = new BufferedReader(new FileReader(f));
+			reader.readLine(); // ignore the 'Last modified' line
 			reader.readLine(); // ignore the header line
 			String line;
 			while((line = reader.readLine()) != null) {
@@ -124,6 +125,7 @@ public class Statistics {
 	}
 
 	private void doWrite(PrintWriter out) {
+		out.println("#Last modified: " + new Date().getTime());
 		out.println(HEADER);
 		for(Entry entry : allEntries)
 			out.println(entry.toLine());
