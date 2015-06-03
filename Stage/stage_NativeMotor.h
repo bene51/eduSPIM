@@ -13,7 +13,7 @@ extern "C" {
  * Signature: (II)V
  */
 JNIEXPORT void JNICALL Java_stage_NativeMotor_stageConnect
-  (JNIEnv *, jclass, jint, jobjectArray stages);
+  (JNIEnv *, jclass, jint, jint, jobjectArray stages);
 
 /*
  * Class:     stage_NativeMotor
