@@ -1,10 +1,11 @@
 package laser;
 
 import jssc.SerialPort;
+import main.ExceptionHandler;
 
 public class Toptica implements ILaser {
 
-	private static final double MAX_POWER = 200; // TODO query this from the device
+	private static final double MAX_POWER = 100; // TODO query this from the device
 
 	private static final char TERM_CHAR = '\r';
 
