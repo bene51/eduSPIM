@@ -22,6 +22,27 @@ import javax.swing.JPanel;
 import main.Preferences;
 import cam.ICamera;
 
+/*
+ * Opaque offscreen image,
+ * Transparent rendered image
+ *
+ * Stack mode:
+ *     - clear the offscreen image
+ *     - do NOT clear the rendered image
+ *     - do NOT draw the transmission image into the rendered image
+ *     - draw the fluorescent image into the rendered image
+ *     - draw the coordinate system into the offscreen image
+ *     - draw the rendered image into the offscreen image
+ *
+ * Preview mode:
+ *     - clear the offscreen image
+ *     - clear the rendered image
+ *     - draw the transmission image into the rendered image
+ *     - draw the fluorescent image into the rendered image
+ *     - draw the coordinate system into the offscreen image
+ *     - draw the rendered image into the offscreen image
+ *
+ */
 @SuppressWarnings("serial")
 public class PlaneDisplay extends JPanel {
 
@@ -37,10 +58,11 @@ public class PlaneDisplay extends JPanel {
 
 	private boolean isStack = false;
 
-	private final double relativeScaleAtZEnd = 0.7;
+	private static final double relativeScaleAtZEnd = 0.7;
 
 	public PlaneDisplay(IndexColorModel lut) {
 		setBackground(Color.black);
+		setOpaque(false);
 		this.stackColorModels = prepareStackColorcode(ICamera.DEPTH, lut);
 		this.planeColorModel = preparePlaneColorcode();
 	}
@@ -150,7 +172,7 @@ public class PlaneDisplay extends JPanel {
 		}
 	}
 
-	public void render() {
+	private void render() {
 		repaint();
 	}
 
@@ -161,21 +183,20 @@ public class PlaneDisplay extends JPanel {
 	@Override
 	public void paintComponent(Graphics g) {
 		Dimension currentSize = getSize();
-		if (offscreenImage == null || renderedImage == null || !currentSize.equals(offscreenDimension)) {
-			// call the 'java.awt.Component.createImage(...)' method to get an
-			// image
+		if (offscreenImage == null || !currentSize.equals(offscreenDimension)) {
+			// offscreenImage = new BufferedImage(currentSize.width, currentSize.height, BufferedImage.TYPE_INT_ARGB);
 			offscreenImage = createImage(currentSize.width, currentSize.height);
 			offscreenGraphics = offscreenImage.getGraphics();
-			renderedImage = createImage(currentSize.width, currentSize.height);
-			renderedGraphics = renderedImage.getGraphics();
-			offscreenDimension = currentSize;
 		}
 
-		// rendering code here (use offscreenGraphics 'Graphics' object)
-		// this algorithm assumes the background will be re-filled because it
-		// reuses the image object (otherwise artifacts will
-		// remain from previous renderings)
-		mypaint(offscreenGraphics);
+		if (renderedImage == null || !currentSize.equals(offscreenDimension)) {
+			renderedImage = new BufferedImage(currentSize.width, currentSize.height, BufferedImage.TYPE_INT_ARGB);
+			// renderedImage = createImage(currentSize.width, currentSize.height);
+			renderedGraphics = renderedImage.getGraphics();
+		}
+		offscreenDimension = currentSize;
+
+		drawToOffscreenBuffer(offscreenGraphics); // TODO this should not be done in paintComponent(), but only if something changes
 
 		// paint back buffer to main graphics
 		g.drawImage(offscreenImage, 0, 0, this);
@@ -198,13 +219,13 @@ public class PlaneDisplay extends JPanel {
 		int yOffs = (int)Math.round((h - imageHeight) / 2.0);
 
 		BufferedImage image = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_ARGB);
-		Graphics g = image.getGraphics();
-		g.drawImage(renderedImage, -xOffs, -yOffs, null);
-		g.dispose();
+		Graphics2D g2d = (Graphics2D)image.getGraphics();
+		g2d.drawImage(offscreenImage, -xOffs, -yOffs, null);
+		g2d.dispose();
 		return image;
 	}
 
-	public void mypaint(Graphics g) {
+	private void drawToOffscreenBuffer(Graphics g) {
 		Graphics2D g2d = (Graphics2D) g;
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
 		    RenderingHints.VALUE_ANTIALIAS_ON);
@@ -212,24 +233,24 @@ public class PlaneDisplay extends JPanel {
 		int w = getWidth();
 		int h = getHeight();
 
+		((Graphics2D)renderedGraphics).setBackground(new Color(0, 0, 0, 0));
+		g2d.setBackground(new Color(0, 0, 0, 0));
+
 		if(!isStack) {
 			((Graphics2D)renderedGraphics).setComposite(AlphaComposite.getInstance(AlphaComposite.CLEAR));
 			renderedGraphics.fillRect(0, 0, w, h);
 			((Graphics2D)renderedGraphics).setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER));
 		}
 
-		g.setColor(Color.black);
-		g.fillRect(0, 0, w, h);
+		g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.CLEAR));
+		g2d.fillRect(0, 0, w, h);
+		g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER));
 
 		double sx = (double)w / ICamera.WIDTH;
 		double sy = (double)h / ICamera.HEIGHT;
 
 		double scale = Math.min(sx, sy);
 		scale *= 0.8;
-
-		if(!isStack)
-			drawCoordSysInt(renderedGraphics, scale);
-
 
 		double zScale = 1 + (relativeScaleAtZEnd - 1) * z / ICamera.DEPTH;
 
@@ -239,12 +260,13 @@ public class PlaneDisplay extends JPanel {
 		int xOffs = (int)Math.round((w - imageWidth) / 2.0);
 		int yOffs = (int)Math.round((h - imageHeight) / 2.0);
 
-		if(!isStack && transmission != null)
+		if(transmission != null)
 			renderedGraphics.drawImage(getTransmissionImage(), xOffs, yOffs, imageWidth, imageHeight, null);
 
 		if(fluorescence != null)
 			renderedGraphics.drawImage(getFluorescenceImage(), xOffs, yOffs, imageWidth, imageHeight, null);
 
+		drawCoordSysInt(g, scale);
 		g.drawImage(renderedImage, 0, 0, null);
 
 		g.setColor(Color.red);
