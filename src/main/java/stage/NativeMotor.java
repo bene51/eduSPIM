@@ -48,12 +48,16 @@ public class NativeMotor implements IMotor {
 
 	@Override
 	public double getPosition(int axis) throws MotorException {
-		return stageGetPosition(axis);
+		if(axis < N_AXES)
+			return stageGetPosition(axis);
+		return 0;
 	}
 
 	@Override
 	public double getVelocity(int axis) throws MotorException {
-		return stageGetVelocity(axis);
+		if(axis < N_AXES)
+			return stageGetVelocity(axis);
+		return 0;
 	}
 
 	@Override
@@ -67,22 +71,27 @@ public class NativeMotor implements IMotor {
 
 	@Override
 	public boolean isMoving(int axis) throws MotorException {
-		return stageIsMoving(axis);
+		if(axis < N_AXES)
+			return stageIsMoving(axis);
+		return false;
 	}
 
 	@Override
 	public void setVelocity(int axis, double vel) throws MotorException {
-		stageSetVelocity(axis, vel);
+		if(axis < N_AXES)
+			stageSetVelocity(axis, vel);
 	}
 
 	@Override
 	public void setTarget(int axis, double pos) throws MotorException {
-		stageSetTarget(axis, pos);
+		if(axis < N_AXES)
+			stageSetTarget(axis, pos);
 	}
 
 	@Override
 	public void stop(int axis) throws MotorException {
-		stageStopMoving(axis);
+		if(axis < N_AXES)
+			stageStopMoving(axis);
 	}
 
 	@Override
