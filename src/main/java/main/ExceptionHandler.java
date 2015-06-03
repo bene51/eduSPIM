@@ -16,6 +16,7 @@ public class ExceptionHandler {
 	private static final Logger logger = LoggerFactory.getLogger(ExceptionHandler.class);
 
 	public static void handleException(String message, Throwable e) {
+		e.printStackTrace();
 		Mail.sendError(exceptionToString(e));
 		logger.error(message, e);
 	}
