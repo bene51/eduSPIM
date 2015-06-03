@@ -266,15 +266,30 @@ camGetLastPreviewImage(int camIdx, char *image)
 	char *next, *last;
 	int id, lastId;
 	HCAM cam = cameras[camIdx];
-	SAVE_CALL(is_GetActSeqBuf(cam, &id, &next, &last), camIdx);
-	lastId = (N_BUFFERS + id - 2) % N_BUFFERS + 1;
-	printf("id = %d lastId = %d\n", id, lastId);
-//	SAVE_CALL(is_LockSeqBuf(cam, lastId, last));
+
+	do {
+		SAVE_CALL(is_GetActSeqBuf(cam, &id, &next, &last), camIdx);
+		lastId = (N_BUFFERS + id - 2) % N_BUFFERS + 1;
+		printf("id = %d lastId = %d\n", id, lastId);
+		if(is_LockSeqBuf(cam, lastId, last) == IS_SUCCESS)
+			break;
+		printf("waiting for a valid image\n");
+	} while(true);
 	SAVE_CALL(is_CopyImageMem(cam, last, lastId, image), camIdx);
-//	SAVE_CALL(is_UnlockSeqBuf(cam, lastId, last));
-//	SAVE_CALL(is_LockSeqBuf(cam, id, next));
-//	SAVE_CALL(is_CopyImageMem(cam, next, id, image));
-//	SAVE_CALL(is_UnlockSeqBuf(cam, id, next));
+	SAVE_CALL(is_UnlockSeqBuf(cam, lastId, last), camIdx);
+
+	/*
+	SAVE_CALL(is_LockSeqBuf(cam, id, next), camIdx);
+	SAVE_CALL(is_CopyImageMem(cam, next, 0, image), camIdx);
+	SAVE_CALL(is_UnlockSeqBuf(cam, id, next), camIdx);
+	*/
+
+	/*
+	SAVE_CALL(is_GetActiveImageMem(cam, &next, &id), camIdx);
+	SAVE_CALL(is_LockSeqBuf(cam, id, next), camIdx);
+	SAVE_CALL(is_CopyImageMem(cam, next, id, image), camIdx);
+	SAVE_CALL(is_UnlockSeqBuf(cam, id, next), camIdx);
+	*/
 }
 
 void
