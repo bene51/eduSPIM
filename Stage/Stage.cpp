@@ -240,23 +240,33 @@ void main(int argc, char *argv[])
 
 	const int n_stages = 2;
 	const char *stages[n_stages];
-	stages[0] = "M-111.1DG-NEW";
+	stages[0] = "N-470K021";
 	stages[1] = "M-111.1DG-NEW";
 
-	stageConnect(7, 38400, n_stages, stages);
-	for(int i = 0; i < n_stages; i++)
+	stageConnect(5, 115200, n_stages, stages);
+
+	for(int i = 0; i < n_stages; i++) {
+		bool needsRef = stageIsReferenceNeeded(0);
+		printf("Axis %d needs referencing? %d\n", i, needsRef);
 		stageReferenceIfNeeded(i);
+	}
 	int axis = 0;
 	srand((unsigned)time(NULL));
-	double y = 15.0 * (double)rand() / double(RAND_MAX);
+	double y = 0.5 * (double)rand() / double(RAND_MAX);
 	printf("moving to %f\n", y);
 	if(argc > 1)
 		y = atof(argv[1]);
+	// double vel = stageGetVelocity(axis);
+	double pos = stageGetPosition(axis);
+	// printf("vel = %f\n", vel);
+	printf("pos = %f\n", pos);
+
 	stageSetTarget(axis, y);
+	int start = GetTickCount();
 	while(stageIsMoving(axis)) {
-		int t = GetTickCount();
-		printf("time: %d\n", t);
 	}
+	int end = GetTickCount();
+	printf("needed %d ms\n", (end - start));
 	stageClose();
 }
 
