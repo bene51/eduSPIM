@@ -6,9 +6,9 @@ import java.io.InputStreamReader;
 
 public class NativeMotor implements IMotor {
 
-	public static final String STAGE_Y = "M-111.1DG-NEW";
+	public static final String STAGE_Y = "M-112.2DG-NEW";
 	public static final String STAGE_Z = "M-111.1DG-NEW";
-	public static final String STAGE_M = "M-111.1DG-NEW"; // TODO
+	public static final String STAGE_M = "N-470K021";
 
 	private static final String[] STAGES = new String[N_AXES];
 	static {
@@ -17,7 +17,7 @@ public class NativeMotor implements IMotor {
 		if(MIRROR < STAGES.length) STAGES[MIRROR] = STAGE_M;
 	};
 
-	private static final int BAUD_RATE = 38400;
+	private static final int BAUD_RATE = 115200;
 
 	static {
 		System.loadLibrary("stage_NativeMotor");
@@ -91,7 +91,7 @@ public class NativeMotor implements IMotor {
 	}
 
 	public static void main(String[] args) throws NumberFormatException, IOException, MotorException {
-		NativeMotor motor = new NativeMotor(7);
+		NativeMotor motor = new NativeMotor(5);
 		System.out.println("motor initialized");
 		double y = motor.getPosition(Y_AXIS);
 		double z = motor.getPosition(Z_AXIS);
