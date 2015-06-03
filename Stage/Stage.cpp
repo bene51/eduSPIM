@@ -166,16 +166,21 @@ void stageReferenceIfNeeded(int axis)
 		SAVE_CALL(PI_FRF(id, AXIS), id);
 		printf("device %d, Reference stage for axis %s by reference switch ", id, AXIS);
 	} else {
-		SAVE_CALL(PI_qLIM(id, AXIS, &bFlag), id);
-		if(bFlag) {
-			SAVE_CALL(!PI_FNL(id, AXIS), id);
-			printf("device %d, Reference stage for axis %s by negative limit switch ", id, AXIS);
-		} else {
-			char msg[1024];
-			sprintf(msg, "Error (Stage has no reference or limit switch) in %s, line %d\n", __FILE__, __LINE__);
-			error_callback(msg, hparam);
-			return;
-		}
+		double pos = 1;
+		BOOL referenceOn = 0;
+		SAVE_CALL(PI_RON(id, AXIS, &referenceOn), id);
+		SAVE_CALL(PI_POS(id, AXIS, &pos), id);
+		printf("Setting absolute position to 0\n");
+//		SAVE_CALL(PI_qLIM(id, AXIS, &bFlag), id);
+//		if(bFlag) {
+//			SAVE_CALL(!PI_FNL(id, AXIS), id);
+//			printf("device %d, Reference stage for axis %s by negative limit switch ", id, AXIS);
+//		} else {
+//			char msg[1024];
+//			sprintf(msg, "Error (Stage has no reference or limit switch) in %s, line %d\n", __FILE__, __LINE__);
+//			error_callback(msg, hparam);
+//			return;
+//		}
 	}
 
 	do {
