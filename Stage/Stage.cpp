@@ -52,6 +52,11 @@ void stageConnect(int com_port, int baud, int nstages, const char **stages)
 {
 	printf("Connecting with RS-232...\n");
 	n_stages = nstages;
+
+	printf("stageConnect\n");
+	for(int i = 0; i < nstages; i++) {
+		printf("Stage[%d] = %s\n", i, stages[i]);
+	}
 	ID = (int *)malloc(n_stages * sizeof(int));
 
 	int nrDevices;
@@ -60,7 +65,8 @@ void stageConnect(int com_port, int baud, int nstages, const char **stages)
 	while(daisyChain < 0) {
 		daisyChain = PI_OpenRS232DaisyChain(com_port, baud, &nrDevices, szDevices, 16 * 128);
 		// daisyChain = PI_OpenUSBDaisyChain("PI C-863 Mercury SN 0125500219", &nrDevices, szDevices, 16 * 128);
-		printf("Trying again\n");
+		// daisyChain = PI_OpenUSBDaisyChain("PI E-871 Controller SN 0112068289", &nrDevices, szDevices, 16 * 128);
+		printf("Trying again: %d\n", daisyChain);
 	}
 	printf("daisyChain = %d: %d devices\n", daisyChain, nrDevices);
 
@@ -72,6 +78,7 @@ void stageConnect(int com_port, int baud, int nstages, const char **stages)
 			error_callback(msg, hparam);
 			return;
 		}
+		printf("Successfully connected daisy chain device %d\n", i);
 	}
 
 	char buffer[255];
@@ -141,7 +148,10 @@ void stageReferenceIfNeeded(int axis)
 	BOOL bFlag = TRUE;
 	int id = ID[axis];
 
+	// switch servo on
 	SAVE_CALL(PI_SVO(id, AXIS, &bFlag), id);
+
+	// check whether already referenced
 	SAVE_CALL(PI_qFRF(id, AXIS, &bRefOK), id);
 	if (bRefOK) {
 		printf("device %d, Axis %s already referenced\n", id, AXIS);
@@ -149,8 +159,10 @@ void stageReferenceIfNeeded(int axis)
 	}
 
 	bFlag = FALSE;
+	// check whether the stage has a reference switch
 	SAVE_CALL(PI_qTRS(id, AXIS, &bFlag), id);
 	if(bFlag) { // stage has reference switch
+		// fast reference move
 		SAVE_CALL(PI_FRF(id, AXIS), id);
 		printf("device %d, Reference stage for axis %s by reference switch ", id, AXIS);
 	} else {
@@ -196,6 +208,7 @@ double stageGetPosition(int axis)
 
 void stageSetVelocity(int axis, double vel)
 {
+	printf("setVelocity: axis %d, vel %f\n", axis, vel);
 	SAVE_CALL(PI_VEL(ID[axis], AXIS, &vel), ID[axis]);
 }
 
