@@ -556,6 +556,16 @@ public class Microscope implements AdminPanelListener {
 		}
 	}
 
+	private void saveSnapshot(String path) {
+		try {
+			BufferedImage im = displayPanel.getSnapshot();
+			File f = new File(path);
+			ImageIO.write(im, "png", f);
+		} catch(Throwable e) {
+			ExceptionHandler.handleException("Error saving snapshot", e);
+		}
+	}
+
 	void acquireStack() throws MotorException, CameraException, LaserException {
 		synchronized(this) {
 			busy = true;
