@@ -61,6 +61,20 @@ public class DisplayFrame extends JFrame {
 	}
 
 	public void setFullscreen(boolean fullscreen) {
+		setVisible(false);
+		dispose();
+		this.setUndecorated(fullscreen);
+		setResizable(!fullscreen);
+		if (fullscreen)
+			setExtendedState(MAXIMIZED_BOTH);
+		this.fullscreen = fullscreen;
+		setVisible(true);
+	}
+
+	/*
+	 * Just here as a reference, not used.
+	 */
+	void setRealFullscreen(boolean fullscreen) {
 		GraphicsEnvironment env = GraphicsEnvironment
 				.getLocalGraphicsEnvironment();
 		GraphicsDevice device = env.getDefaultScreenDevice();
