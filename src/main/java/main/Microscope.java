@@ -320,16 +320,14 @@ public class Microscope implements AdminPanelListener {
 		ImagePlus trans = IJ.openImage(System.getProperty("user.home") + "/transmission.tif");
 //		if(!simulated) {
 			try {
-				// TODO which camera has which index
 				fluorescenceCamera = new NativeCamera(0,
 						Preferences.getFCameraFramerate(),
 						Preferences.getFCameraExposure(),
 						Preferences.getFCameraGain());
 				transmissionCamera = new NativeCamera(1,
-						Preferences.getFCameraFramerate(),
-						Preferences.getFCameraExposure(),
-						Preferences.getFCameraGain());
-				// transmissionCamera = new SimulatedCamera(trans);
+						Preferences.getTCameraFramerate(),
+						Preferences.getTCameraExposure(),
+						Preferences.getTCameraGain());
 				return;
 			} catch(Throwable e) {
 				ExceptionHandler.handleException("Error initializing the camera, using simulated camera instead instead", e);
