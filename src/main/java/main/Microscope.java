@@ -359,9 +359,7 @@ public class Microscope implements AdminPanelListener {
 //		}
 
 		simulated = true;
-		System.out.println("Loading the image");
 		ImagePlus imp = IJ.openImage(System.getProperty("user.home") + "/HeadBack030_010um_3.tif");
-		System.out.println("image loaded");
 		fluorescenceCamera = new SimulatedCamera(imp);
 		transmissionCamera = new SimulatedCamera(trans);
 	}
