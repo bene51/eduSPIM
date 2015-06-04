@@ -114,38 +114,19 @@ public class NativeCamera implements ICamera {
 
 		byte[] frame = new byte[WIDTH * HEIGHT];
 
-		// acquire a sequence
-		cam.startSequence();
-		for (int i = 0; i < DEPTH; i++) {
-			cam.getNextSequenceImage(frame);
-		}
-		cam.stopSequence();
-
-		// acquire a sequence
-		cam.startSequence();
-		for (int i = 0; i < DEPTH; i++) {
-			cam.getNextSequenceImage(frame);
-		}
-		cam.stopSequence();
-
-		// test preview
-		cam.startPreview();
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		String line;
 		while (!(line = in.readLine()).equals("quit")) {
 			System.out.println("echo: " + line);
-			cam.getPreviewImage(frame);
-			System.out.println(Integer.toString(frame[0]));
+			// acquire a sequence
+			cam.startSequence();
+			for (int i = 0; i < DEPTH; i++) {
+				cam.getNextSequenceImage(frame);
+			}
+			cam.stopSequence();
+			System.out.println("done");
 		}
 		System.out.println("echo: " + line);
-		cam.stopPreview();
-
-//		// acquire a sequence
-//		cam.startSequence();
-//		for (int i = 0; i < 10; i++) {
-//			cam.getNextSequenceImage(frame);
-//		}
-//		cam.stopSequence();
 
 		cam.close();
 	}
