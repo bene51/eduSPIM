@@ -218,7 +218,7 @@ public class Microscope implements AdminPanelListener {
 			displayWindow.add(((AWTButtons)buttons).getPanel(), BorderLayout.EAST);
 		displayWindow.pack();
 		displayWindow.setVisible(true);
-//		displayWindow.setFullscreen(true); // TODO fullscreen
+		displayWindow.setFullscreen(true); // TODO fullscreen
 		displayPanel.requestFocusInWindow();
 		displayPanel.display(null, null, yRel, 0);
 
