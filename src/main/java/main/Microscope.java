@@ -182,7 +182,6 @@ public class Microscope implements AdminPanelListener {
 					shutdown();
 				} else if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_F) {
 					boolean fs = !displayWindow.isFullscreen();
-					System.out.println("put window to fullscreen: " + fs);
 					displayWindow.setFullscreen(fs);
 					displayPanel.requestFocusInWindow();
 					displayWindow.repaint();
@@ -417,13 +416,21 @@ public class Microscope implements AdminPanelListener {
 	}
 
 	int getPlaneForZ(double zPos) {
-		double zrel = (zPos - Preferences.getStackZStart()) / (Preferences.getStackZEnd() - Preferences.getStackZStart());
+		double z0 = Math.min(Preferences.getStackZStart(), Preferences.getStackZEnd());
+		double z1 = Math.max(Preferences.getStackZStart(), Preferences.getStackZEnd());
+		double zrel = 1 - (zPos - z0) / (z1 - z0); // let planes be inverted
 		return (int)Math.round(zrel * ICamera.DEPTH);
+	}
+
+	double getCurrentRelativeYPos(double yPos) {
+		double y0 = Math.min(Preferences.getStackYStart(), Preferences.getStackYEnd());
+		double y1 = Math.max(Preferences.getStackYStart(), Preferences.getStackYEnd());
+		return (yPos - y0) / (y1 - y0);
 	}
 
 	double getCurrentRelativeYPos() throws MotorException {
 		double ypos = motor.getPosition(Y_AXIS);
-		return (ypos - Preferences.getStackYStart()) / (Preferences.getStackYEnd() - Preferences.getStackYStart());
+		return getCurrentRelativeYPos(ypos);
 	}
 
 	double getMirrorPositionForZ(double zPos) {
@@ -442,7 +449,7 @@ public class Microscope implements AdminPanelListener {
 		}
 	}
 
-	void startPreview(int button, int axis, boolean positive, double target) throws MotorException, CameraException, LaserException {
+	void startPreview(int button, int axis, double target) throws MotorException, CameraException, LaserException {
 		synchronized(this) {
 			busy = true;
 		}
@@ -451,7 +458,7 @@ public class Microscope implements AdminPanelListener {
 		double zPos = motor.getPosition(Z_AXIS);
 		int plane = getPlaneForZ(zPos);
 		double yPos = motor.getPosition(Y_AXIS);
-		double yRel = (yPos - Preferences.getStackYStart()) / (Preferences.getStackYEnd() - Preferences.getStackYStart());
+		double yRel = getCurrentRelativeYPos(yPos);
 		if(yRel < 0)
 			yRel = 0;
 		if(yRel > 1)
@@ -505,16 +512,16 @@ public class Microscope implements AdminPanelListener {
 		laser.setOn();
 		do {
 			if(axis == Y_AXIS) {
-				yPos = positive ? yPos + dz : yPos - dz;
-				yRel = (yPos - Preferences.getStackYStart()) / (Preferences.getStackYEnd() - Preferences.getStackYStart());
+				yPos = target < yPos ? yPos - dz : yPos + dz; // positive ? yPos + dz : yPos - dz;
+				yRel = getCurrentRelativeYPos(yPos);
+				if(yRel < 0 || yRel > 1)
+					break;
 			} else if(axis == Z_AXIS) {
-				plane = positive ? plane + 1 : plane - 1;
+				zPos = target < zPos ? zPos - dz : zPos + dz;
+				plane = getPlaneForZ(zPos);
+				if(plane < 0 || plane >= ICamera.DEPTH)
+					break;
 			}
-
-			// stop if moving out of area
-			if(plane < 0 || plane >= ICamera.DEPTH ||
-					yRel < 0 || yRel > 1)
-				break;
 
 			if(fluorescenceCamera instanceof SimulatedCamera) {
 				((SimulatedCamera) fluorescenceCamera).setYPosition(yRel);
@@ -536,10 +543,10 @@ public class Microscope implements AdminPanelListener {
 		System.out.println("plane = " + plane + " mz = " + mz + " ypos = " + yPos);
 
 		// move to theoretic position?
-		plane = Math.max(0, Math.min(plane, ICamera.DEPTH - 1));
-		yPos = Math.max(Preferences.getStackYStart(), Math.min(yPos, Preferences.getStackYEnd()));
-		yRel = (yPos - Preferences.getStackYStart()) / (Preferences.getStackYEnd() - Preferences.getStackYStart());
-		zPos = Preferences.getStackZStart() + plane * dz;
+		zPos = clamp(zPos, Preferences.getStackZStart(), Preferences.getStackZEnd());
+		yPos = clamp(yPos, Preferences.getStackYStart(), Preferences.getStackYEnd());
+		yRel = getCurrentRelativeYPos(yPos);
+		plane = getPlaneForZ(zPos);
 		double tgt = axis == Y_AXIS ? yPos : zPos;
 		motor.setTarget(axis, tgt);
 		if(axis == Z_AXIS)
@@ -581,6 +588,16 @@ public class Microscope implements AdminPanelListener {
 		}
 	}
 
+	private double clamp(double v, double v0, double v1) {
+		double b0 = Math.min(v0, v1);
+		double b1 = Math.max(v0, v1);
+		if(v < b0)
+			return b0;
+		if(v > b1)
+			return b1;
+		return v;
+	}
+
 	private void saveSnapshot(String path) {
 		try {
 			BufferedImage im = displayPanel.getSnapshot();
@@ -604,7 +621,7 @@ public class Microscope implements AdminPanelListener {
 		}
 
 		// move motor and mirror back
-		double zStart = Preferences.getStackZEnd();
+		double zStart = Preferences.getStackZStart();
 		motor.setTarget(Z_AXIS, zStart);
 		motor.setTarget(MIRROR, getMirrorPositionForZ(zStart));
 		displayPanel.setStackMode(false);
@@ -635,7 +652,7 @@ public class Microscope implements AdminPanelListener {
 		displayPanel.display(null, null, yRel, ICamera.DEPTH - 1);
 		sleep(100); // delay to ensure rendering before changing stack mode
 		displayPanel.setStackMode(true);
-		double zEnd = Preferences.getStackZStart();
+		double zEnd = Preferences.getStackZEnd();
 		motor.setTarget(Z_AXIS, zEnd);
 		motor.setTarget(MIRROR, getMirrorPositionForZ(zEnd));
 

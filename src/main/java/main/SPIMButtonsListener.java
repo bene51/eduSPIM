@@ -33,16 +33,16 @@ public class SPIMButtonsListener implements ButtonsListener {
 			acquireStack();
 			break;
 		case AbstractButtons.BUTTON_Y_DOWN:
-			startPreview(button, Y_AXIS, false, Preferences.getStackYStart());
+			startPreview(button, Y_AXIS, Math.min(Preferences.getStackYStart(), Preferences.getStackYEnd()));
 			break;
 		case AbstractButtons.BUTTON_Y_UP:
-			startPreview(button, Y_AXIS, true,  Preferences.getStackYEnd());
+			startPreview(button, Y_AXIS, Math.max(Preferences.getStackYStart(), Preferences.getStackYEnd()));
 			break;
 		case AbstractButtons.BUTTON_Z_DOWN:
-			startPreview(button, Z_AXIS, false, Preferences.getStackZStart());
+			startPreview(button, Z_AXIS, Math.min(Preferences.getStackZStart(), Preferences.getStackZEnd()));
 			break;
 		case AbstractButtons.BUTTON_Z_UP:
-			startPreview(button, Z_AXIS, true,  Preferences.getStackZEnd());
+			startPreview(button, Z_AXIS, Math.max(Preferences.getStackZStart(), Preferences.getStackZEnd()));
 			break;
 		}
 		microscope.requestFocus();
@@ -89,14 +89,14 @@ public class SPIMButtonsListener implements ButtonsListener {
 		}
 	}
 
-	private void startPreview(int button, int axis, boolean positive, double target) {
+	private void startPreview(int button, int axis, double target) {
 		double y = Preferences.getStackYStart();
 		double z = Preferences.getStackZStart();
 		IMotor motor = microscope.getMotor();
 		try {
 			y = motor.getPosition(Y_AXIS);
 			z = motor.getPosition(Z_AXIS);
-			microscope.startPreview(button, axis, positive,  target);
+			microscope.startPreview(button, axis, target);
 		} catch (Throwable e) {
 			ExceptionHandler.handleException("Error during preview, trying to close and re-initialize the hardware", e);
 
@@ -108,7 +108,7 @@ public class SPIMButtonsListener implements ButtonsListener {
 				microscope.getMotor().setTarget(Z_AXIS, z);
 				while(motor.isMoving())
 					Microscope.sleep(50);
-				microscope.startPreview(button, axis, positive, target);
+				microscope.startPreview(button, axis, target);
 			} catch(Throwable ex) {
 				ExceptionHandler.handleException("Error during preview after re-initializing the hardware, restarting the software", e);
 				microscope.shutdown(Microscope.EXIT_PREVIEW_ERROR);
