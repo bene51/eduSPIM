@@ -27,11 +27,10 @@ public class NativeMotor implements IMotor {
 		stageConnect(comPort, BAUD_RATE, STAGES);
 		for(int axis = 0; axis < STAGES.length; axis++) {
 			if(stageIsReferenceNeeded(axis)) {
-				boolean allow = true; // TODO check with Wiebke the order of referencing
+				boolean allow = true;
 				if(allow)
 					stageReferenceIfNeeded(axis);
 			}
-			// TODO move to the middle: check with Wiebke
 		}
 	}
 

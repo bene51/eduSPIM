@@ -17,7 +17,6 @@ public interface IMotor {
 	public static final double POS_MIN_Z = 0;
 	public static final double POS_MIN_M = 0;
 
-	// TODO check motor constants
 	public static final double POS_MAX_Y = 25;
 	public static final double POS_MAX_Z = 15;
 	public static final double POS_MAX_M = 2;

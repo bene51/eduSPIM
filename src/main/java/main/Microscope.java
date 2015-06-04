@@ -214,7 +214,7 @@ public class Microscope implements AdminPanelListener {
 			displayWindow.add(((AWTButtons)buttons).getPanel(), BorderLayout.EAST);
 		displayWindow.pack();
 		displayWindow.setVisible(true);
-		displayWindow.setFullscreen(true); // TODO fullscreen
+		displayWindow.setFullscreen(true);
 		displayPanel.requestFocusInWindow();
 		displayPanel.display(null, null, yRel, 0);
 
@@ -297,7 +297,7 @@ public class Microscope implements AdminPanelListener {
 
 	private void initMotor() {
 		try {
-			motor = new NativeMotor(STAGE_COM_PORT); // TODO save parameters in Preferences
+			motor = new NativeMotor(STAGE_COM_PORT);
 			motor.setVelocity(Y_AXIS, IMotor.VEL_MAX_Y);
 			motor.setVelocity(Z_AXIS, IMotor.VEL_MAX_Z);
 			boolean inRange = between(

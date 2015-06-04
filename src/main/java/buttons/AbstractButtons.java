@@ -59,7 +59,7 @@ public abstract class AbstractButtons {
 		// This should not happen, let's just be sure
 		synchronized(this) {
 			if(button != buttonDown)
-				System.out.println("Button " + button + " was released but button " + buttonDown + " was pressed before"); // TODO throw an exception
+				System.out.println("Button " + button + " was released but button " + buttonDown + " was pressed before");
 			buttonDown = -1;
 		}
 		new Thread() {
