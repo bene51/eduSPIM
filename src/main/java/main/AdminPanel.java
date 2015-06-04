@@ -28,18 +28,20 @@ import javax.swing.border.TitledBorder;
 import laser.LaserException;
 import stage.IMotor;
 import cam.CameraException;
+import cam.ICamera;
 
 @SuppressWarnings("serial")
 public class AdminPanel extends JPanel {
+
+	// TODO focus listeners
 
 	private static DecimalFormat df = new DecimalFormat("0.000");
 
 	private HashMap<String, String> oldPreferences;
 
-	private MTextField volumeStartY, volumeStartZ, volumeEndY, volumeEndZ;
 	private MButton setStart, setEnd, ok, cancel;
-	private MTextField mirror1Z, mirror2Z;
-	private NumberField mirror1M, mirror2M;
+	private NumberField mirror1Z, mirror2Z, mirror1M, mirror2M;
+	private NumberField volumeStartY, volumeStartZ, volumeEndY, volumeEndZ;
 	private NumberField fCameraGain, tCameraGain;
 	private NumberField fCameraExp, fCameraFPS;
 	private NumberField tCameraExp, tCameraFPS;
@@ -53,9 +55,44 @@ public class AdminPanel extends JPanel {
 		this.yPos = y;
 		this.zPos = z;
 
+		volumeStartY = new NumberField(6);
+		volumeStartY.setLimits(IMotor.POS_MIN_Y, IMotor.POS_MAX_Y);
+		volumeStartY.setForeground(Color.black);
+		volumeStartY.setText(df.format(Preferences.getStackYStart()));
+		volumeStartY.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				int code = e.getKeyCode();
+				if(code == KeyEvent.VK_ENTER ||
+						code == KeyEvent.VK_UP ||
+						code == KeyEvent.VK_DOWN) {
+					updateFPS();
+					fireMotorPositionChanged(
+							Double.parseDouble(volumeStartY.getText()),
+							Double.parseDouble(volumeStartZ.getText()));
+				}
+			}
+		});
 
-		volumeStartY = new MTextField(df.format(Preferences.getStackYStart()));
-		volumeStartZ = new MTextField(df.format(Preferences.getStackZStart()));
+		volumeStartZ = new NumberField(6);
+		volumeStartZ.setLimits(IMotor.POS_MIN_Z, IMotor.POS_MAX_Z);
+		volumeStartZ.setForeground(Color.black);
+		volumeStartZ.setText(df.format(Preferences.getStackZStart()));
+		volumeStartZ.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				int code = e.getKeyCode();
+				if(code == KeyEvent.VK_ENTER ||
+						code == KeyEvent.VK_UP ||
+						code == KeyEvent.VK_DOWN) {
+					updateFPS();
+					fireMotorPositionChanged(
+							Double.parseDouble(volumeStartY.getText()),
+							Double.parseDouble(volumeStartZ.getText()));
+				}
+			}
+		});
+
 		setStart = new MButton("Set");
 		setStart.addActionListener(new ActionListener() {
 			@Override
@@ -64,8 +101,45 @@ public class AdminPanel extends JPanel {
 				volumeStartZ.setText(df.format(zPos));
 			}
 		});
-		volumeEndY = new MTextField(df.format(Preferences.getStackYEnd()));
-		volumeEndZ = new MTextField(df.format(Preferences.getStackZEnd()));
+
+		volumeEndY = new NumberField(6);
+		volumeEndY.setLimits(IMotor.POS_MIN_Y, IMotor.POS_MAX_Y);
+		volumeEndY.setForeground(Color.black);
+		volumeEndY.setText(df.format(Preferences.getStackYEnd()));
+		volumeEndY.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				int code = e.getKeyCode();
+				if(code == KeyEvent.VK_ENTER ||
+						code == KeyEvent.VK_UP ||
+						code == KeyEvent.VK_DOWN) {
+					updateFPS();
+					fireMotorPositionChanged(
+							Double.parseDouble(volumeEndY.getText()),
+							Double.parseDouble(volumeEndZ.getText()));
+				}
+			}
+		});
+
+		volumeEndZ = new NumberField(6);
+		volumeEndZ.setLimits(IMotor.POS_MIN_Z, IMotor.POS_MAX_Z);
+		volumeEndZ.setForeground(Color.black);
+		volumeEndZ.setText(df.format(Preferences.getStackZEnd()));
+		volumeEndZ.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				int code = e.getKeyCode();
+				if(code == KeyEvent.VK_ENTER ||
+						code == KeyEvent.VK_UP ||
+						code == KeyEvent.VK_DOWN) {
+					updateFPS();
+					fireMotorPositionChanged(
+							Double.parseDouble(volumeEndY.getText()),
+							Double.parseDouble(volumeEndZ.getText()));
+				}
+			}
+		});
+
 		setEnd = new MButton("Set");
 		setEnd.addActionListener(new ActionListener() {
 			@Override
@@ -74,8 +148,27 @@ public class AdminPanel extends JPanel {
 				volumeEndZ.setText(df.format(zPos));
 			}
 		});
-		mirror1Z = new MTextField(df.format(Preferences.getMirrorZ1()));
+		mirror1Z = new NumberField(6);
+		mirror1Z.setLimits(IMotor.POS_MIN_Z, IMotor.POS_MAX_Z);
+		mirror1Z.setForeground(Color.black);
+		mirror1Z.setText(df.format(Preferences.getMirrorZ1()));
+		mirror1Z.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				int code = e.getKeyCode();
+				if(code == KeyEvent.VK_ENTER ||
+						code == KeyEvent.VK_UP ||
+						code == KeyEvent.VK_DOWN) {
+					updateFPS();
+					fireMirrorPositionChanged(
+							Double.parseDouble(mirror1Z.getText()),
+							Double.parseDouble(mirror1M.getText()));
+				}
+			}
+		});
+
 		mirror1M = new NumberField(6);
+		mirror1M.setLimits(IMotor.POS_MIN_M, IMotor.POS_MAX_M);
 		mirror1M.setForeground(Color.black);
 		mirror1M.setText(df.format(Preferences.getMirrorM1()));
 		mirror1M.addKeyListener(new KeyAdapter() {
@@ -85,13 +178,33 @@ public class AdminPanel extends JPanel {
 				if(code == KeyEvent.VK_ENTER ||
 						code == KeyEvent.VK_UP ||
 						code == KeyEvent.VK_DOWN) {
-					mirror1Z.setText(df.format(zPos));
-					fireMirrorPositionChanged(Double.parseDouble(mirror1M.getText()));
+					updateFPS();
+					fireMirrorPositionChanged(
+							Double.parseDouble(mirror1Z.getText()),
+							Double.parseDouble(mirror1M.getText()));
 				}
 			}
 		});
-		mirror2Z = new MTextField(df.format(Preferences.getMirrorZ2()));
+		mirror2Z = new NumberField(6);
+		mirror2Z.setLimits(IMotor.POS_MIN_Z, IMotor.POS_MAX_Z);
+		mirror2Z.setForeground(Color.black);
+		mirror2Z.setText(df.format(Preferences.getMirrorZ2()));
+		mirror2Z.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				int code = e.getKeyCode();
+				if(code == KeyEvent.VK_ENTER ||
+						code == KeyEvent.VK_UP ||
+						code == KeyEvent.VK_DOWN) {
+					updateFPS();
+					fireMirrorPositionChanged(
+							Double.parseDouble(mirror2Z.getText()),
+							Double.parseDouble(mirror2M.getText()));
+				}
+			}
+		});
 		mirror2M = new NumberField(6);
+		mirror2M.setLimits(IMotor.POS_MIN_M, IMotor.POS_MAX_M);
 		mirror2M.setText(df.format(Preferences.getMirrorM2()));
 		mirror2M.setForeground(Color.black);
 		mirror2M.addKeyListener(new KeyAdapter() {
@@ -101,8 +214,10 @@ public class AdminPanel extends JPanel {
 				if(code == KeyEvent.VK_ENTER ||
 						code == KeyEvent.VK_UP ||
 						code == KeyEvent.VK_DOWN) {
-					mirror2Z.setText(df.format(zPos));
-					fireMirrorPositionChanged(Double.parseDouble(mirror2M.getText()));
+					updateFPS();
+					fireMirrorPositionChanged(
+							Double.parseDouble(mirror2Z.getText()),
+							Double.parseDouble(mirror2M.getText()));
 				}
 			}
 		});
@@ -517,6 +632,67 @@ public class AdminPanel extends JPanel {
 		add(buttons, cAll);
 	}
 
+	/**
+	 * Since this stupid mirror motor doesn't allow to adjust its speed,
+	 * the framerate needs to be adjusted for the fixed speed of the mirror motor.
+	 *
+	 * Let the mirror distance over the entire z range be dm, and the fixed mirror
+	 * speed be vm, which is roughly 20um / 1500ms = 0.01333333. Then the framerate
+	 * dt = dm / vm, and fps = ICamera.DEPTH / dt.
+	 */
+	private void updateFPS() {
+		// final double vm = 0.02 / 1.5; // for 2000 Hz
+		// final double vm = 0.02 / 3.0; // for 500 Hz
+		// final double vm = 0.02 / 7.0; // for 200 Hz
+		final double vm = 0.02 / 8.000;  // for 150 Hz
+
+		// calculate mirror coefficients
+		double x1 = Double.parseDouble(mirror1Z.getText());
+		double y1 = Double.parseDouble(mirror1M.getText());
+		double x2 = Double.parseDouble(mirror2Z.getText());
+		double y2 = Double.parseDouble(mirror2M.getText());
+
+		if(Math.abs(y1 - y2) < 1e-6)
+			return;
+
+		double m = (y2 - y1) / (x2 - x1);
+		double t = y1 - m * x1;
+
+		double z1 = Double.parseDouble(volumeStartZ.getText());
+		double z2 = Double.parseDouble(volumeEndZ.getText());
+
+		double m1 = m * z1 + t;
+		double m2 = m * z2 + t;
+
+		double dm = Math.abs(m1 - m2);
+		double dt = dm / vm;
+
+		double fps = ICamera.DEPTH / dt;
+
+
+
+
+		try {
+			double tmp = Microscope.getInstance().getTransmissionCamera().setFramerate(fps);
+			tCameraFPS.setText(df.format(tmp));
+			tmp = Microscope.getInstance().getTransmissionCamera().setExposuretime(
+					Double.parseDouble(tCameraExp.getText()));
+			tCameraExp.setText(df.format(tmp));
+		} catch(Exception e) {
+			ExceptionHandler.showException("Error updating transmission camera parameters", e);
+		}
+
+		try {
+			double tmp = Microscope.getInstance().getFluorescenceCamera().setFramerate(fps);
+			fCameraFPS.setText(df.format(tmp));
+			tmp = Microscope.getInstance().getFluorescenceCamera().setExposuretime(
+					Double.parseDouble(fCameraExp.getText()));
+			fCameraExp.setText(df.format(tmp));
+		} catch(Exception e) {
+			ExceptionHandler.showException("Error updating transmission camera parameters", e);
+		}
+	}
+
 	public void init() {
 		volumeStartY.setText(df.format(Preferences.getStackYStart()));
 		volumeStartZ.setText(df.format(Preferences.getStackZStart()));
@@ -582,7 +758,7 @@ public class AdminPanel extends JPanel {
 		try {
 			int gain = (int)Math.round(Double.parseDouble(tCameraGain.getText()));
 			Microscope.getInstance().getTransmissionCamera().setGain(gain);
-			Microscope.getInstance().singlePreview(true, true);
+			fireCameraParametersChanged();
 		} catch (CameraException e1) {
 			try {
 				int gain = Microscope.getInstance().getTransmissionCamera().getGain();
@@ -598,7 +774,7 @@ public class AdminPanel extends JPanel {
 			double exp = Double.parseDouble(tCameraExp.getText());
 			exp = Microscope.getInstance().getTransmissionCamera().setExposuretime(exp);
 			tCameraExp.setText(df.format(exp));
-			Microscope.getInstance().singlePreview(true, true);
+			fireCameraParametersChanged();
 		} catch (CameraException e1) {
 			ExceptionHandler.showException("Error changing the exposure time of the transmission camera", e1);
 		}
@@ -609,7 +785,7 @@ public class AdminPanel extends JPanel {
 			double fps = Double.parseDouble(tCameraFPS.getText());
 			fps = Microscope.getInstance().getTransmissionCamera().setFramerate(fps);
 			tCameraFPS.setText(df.format(fps));
-			Microscope.getInstance().singlePreview(true, true);
+			fireCameraParametersChanged();
 		} catch (CameraException e1) {
 			ExceptionHandler.showException("Error changing the frame rate of the transmission camera", e1);
 		}
@@ -619,7 +795,7 @@ public class AdminPanel extends JPanel {
 		try {
 			int gain = (int)Math.round(Double.parseDouble(fCameraGain.getText()));
 			Microscope.getInstance().getFluorescenceCamera().setGain(gain);
-			Microscope.getInstance().singlePreview(true, true);
+			fireCameraParametersChanged();
 		} catch (CameraException e1) {
 			try {
 				int gain = Microscope.getInstance().getFluorescenceCamera().getGain();
@@ -635,7 +811,7 @@ public class AdminPanel extends JPanel {
 			double exp = Double.parseDouble(fCameraExp.getText());
 			exp = Microscope.getInstance().getFluorescenceCamera().setExposuretime(exp);
 			fCameraExp.setText(df.format(exp));
-			Microscope.getInstance().singlePreview(true, true);
+			fireCameraParametersChanged();
 		} catch (CameraException e1) {
 			ExceptionHandler.showException("Error changing the exposure time of the fluorescence camera", e1);
 		}
@@ -646,7 +822,7 @@ public class AdminPanel extends JPanel {
 			double fps = Double.parseDouble(fCameraFPS.getText());
 			fps = Microscope.getInstance().getFluorescenceCamera().setFramerate(fps);
 			fCameraFPS.setText(df.format(fps));
-			Microscope.getInstance().singlePreview(true, true);
+			fireCameraParametersChanged();
 		} catch (CameraException e1) {
 			ExceptionHandler.showException("Error changing the frame rate of the fluorescence camera", e1);
 		}
@@ -656,11 +832,9 @@ public class AdminPanel extends JPanel {
 		try {
 			double power = Double.parseDouble(laserPower.getText());
 			Microscope.getInstance().getLaser().setPower(power);
-			Microscope.getInstance().singlePreview(true, true);
+			fireCameraParametersChanged();
 		} catch (LaserException e1) {
 			ExceptionHandler.showException("Error changing the laser power", e1);
-		} catch(CameraException e2) {
-			ExceptionHandler.showException("Error showing preview image after changing laser power", e2);
 		}
 	}
 
@@ -677,9 +851,19 @@ public class AdminPanel extends JPanel {
 		listeners.remove(l);
 	}
 
-	private void fireMirrorPositionChanged(double pos) {
+	private void fireMirrorPositionChanged(double z, double m) {
 		for(AdminPanelListener l : listeners)
-			l.mirrorPositionChanged(pos);
+			l.mirrorPositionChanged(z, m);
+	}
+
+	private void fireMotorPositionChanged(double y, double z) {
+		for(AdminPanelListener l : listeners)
+			l.motorPositionChanged(y, z);
+	}
+
+	private void fireCameraParametersChanged() {
+		for(AdminPanelListener l : listeners)
+			l.cameraParametersChanged();
 	}
 
 	private void fireDone(boolean cancelled) {

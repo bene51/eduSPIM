@@ -769,54 +769,174 @@ public class Microscope implements AdminPanelListener {
 		System.exit(exitcode);
 	}
 
+	private boolean continuousPreviewRunning = false;
+	void continuousPreview(
+			final boolean trans,
+			final boolean fluor,
+			final boolean zChanges,
+			final StopCriterion stopCrit) {
+		if(!trans && !fluor)
+			return;
+
+		continuousPreviewRunning = true;
+		Thread previewThread = new Thread() {
+			@Override
+			public void run() {
+				try {
+					double yRel = getCurrentRelativeYPos();
+					int z = getCurrentPlane();
+					displayPanel.setStackMode(false);
+					if(fluor) {
+						fluorescenceCamera.startPreview();
+						if(fluorescenceCamera instanceof SimulatedCamera) {
+							((SimulatedCamera) fluorescenceCamera).setYPosition(yRel);
+							((SimulatedCamera) fluorescenceCamera).setZPosition(z);
+						}
+					}
+					if(trans) {
+						transmissionCamera.startPreview();
+						if(transmissionCamera instanceof SimulatedCamera) {
+							((SimulatedCamera) transmissionCamera).setYPosition(yRel);
+							((SimulatedCamera) transmissionCamera).setZPosition(z);
+						}
+					}
+
+					if(fluor)
+						laser.setOn();
+					do {
+						if(zChanges)
+							z = getCurrentPlane();
+						if(fluor)
+							fluorescenceCamera.getPreviewImage(fluorescenceFrame);
+						if(trans)
+							transmissionCamera.getPreviewImage(transmissionFrame);
+
+						// if both are acquired, display it normally
+						if(trans && fluor)
+							displayPanel.display(fluorescenceFrame, transmissionFrame, yRel, z);
+						// if only one is present, display it as transmission image,
+						// to avoid the translucent lookup table:
+						else if(trans)
+							displayPanel.display(null, transmissionFrame, yRel, z);
+						else if(fluor)
+							displayPanel.display(null, fluorescenceFrame, yRel, z);
+					} while(!mirrorQueue.isIdle() || !stopCrit.shouldStop());
+
+					if(fluor)
+						laser.setOff();
+					if(fluor)
+						fluorescenceCamera.stopPreview();
+					if(trans)
+						transmissionCamera.stopPreview();
+					continuousPreviewRunning = false;
+					System.out.println("Stopped preview");
+				} catch(Throwable e) {
+					ExceptionHandler.showException("Error during preview", e);
+					try {
+						if(fluor)
+							fluorescenceCamera.stopPreview();
+					} catch(Throwable ex) {
+						ExceptionHandler.showException("Error stopping preview", ex);
+					}
+					try {
+						if(trans)
+							transmissionCamera.stopPreview();
+					} catch(Throwable ex) {
+						ExceptionHandler.showException("Error stopping preview", ex);
+					}
+				}
+			}
+		};
+		previewThread.start();
+	}
+
 	/******************************************************
 	 * AdminPanelListener interface
 	 */
 	@Override
-	public void mirrorPositionChanged(final double pos) {
+	public void mirrorPositionChanged(final double z, final double m) {
 		mirrorQueue.push(new Runnable() {
 			@Override
 			public void run() {
-				if(!fluorescenceCamera.isPreviewRunning()) {
-					System.out.println("Starting preview");
-					Thread previewThread = new Thread() {
+				if(!continuousPreviewRunning) {
+					continuousPreview(true, true, true, new StopCriterion() {
 						@Override
-						public void run() {
+						public boolean shouldStop() {
 							try {
-								displayPanel.setStackMode(false);
-								fluorescenceCamera.startPreview();
-								double yRel = getCurrentRelativeYPos();
-								int z = getCurrentPlane();
-								if(fluorescenceCamera instanceof SimulatedCamera) {
-									((SimulatedCamera) fluorescenceCamera).setYPosition(yRel);
-									((SimulatedCamera) fluorescenceCamera).setZPosition(z);
-								}
-								do {
-									fluorescenceCamera.getPreviewImage(fluorescenceFrame);
-									// display it as transmission image to avoid the translucent
-									// lookup table:
-									displayPanel.display(null, fluorescenceFrame, yRel, z);
-								} while(!mirrorQueue.isIdle() || motor.isMoving(MIRROR));
-
-								fluorescenceCamera.stopPreview();
-								System.out.println("Stopped preview");
-							} catch(Throwable e) {
-								ExceptionHandler.showException("Error during preview", e);
-								try {
-									fluorescenceCamera.stopPreview();
-								} catch(Throwable ex) {
-									ExceptionHandler.showException("Error stopping preview", ex);
-								}
+								return !(motor.isMoving(MIRROR) || motor.isMoving(Z_AXIS));
+							} catch(Exception e) {
+								ExceptionHandler.showException("Error querying motor", e);
+								return true;
 							}
 						}
-					};
-					previewThread.start();
+					});
 				}
 				try {
-					motor.setTarget(MIRROR, pos);
+					motor.setTarget(MIRROR, m);
+					motor.setTarget(Z_AXIS, z);
 				} catch(Exception e) {
 					ExceptionHandler.showException("Error setting mirror position", e);
 				}
+			} // run
+		});
+	}
+
+	@Override
+	public void motorPositionChanged(final double y, final double z) {
+		mirrorQueue.push(new Runnable() {
+			@Override
+			public void run() {
+				if(!continuousPreviewRunning) {
+					continuousPreview(true, true, true, new StopCriterion() {
+						@Override
+						public boolean shouldStop() {
+							try {
+								if(!motor.isMoving()) {
+									System.out.println("motor stopped moving");
+									return true;
+								}
+								return false;
+							} catch(Exception e) {
+								ExceptionHandler.showException("Error querying motor", e);
+								return true;
+							}
+						}
+					});
+				}
+				try {
+					double m = getMirrorPositionForZ(z);
+					motor.setTarget(MIRROR, m);
+					motor.setTarget(Z_AXIS, z);
+					motor.setTarget(Y_AXIS, y);
+				} catch(Exception e) {
+					ExceptionHandler.showException("Error setting mirror position", e);
+				}
+			} // run
+		});
+	}
+
+	@Override
+	public void cameraParametersChanged() {
+		mirrorQueue.push(new Runnable() {
+			@Override
+			public void run() {
+				if(!continuousPreviewRunning) {
+					continuousPreview(true, true, true, new StopCriterion() {
+						@Override
+						public boolean shouldStop() {
+							return true;
+						}
+					});
+				}
+				// TODO should actually change the camera parameters here
+//				try {
+//					double m = getMirrorPositionForZ(z);
+//					motor.setTarget(MIRROR, m);
+//					motor.setTarget(Z_AXIS, z);
+//					motor.setTarget(Y_AXIS, y);
+//				} catch(Exception e) {
+//					ExceptionHandler.showException("Error setting mirror position", e);
+//				}
 			} // run
 		});
 	}
