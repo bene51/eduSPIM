@@ -446,7 +446,7 @@ public class Microscope implements AdminPanelListener {
 		// set the speed of the motor according to the frame rate
 		double framerate = fluorescenceCamera.getFramerate();
 		double dz = (Preferences.getStackZEnd() - Preferences.getStackZStart()) / ICamera.DEPTH;
-		motor.setVelocity(axis, dz * framerate);
+		motor.setVelocity(axis, Math.abs(dz * framerate));
 
 		// set the speed of the mirror
 		if(axis == Z_AXIS) {
@@ -569,7 +569,7 @@ public class Microscope implements AdminPanelListener {
 		// set the speed of the motor according to the frame rate
 		double framerate = fluorescenceCamera.getFramerate();
 		double dz = (Preferences.getStackZEnd() - Preferences.getStackZStart()) / ICamera.DEPTH;
-		motor.setVelocity(Z_AXIS, dz * framerate);
+		motor.setVelocity(Z_AXIS, Math.abs(dz * framerate));
 
 		// set the speed of the mirror
 		double dMirror = Math.abs(
