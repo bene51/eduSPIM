@@ -18,7 +18,10 @@ import java.io.InputStream;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -59,8 +62,6 @@ import display.PlaneDisplay;
  * Things to test there:
  * - Sending mail
  * - Check preferences
- *
- * TODO automatically close application in the evening.
  *
  * TODO move the sample back to the 'home position' after some idle time.
  *
@@ -136,6 +137,20 @@ public class Microscope implements AdminPanelListener {
 	private Microscope(boolean fatal) throws IOException, MotorException {
 
 		logger.info("Initializing microscope");
+
+		Timer timer = new Timer("eduSPIM shutdown", true);
+		Calendar c = Calendar.getInstance();
+		c.set(Calendar.HOUR_OF_DAY, 21);
+		c.set(Calendar.MINUTE, 0);
+		c.set(Calendar.SECOND, 0);
+		c.set(Calendar.MILLISECOND, 0);
+		Date shutdownTime = c.getTime();
+		timer.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				shutdown(EXIT_NORMAL);
+			}
+		}, shutdownTime);
 
 		if(fatal) {
 			displayPanel = null;
@@ -791,28 +806,31 @@ public class Microscope implements AdminPanelListener {
 	}
 
 	public void shutdown(int exitcode) {
-		logger.info("Shutting down with exit code " + exitcode);
-		Mail.send("EduSPIM shutdown (exit code " + exitcode + ")",
-				Preferences.getMailto(),
-				null,
-				"Hi,\n\n"
-				+ "EduSPIM was just shut down with exit status " + exitcode + ".\n\n"
-				+ "Logs are here:\n"
-				+ Preferences.getLogsLink() + "\n\n"
-				+ "stack projections:\n"
-				+ Preferences.getStacksLink() + "\n\n"
-				+ "and statistics:\n"
-				+ Preferences.getStatisticsLink() + "\n\n"
-				+ "Greetings,\nEduSPIM",
-				true);
-		while(!mirrorQueue.isIdle())
-			sleep(100);
+		try {
+			logger.info("Shutting down with exit code " + exitcode);
+			Mail.send("EduSPIM shutdown (exit code " + exitcode + ")",
+					Preferences.getMailto(),
+					null,
+					"Hi,\n\n"
+					+ "EduSPIM was just shut down with exit status " + exitcode + ".\n\n"
+					+ "Logs are here:\n"
+					+ Preferences.getLogsLink() + "\n\n"
+					+ "stack projections:\n"
+					+ Preferences.getStacksLink() + "\n\n"
+					+ "and statistics:\n"
+					+ Preferences.getStatisticsLink() + "\n\n"
+					+ "Greetings,\nEduSPIM",
+					true);
+			while(!mirrorQueue.isIdle())
+				sleep(100);
 
-		closeHardware();
+			closeHardware();
 
-		mirrorQueue.shutdown();
-		displayWindow.dispose();
-		System.exit(exitcode);
+			mirrorQueue.shutdown();
+			displayWindow.dispose();
+		} finally {
+			System.exit(exitcode);
+		}
 	}
 
 	private boolean continuousPreviewRunning = false;
