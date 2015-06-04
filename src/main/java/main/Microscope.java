@@ -160,7 +160,7 @@ public class Microscope implements AdminPanelListener {
 		fluorescenceFrame = new byte[ICamera.WIDTH * ICamera.HEIGHT];
 		transmissionFrame = new byte[ICamera.WIDTH * ICamera.HEIGHT];
 
-		URL url = getClass().getResource("/fire.lut");
+		URL url = getClass().getResource("/physics_inverted.lut");
 		InputStream stream = url.openStream();
 		IndexColorModel depthLut = LutLoader.open(stream);
 		stream.close();
