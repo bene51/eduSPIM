@@ -420,11 +420,16 @@ public class Microscope implements AdminPanelListener {
 		synchronized(this) {
 			busy = true;
 		}
+
 		// get current plane
 		double zPos = motor.getPosition(Z_AXIS);
 		int plane = getPlaneForZ(zPos);
 		double yPos = motor.getPosition(Y_AXIS);
 		double yRel = (yPos - Preferences.getStackYStart()) / (Preferences.getStackYEnd() - Preferences.getStackYStart());
+		if(yRel < 0)
+			yRel = 0;
+		if(yRel > 1)
+			yRel = 1;
 
 		// remember old values
 		double yRelOrg = yRel;
