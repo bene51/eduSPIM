@@ -351,6 +351,7 @@ public class Microscope implements AdminPanelListener {
 	private void initLaser(double power) {
 		try {
 			laser = new Toptica("COM" + LASER_COM_PORT, power); // TODO save parameters in Preferences
+			laser.setOff();
 		} catch(Throwable e) {
 			ExceptionHandler.handleException("Error initializing laser, using simulated laser instead", e);
 			laser = new NoopLaser();
@@ -416,7 +417,7 @@ public class Microscope implements AdminPanelListener {
 		return Preferences.getMirrorCoefficientM() * zPos + Preferences.getMirrorCoefficientT();
 	}
 
-	void startPreview(int button, int axis, boolean positive, double target) throws MotorException, CameraException {
+	void startPreview(int button, int axis, boolean positive, double target) throws MotorException, CameraException, LaserException {
 		synchronized(this) {
 			busy = true;
 		}
@@ -446,6 +447,7 @@ public class Microscope implements AdminPanelListener {
 		// set the speed of the motor according to the frame rate
 		double framerate = fluorescenceCamera.getFramerate();
 		double dz = (Preferences.getStackZEnd() - Preferences.getStackZStart()) / ICamera.DEPTH;
+
 		motor.setVelocity(axis, Math.abs(dz * framerate));
 
 		// set the speed of the mirror
@@ -467,6 +469,7 @@ public class Microscope implements AdminPanelListener {
 
 		fluorescenceCamera.startSequence();
 		transmissionCamera.startSequence();
+		laser.setOn();
 		do {
 			if(axis == Y_AXIS) {
 				yPos = positive ? yPos + dz : yPos - dz;
@@ -493,6 +496,7 @@ public class Microscope implements AdminPanelListener {
 			displayPanel.display(fluorescenceFrame, transmissionFrame, yRel, plane);
 		} while(buttons.getButtonDown() == button);
 
+		laser.setOff();
 		fluorescenceCamera.stopSequence();
 		transmissionCamera.stopSequence();
 		int mz = getCurrentPlane();
@@ -544,7 +548,7 @@ public class Microscope implements AdminPanelListener {
 		}
 	}
 
-	void acquireStack() throws MotorException, CameraException {
+	void acquireStack() throws MotorException, CameraException, LaserException {
 		synchronized(this) {
 			busy = true;
 		}
@@ -586,6 +590,7 @@ public class Microscope implements AdminPanelListener {
 		motor.setTarget(MIRROR, getMirrorPositionForZ(zEnd));
 
 		fluorescenceCamera.startSequence();
+		laser.setOn();
 		for(int i = ICamera.DEPTH - 1; i >= 0; i--) {
 			if(fluorescenceCamera instanceof SimulatedCamera) {
 				((SimulatedCamera) fluorescenceCamera).setYPosition(yRel);
@@ -594,6 +599,7 @@ public class Microscope implements AdminPanelListener {
 			fluorescenceCamera.getNextSequenceImage(fluorescenceFrame);
 			displayPanel.display(fluorescenceFrame, null, yRel, i);
 		}
+		laser.setOff();
 		fluorescenceCamera.stopSequence();
 
 		// reset the motor speed
@@ -633,7 +639,7 @@ public class Microscope implements AdminPanelListener {
 		}
 	}
 
-	void singlePreview(boolean trans, boolean fluor) throws CameraException {
+	void singlePreview(boolean trans, boolean fluor) throws CameraException, LaserException {
 		if(!trans && !fluor)
 			return;
 
@@ -651,6 +657,7 @@ public class Microscope implements AdminPanelListener {
 			transmissionCamera.stopSequence();
 		}
 
+		laser.setOn();
 		if(fluor) {
 			fluorescenceCamera.startSequence();
 			if(fluorescenceCamera instanceof SimulatedCamera) {
@@ -660,6 +667,7 @@ public class Microscope implements AdminPanelListener {
 			fluorescenceCamera.getNextSequenceImage(fluorescenceFrame);
 			fluorescenceCamera.stopSequence();
 		}
+		laser.setOff();
 
 		// if both are acquired, display it normally
 		if(trans && fluor)
