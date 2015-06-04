@@ -57,6 +57,7 @@ import display.PlaneDisplay;
 /*
  * Things to test there:
  * - Sending mail
+ * - Check preferences
  *
  * TODO info panel
  *
