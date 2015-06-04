@@ -637,13 +637,13 @@ public class Microscope implements AdminPanelListener {
 		displayPanel.setStackMode(false);
 
 		if(trans) {
-			transmissionCamera.startPreview();
+			transmissionCamera.startSequence();
 			if(transmissionCamera instanceof SimulatedCamera) {
 				((SimulatedCamera) transmissionCamera).setYPosition(yRel);
 				((SimulatedCamera) transmissionCamera).setZPosition(0);
 			}
-			transmissionCamera.getPreviewImage(transmissionFrame);
-			transmissionCamera.stopPreview();
+			transmissionCamera.getNextSequenceImage(transmissionFrame);
+			transmissionCamera.stopSequence();
 		}
 
 		if(fluor) {
