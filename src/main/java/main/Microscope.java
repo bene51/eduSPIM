@@ -332,8 +332,7 @@ public class Microscope implements AdminPanelListener {
 	}
 
 	private void initCameras() {
-		ImagePlus trans = IJ.openImage(System.getProperty("user.home") + "/transmission.tif");
-//		if(!simulated) {
+		if(!simulated) {
 			try {
 				fluorescenceCamera = new NativeCamera(0,
 						Preferences.getFCameraFramerate(),
@@ -353,9 +352,10 @@ public class Microscope implements AdminPanelListener {
 			} catch(Throwable e) {
 				ExceptionHandler.handleException("Error initializing the camera, using simulated camera instead instead", e);
 			}
-//		}
+		}
 
 		simulated = true;
+		ImagePlus trans = IJ.openImage(System.getProperty("user.home") + "/transmission.tif");
 		ImagePlus imp = IJ.openImage(System.getProperty("user.home") + "/HeadBack030_010um_3.tif");
 		fluorescenceCamera = new SimulatedCamera(imp);
 		transmissionCamera = new SimulatedCamera(trans);
