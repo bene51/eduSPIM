@@ -156,7 +156,7 @@ public class Microscope implements AdminPanelListener {
 		instance = this;
 
 		initBeanshell();
-		initHardware(true);
+		initHardware();
 
 		double yRel = getCurrentRelativeYPos();
 
@@ -235,8 +235,8 @@ public class Microscope implements AdminPanelListener {
 		return instance;
 	}
 
-	public void initHardware(boolean moveMotorToStart) {
-		initMotor(moveMotorToStart);
+	public void initHardware() {
+		initMotor();
 		initLaser(Preferences.getLaserPower());
 		initButtons();
 
@@ -287,32 +287,47 @@ public class Microscope implements AdminPanelListener {
 		}
 	}
 
-	private void initMotor(boolean moveToStart) {
+	private static boolean between(double v, double b1, double b2) {
+		double i0 = Math.min(b1, b2);
+		double i1 = Math.max(b1, b2);
+
+		return v >= i0 && v <= i1;
+	}
+
+	private void initMotor() {
 		try {
 			motor = new NativeMotor(STAGE_COM_PORT); // TODO save parameters in Preferences
-			if(moveToStart) {
+			motor.setVelocity(Y_AXIS, IMotor.VEL_MAX_Y);
+			motor.setVelocity(Z_AXIS, IMotor.VEL_MAX_Z);
+			boolean inRange = between(
+							motor.getPosition(Z_AXIS),
+							Preferences.getStackZStart(),
+							Preferences.getStackZEnd());
+			if(!inRange)
+				motor.setTarget(Z_AXIS, Preferences.getStackZStart());
+
+			inRange = between(
+					motor.getPosition(Y_AXIS),
+					Preferences.getStackYStart(),
+					Preferences.getStackYEnd());
+			if(!inRange)
+				motor.setTarget(Y_AXIS, Preferences.getStackYStart());
+
+			while(motor.isMoving())
+				sleep(50);
+		} catch(Throwable e) {
+			ExceptionHandler.handleException("Error initializing the motors, using simulated motors instead", e);
+			motor = new SimulatedMotor();
+			try {
 				motor.setVelocity(Y_AXIS, IMotor.VEL_MAX_Y);
 				motor.setVelocity(Z_AXIS, IMotor.VEL_MAX_Z);
 				motor.setTarget(Y_AXIS, Preferences.getStackYStart());
 				motor.setTarget(Z_AXIS, Preferences.getStackZStart());
 				while(motor.isMoving())
 					sleep(50);
-			}
-		} catch(Throwable e) {
-			ExceptionHandler.handleException("Error initializing the motors, using simulated motors instead", e);
-			motor = new SimulatedMotor();
-			if(moveToStart) {
-				try {
-					motor.setVelocity(Y_AXIS, IMotor.VEL_MAX_Y);
-					motor.setVelocity(Z_AXIS, IMotor.VEL_MAX_Z);
-					motor.setTarget(Y_AXIS, Preferences.getStackYStart());
-					motor.setTarget(Z_AXIS, Preferences.getStackZStart());
-					while(motor.isMoving())
-						sleep(50);
-				} catch(Throwable ex) {
-					ExceptionHandler.handleException("Error initializing simulated motors, exiting...", ex);
-					shutdown(EXIT_FATAL_ERROR);
-				}
+			} catch(Throwable ex) {
+				ExceptionHandler.handleException("Error initializing simulated motors, exiting...", ex);
+				shutdown(EXIT_FATAL_ERROR);
 			}
 			simulated = true;
 		}

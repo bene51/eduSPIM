@@ -80,7 +80,7 @@ public class SPIMButtonsListener implements ButtonsListener {
 			microscope.resetBusy();
 			try {
 				microscope.closeHardware();
-				microscope.initHardware(false);
+				microscope.initHardware();
 				microscope.acquireStack();
 			} catch(Throwable ex) {
 				ExceptionHandler.handleException("Error during stack acquisition after re-initializing the hardware, restarting the software", ex);
@@ -103,7 +103,7 @@ public class SPIMButtonsListener implements ButtonsListener {
 			microscope.resetBusy();
 			try {
 				microscope.closeHardware();
-				microscope.initHardware(false);
+				microscope.initHardware();
 				microscope.getMotor().setTarget(Y_AXIS, y);
 				microscope.getMotor().setTarget(Z_AXIS, z);
 				while(motor.isMoving())
@@ -132,7 +132,7 @@ public class SPIMButtonsListener implements ButtonsListener {
 
 			try {
 				microscope.closeHardware();
-				microscope.initHardware(false);
+				microscope.initHardware();
 				microscope.manualLaserOn();
 			} catch(Throwable ex) {
 				ExceptionHandler.handleException("Error during manual laser on after re-initializing the hardware, restarting the software", e);
@@ -149,7 +149,7 @@ public class SPIMButtonsListener implements ButtonsListener {
 
 			try {
 				microscope.closeHardware();
-				microscope.initHardware(false);
+				microscope.initHardware();
 			} catch(Throwable ex) {
 				ExceptionHandler.handleException("Error during manual laser off after re-opening the laser, restarting the software", e);
 				microscope.shutdown(Microscope.EXIT_MANUAL_LASER_ERROR);
