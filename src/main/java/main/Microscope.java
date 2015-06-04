@@ -96,8 +96,8 @@ public class Microscope implements AdminPanelListener {
 	public static final int EXIT_FATAL_ERROR        = -5;
 	public static final int EXIT_BUTTON_ERROR       = -6;
 
-	private static final int STAGE_COM_PORT = 7;
-	private static final int LASER_COM_PORT = 4;
+	private static final int STAGE_COM_PORT = 5;
+	private static final int LASER_COM_PORT = 6;
 	private static final int ARDUINO_COM_PORT = 3;
 
 	private static enum Mode {
