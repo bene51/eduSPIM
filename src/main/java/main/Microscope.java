@@ -734,15 +734,20 @@ public class Microscope implements AdminPanelListener {
 			displayPanel.display(null, fluorescenceFrame, yRel, z);
 	}
 
+	private double zposBeforeManualLaserOn;
 	public void manualLaserOn() throws LaserException, MotorException {
 		if(mode == Mode.NORMAL) {
 			logger.info("Manual laser on");
 			Statistics.incrementLasers();
 		}
-		// move mirror away
-		double mirror = getMirrorPositionForZ(Preferences.getStackZStart());
-		motor.setTarget(MIRROR, mirror);
-		while(motor.isMoving(MIRROR))
+		// move stage away
+		zposBeforeManualLaserOn = motor.getPosition(Z_AXIS);
+		// check the faster way
+		double d0 = Math.abs(zposBeforeManualLaserOn - Preferences.getStackZStart());
+		double d1 = Math.abs(zposBeforeManualLaserOn - Preferences.getStackZEnd());
+		double tgt = d0 < d1 ? Preferences.getStackZStart() : Preferences.getStackZEnd();
+		motor.setTarget(Z_AXIS, tgt);
+		while(motor.isMoving(Z_AXIS))
 			; // wait
 
 		laser.setOn();
@@ -754,9 +759,8 @@ public class Microscope implements AdminPanelListener {
 
 		laser.setTriggered();
 		// move mirror in place
-		double mirror = getMirrorPositionForZ(motor.getPosition(Z_AXIS));
-		motor.setTarget(MIRROR, mirror);
-		while(motor.isMoving(MIRROR))
+		motor.setTarget(Z_AXIS, zposBeforeManualLaserOn);
+		while(motor.isMoving(Z_AXIS))
 			; // wait
 	}
 
