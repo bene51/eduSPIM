@@ -16,7 +16,7 @@ public class ArduinoButtons extends AbstractButtons implements SerialPortEventLi
 	private int value = 0;
 	private final Microscope microscope;
 
-	private static final int N_BUTTONS = 6;
+	private static final int N_BUTTONS = 7;
 
 	public ArduinoButtons(String portname, Microscope microscope) throws ButtonsException {
 		this.port = new SerialPort(portname);

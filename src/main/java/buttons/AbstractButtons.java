@@ -12,6 +12,7 @@ public abstract class AbstractButtons {
 	public static final int BUTTON_Z_UP   = 3;
 	public static final int BUTTON_STACK  = 4;
 	public static final int BUTTON_LASER  = 5;
+	public static final int BUTTON_INFO   = 6;
 
 	private int buttonDown = -1;
 

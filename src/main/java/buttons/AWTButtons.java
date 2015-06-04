@@ -23,6 +23,7 @@ public class AWTButtons extends AbstractButtons {
 	private final JButton zUpButton   = new MButton("z+");
 	private final JButton stackButton = new MButton("S");
 	private final JButton laserButton = new MButton("L");
+	private final JButton infoButton  = new MButton("i");
 
 	public AWTButtons() {
 		GridBagLayout gridbag = new GridBagLayout();
@@ -61,12 +62,17 @@ public class AWTButtons extends AbstractButtons {
 		c.gridx = 3;
 		panel.add(laserButton, c);
 
+		c.gridy = 1;
+		c.gridx = 4;
+		panel.add(infoButton, c);
+
 		yDownButton.addMouseListener(new MouseAdapter(BUTTON_Y_DOWN));
 		yUpButton.addMouseListener(new MouseAdapter(BUTTON_Y_UP));
 		zDownButton.addMouseListener(new MouseAdapter(BUTTON_Z_DOWN));
 		zUpButton.addMouseListener(new MouseAdapter(BUTTON_Z_UP));
 		stackButton.addMouseListener(new MouseAdapter(BUTTON_STACK));
 		laserButton.addMouseListener(new MouseAdapter(BUTTON_LASER));
+		infoButton.addMouseListener(new MouseAdapter(BUTTON_INFO));
 	}
 
 	@Override

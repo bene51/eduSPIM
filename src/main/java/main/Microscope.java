@@ -52,6 +52,7 @@ import cam.ICamera;
 import cam.NativeCamera;
 import cam.SimulatedCamera;
 import display.DisplayFrame;
+import display.InfoFrame;
 import display.PlaneDisplay;
 
 /*
@@ -125,6 +126,7 @@ public class Microscope implements AdminPanelListener {
 	private final DisplayFrame displayWindow;
 	private final AdminPanel adminPanel;
 	private JConsole beanshell;
+	private InfoFrame info;
 
 	private final byte[] fluorescenceFrame, transmissionFrame;
 
@@ -415,6 +417,18 @@ public class Microscope implements AdminPanelListener {
 
 	double getMirrorPositionForZ(double zPos) {
 		return Preferences.getMirrorCoefficientM() * zPos + Preferences.getMirrorCoefficientT();
+	}
+
+	void showInfo() {
+		if(info == null)
+			info = new InfoFrame();
+	}
+
+	void closeInfo() {
+		if(info != null) {
+			info.dispose();
+			info = null;
+		}
 	}
 
 	void startPreview(int button, int axis, boolean positive, double target) throws MotorException, CameraException, LaserException {

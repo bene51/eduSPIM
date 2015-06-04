@@ -23,6 +23,9 @@ public class SPIMButtonsListener implements ButtonsListener {
 		}
 
 		switch(button) {
+		case AbstractButtons.BUTTON_INFO:
+			infoOn();
+			break;
 		case AbstractButtons.BUTTON_LASER:
 			manualLaserOn();
 			break;
@@ -48,6 +51,9 @@ public class SPIMButtonsListener implements ButtonsListener {
 	@Override
 	public void buttonReleased(int button) {
 		switch(button) {
+		case AbstractButtons.BUTTON_INFO:
+			infoOff();
+			break;
 		case AbstractButtons.BUTTON_LASER:
 			manualLaserOff();
 			break;
@@ -108,6 +114,14 @@ public class SPIMButtonsListener implements ButtonsListener {
 				microscope.shutdown(Microscope.EXIT_PREVIEW_ERROR);
 			}
 		}
+	}
+
+	private void infoOn() {
+		microscope.showInfo();
+	}
+
+	private void infoOff() {
+		microscope.closeInfo();
 	}
 
 	private void manualLaserOn() {
