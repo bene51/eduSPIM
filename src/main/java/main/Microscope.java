@@ -60,11 +60,9 @@ import display.PlaneDisplay;
  * - Sending mail
  * - Check preferences
  *
- * TODO automatically switch off and shutdown in the evening
+ * TODO automatically close application in the evening.
  *
  * TODO move the sample back to the 'home position' after some idle time.
- *
- * TODO Autostart, auto close software, auto open software...
  *
  * TODO continuous preview mode in the admin panel for alignment
  *
@@ -133,7 +131,6 @@ public class Microscope implements AdminPanelListener {
 
 	private static Microscope instance;
 
-	// for saving snapshots TODO check whether that's necessary.
 	private final ExecutorService exec = Executors.newSingleThreadExecutor();
 
 	private Microscope(boolean fatal) throws IOException, MotorException {
