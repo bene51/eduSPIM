@@ -58,17 +58,9 @@ import display.PlaneDisplay;
  * Things to test there:
  * - Sending mail
  *
- * TODO arduino for buttons
- *
- * TODO alive signal from arduino
- *
- * TODO include mirror
+ * TODO info panel
  *
  * TODO automatically switch off and shutdown in the evening
- *
- * TODO display a properties editor in case no properties file is found.
- *
- * TODO screensaver
  *
  * TODO move the sample back to the 'home position' after some idle time.
  *
