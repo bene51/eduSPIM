@@ -60,8 +60,6 @@ import display.PlaneDisplay;
  * - Sending mail
  * - Check preferences
  *
- * TODO info panel
- *
  * TODO automatically switch off and shutdown in the evening
  *
  * TODO move the sample back to the 'home position' after some idle time.
@@ -70,7 +68,9 @@ import display.PlaneDisplay;
  *
  * TODO continuous preview mode in the admin panel for alignment
  *
- * TODO re-direct logs for today to a shared dropbox file
+ * TODO re-direct stdout to a shared dropbox file
+ *
+ * TODO artificial data set
  */
 public class Microscope implements AdminPanelListener {
 
@@ -98,6 +98,7 @@ public class Microscope implements AdminPanelListener {
 	public static final int EXIT_FATAL_ERROR        = -5;
 	public static final int EXIT_BUTTON_ERROR       = -6;
 
+	// TODO save these in Preferences
 	private static final int STAGE_COM_PORT = 5;
 	private static final int LASER_COM_PORT = 6;
 	private static final int ARDUINO_COM_PORT = 3;
@@ -367,7 +368,7 @@ public class Microscope implements AdminPanelListener {
 
 	private void initLaser(double power) {
 		try {
-			laser = new Toptica("COM" + LASER_COM_PORT, power); // TODO save parameters in Preferences
+			laser = new Toptica("COM" + LASER_COM_PORT, power);
 			laser.setOff();
 		} catch(Throwable e) {
 			ExceptionHandler.handleException("Error initializing laser, using simulated laser instead", e);
