@@ -451,6 +451,12 @@ public class Microscope implements AdminPanelListener {
 		motor.setVelocity(axis, Math.abs(dz * framerate));
 
 		// set the speed of the mirror
+		/*
+		 * This is commented out since our current mirror doesn't allow to
+		 * adjust its velocity, so the framerate needs to be adjusted to the
+		 * mirror speed, and the latter is not touched at any time.
+		 */
+		/*
 		if(axis == Z_AXIS) {
 			double dMirror = Math.abs(
 					getMirrorPositionForZ(Preferences.getStackZEnd()) -
@@ -458,6 +464,8 @@ public class Microscope implements AdminPanelListener {
 				) / ICamera.DEPTH;
 			motor.setVelocity(MIRROR, dMirror * framerate);
 		}
+		*/
+
 
 		displayPanel.setStackMode(false);
 		motor.setTarget(axis, target);
@@ -518,7 +526,7 @@ public class Microscope implements AdminPanelListener {
 		// reset the motor speed
 		motor.setVelocity(Y_AXIS, IMotor.VEL_MAX_Y);
 		motor.setVelocity(Z_AXIS, IMotor.VEL_MAX_Z);
-		motor.setVelocity(MIRROR, IMotor.VEL_MAX_M);
+		// motor.setVelocity(MIRROR, IMotor.VEL_MAX_M);
 
 		// log the move
 		if(mode == Mode.NORMAL) {
@@ -576,11 +584,18 @@ public class Microscope implements AdminPanelListener {
 		motor.setVelocity(Z_AXIS, Math.abs(dz * framerate));
 
 		// set the speed of the mirror
+		/*
+		 * This is commented out since our current mirror doesn't allow to
+		 * adjust its velocity, so the framerate needs to be adjusted to the
+		 * mirror speed, and the latter is not touched at any time.
+		 */
+		/*
 		double dMirror = Math.abs(
 				getMirrorPositionForZ(Preferences.getStackZEnd()) -
 				getMirrorPositionForZ(Preferences.getStackZStart())
 			) / ICamera.DEPTH;
 		motor.setVelocity(MIRROR, dMirror * framerate);
+		*/
 
 		displayPanel.display(null, null, yRel, ICamera.DEPTH - 1);
 		sleep(100); // delay to ensure rendering before changing stack mode
@@ -605,7 +620,7 @@ public class Microscope implements AdminPanelListener {
 		// reset the motor speed
 		motor.setVelocity(Y_AXIS, IMotor.VEL_MAX_Y);
 		motor.setVelocity(Z_AXIS, IMotor.VEL_MAX_Z);
-		motor.setVelocity(MIRROR, IMotor.VEL_MAX_M);
+		// motor.setVelocity(MIRROR, IMotor.VEL_MAX_M);
 
 		adminPanel.setPosition(motor.getPosition(Y_AXIS), motor.getPosition(Z_AXIS));
 
