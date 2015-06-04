@@ -437,8 +437,8 @@ public class Microscope implements AdminPanelListener {
 
 		// move mirror to start pos and wait until it's done
 		if(axis == Z_AXIS) {
-			double mirrorPos = getMirrorPositionForZ(zPos);
-			motor.setTarget(MIRROR, getMirrorPositionForZ(zPos));
+			double mirrorStart = getMirrorPositionForZ(zPos);
+			motor.setTarget(MIRROR, mirrorStart);
 			while(motor.isMoving(MIRROR))
 				; // do nothing
 		}
