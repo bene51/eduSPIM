@@ -312,7 +312,6 @@ camGetNextSequenceImage(int camIdx, char *image)
 	char *pBuffer = NULL;
 	HCAM cam = cameras[camIdx];
 	SAVE_CALL(is_WaitForNextImage(cam, 20000, &pBuffer, &nMemID), camIdx);
-	printf("got image %d\n", nMemID);
 	SAVE_CALL(is_CopyImageMem(cam, pBuffer, nMemID, image), camIdx);
 	SAVE_CALL(is_UnlockSeqBuf(cam, nMemID, pBuffer), camIdx);
 }
