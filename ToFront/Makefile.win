@@ -1,0 +1,23 @@
+.SUFFIXES: .cpp .obj
+
+CC = cl
+INCL = /I "$(JAVA_HOME)/include" /I "$(JAVA_HOME)/include/win32" /I "include"
+COMPILE_FLAGS = /c /O2 /EHsc /W3 /nologo /O2 /Zi /MT
+LIBS = user32.lib
+
+CPP_OBJS = windows_ToFront.obj
+
+all: to_front.dll
+
+clean:
+	del to_front.dll $(CPP_OBJS)
+
+.cpp.obj:
+	@echo Building $@ from $<
+	$(CC) $(COMPILE_FLAGS) $(INCL) /Fe$@ $< >nul
+
+to_front.dll: $(CPP_OBJS)
+	@echo linking...
+	$(CC) /LD /Fe$@ $(LIBS) $** >nul
+	copy /Y $@ ..
+

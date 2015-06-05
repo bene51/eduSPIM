@@ -17,3 +17,5 @@ stage_NativeMotor.dll
 cam_NativeCamera.dll
 enumerate_serial.dll
 enumerate_serial.lib
+to_front.lib
+to_front.dll
