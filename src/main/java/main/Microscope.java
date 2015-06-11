@@ -624,13 +624,31 @@ public class Microscope implements AdminPanelListener {
 		return v;
 	}
 
-	private void saveSnapshot(String path) {
+	void saveSnapshot(String path) {
 		try {
 			BufferedImage im = displayPanel.getSnapshot();
 			File f = new File(path);
 			ImageIO.write(im, "png", f);
 		} catch(Throwable e) {
 			ExceptionHandler.handleException("Error saving snapshot", e);
+		}
+	}
+
+	void timelapse(double durationInHours, double intervalInMinutes, String dir) throws MotorException, CameraException, LaserException {
+		long durationMillis = (long)(durationInHours * 60 * 60 * 1000);
+		long intervalMillis = (long)(intervalInMinutes * 60 * 1000);
+		int n = (int)Math.ceil(durationMillis / (double)intervalMillis);
+		System.out.println("Running timelapse over " + n + " timepoints");
+		long startMillis = System.currentTimeMillis();
+		File dirf = new File(dir);
+		for(int it = 0; it < n; it++) {
+			while(System.currentTimeMillis() < startMillis + it * intervalMillis)
+				sleep(100);
+
+			String file = String.format("t%04d.png", it);
+			String path = new File(dirf, file).getAbsolutePath();
+			acquireStack();
+			saveSnapshot(path);
 		}
 	}
 
