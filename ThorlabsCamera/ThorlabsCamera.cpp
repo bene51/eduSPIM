@@ -210,10 +210,10 @@ camSetup(int camIdx)
 		return;
 	printf("Setting maximum exposure time: %f\n", exposure);
 
-	int bid;
 	buffers[camIdx] = (char **)malloc(N_BUFFERS * sizeof(char *));
 
 	for(int i = 0; i < N_BUFFERS; i++) {
+		int bid;
 		if(!SAVE_CALL(is_AllocImageMem(cam,
 				WIDTH,
 				HEIGHT,
@@ -277,19 +277,6 @@ camGetLastPreviewImage(int camIdx, char *image)
 	} while(true);
 	SAVE_CALL(is_CopyImageMem(cam, last, lastId, image), camIdx);
 	SAVE_CALL(is_UnlockSeqBuf(cam, lastId, last), camIdx);
-
-	/*
-	SAVE_CALL(is_LockSeqBuf(cam, id, next), camIdx);
-	SAVE_CALL(is_CopyImageMem(cam, next, 0, image), camIdx);
-	SAVE_CALL(is_UnlockSeqBuf(cam, id, next), camIdx);
-	*/
-
-	/*
-	SAVE_CALL(is_GetActiveImageMem(cam, &next, &id), camIdx);
-	SAVE_CALL(is_LockSeqBuf(cam, id, next), camIdx);
-	SAVE_CALL(is_CopyImageMem(cam, next, id, image), camIdx);
-	SAVE_CALL(is_UnlockSeqBuf(cam, id, next), camIdx);
-	*/
 }
 
 void
