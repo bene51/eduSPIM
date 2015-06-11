@@ -36,6 +36,17 @@ __save_call(int ans, int camIdx, const char *file, int line)
 	return TRUE;
 }
 
+static unsigned short shift(unsigned short val)
+{
+	return (val >> 6);
+}
+
+static void shiftArray(unsigned short *arr, int N)
+{
+	for(int i = 0; i < N; i++)
+		arr[i] = swap(arr[i]);
+}
+
 void
 camSetErrorCallback(void (*callback)(const char *, void *), void *param)
 {
@@ -135,7 +146,7 @@ camSetup(int camIdx)
 	printf("Found previous color mode: %d\n", cm);
 
 	int bpp = 8;
-	cm = IS_CM_MONO8;
+	cm = IS_CM_MONO8; // IS_CM_MONO16;
 	if(!SAVE_CALL(is_SetColorMode(cam, cm), camIdx))
 		return;
 	printf("Setting color mode to MONO8\n");
@@ -277,6 +288,7 @@ camGetLastPreviewImage(int camIdx, char *image)
 	} while(true);
 	SAVE_CALL(is_CopyImageMem(cam, last, lastId, image), camIdx);
 	SAVE_CALL(is_UnlockSeqBuf(cam, lastId, last), camIdx);
+	// swapArray((unsigned short *)image, WIDTH * HEIGHT);
 }
 
 void
@@ -301,6 +313,7 @@ camGetNextSequenceImage(int camIdx, char *image)
 	SAVE_CALL(is_WaitForNextImage(cam, 20000, &pBuffer, &nMemID), camIdx);
 	SAVE_CALL(is_CopyImageMem(cam, pBuffer, nMemID, image), camIdx);
 	SAVE_CALL(is_UnlockSeqBuf(cam, nMemID, pBuffer), camIdx);
+	// swapArray((unsigned short *)image, WIDTH * HEIGHT);
 }
 
 void
