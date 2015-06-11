@@ -259,6 +259,9 @@ public class Microscope implements AdminPanelListener {
 
 	public void closeHardware() {
 		try {
+			motor.setTarget(MIRROR, 1);
+			while(motor.isMoving())
+				;
 			motor.close();
 		} catch(MotorException e) {
 			ExceptionHandler.handleException("Error closing the motors", e);
@@ -311,12 +314,17 @@ public class Microscope implements AdminPanelListener {
 			motor = new NativeMotor(STAGE_COM_PORT);
 			motor.setVelocity(Y_AXIS, IMotor.VEL_MAX_Y);
 			motor.setVelocity(Z_AXIS, IMotor.VEL_MAX_Z);
+
+			double z0 = motor.getPosition(Z_AXIS);
+
 			boolean inRange = between(
-							motor.getPosition(Z_AXIS),
+							z0,
 							Preferences.getStackZStart(),
 							Preferences.getStackZEnd());
-			if(!inRange)
-				motor.setTarget(Z_AXIS, Preferences.getStackZStart());
+			if(!inRange) {
+				z0 = Preferences.getStackZStart();
+				motor.setTarget(Z_AXIS, z0);
+			}
 
 			inRange = between(
 					motor.getPosition(Y_AXIS),
@@ -324,6 +332,9 @@ public class Microscope implements AdminPanelListener {
 					Preferences.getStackYEnd());
 			if(!inRange)
 				motor.setTarget(Y_AXIS, Preferences.getStackYStart());
+
+			double mirrorPos = getMirrorPositionForZ(z0);
+			motor.setTarget(MIRROR, mirrorPos);
 
 			while(motor.isMoving())
 				sleep(50);
