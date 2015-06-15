@@ -419,6 +419,12 @@ public class Microscope implements AdminPanelListener {
 
 	synchronized void resetBusy() {
 		this.busy = false;
+		displayWindow.clearMessage();
+	}
+
+	private void setBusy() {
+		this.busy = true;
+		displayWindow.showMessage("Busy...");
 	}
 
 	public IMotor getMotor() {
@@ -465,20 +471,23 @@ public class Microscope implements AdminPanelListener {
 	}
 
 	void showInfo() {
-		if(info == null)
+		if(info == null) {
 			info = new InfoFrame();
+			setBusy();
+		}
 	}
 
 	void closeInfo() {
 		if(info != null) {
 			info.dispose();
 			info = null;
+			resetBusy();
 		}
 	}
 
 	void startPreview(int button, int axis, double target) throws MotorException, CameraException, LaserException {
 		synchronized(this) {
-			busy = true;
+			setBusy();
 		}
 
 		// get current plane
@@ -611,7 +620,7 @@ public class Microscope implements AdminPanelListener {
 		displayPanel.requestFocusInWindow();
 
 		synchronized(this) {
-			busy = false;
+			resetBusy();
 		}
 	}
 
@@ -656,7 +665,7 @@ public class Microscope implements AdminPanelListener {
 	boolean recordStack = false;
 	void acquireStack() throws MotorException, CameraException, LaserException {
 		synchronized(this) {
-			busy = true;
+			setBusy();
 		}
 
 		double yRel = getCurrentRelativeYPos();
@@ -773,7 +782,7 @@ public class Microscope implements AdminPanelListener {
 			}
 		});
 		synchronized(this) {
-			busy = false;
+			resetBusy();
 		}
 	}
 
@@ -825,6 +834,7 @@ public class Microscope implements AdminPanelListener {
 			logger.info("Manual laser on");
 			Statistics.incrementLasers();
 		}
+		setBusy();
 		// move stage away
 		zposBeforeManualLaserOn = motor.getPosition(Z_AXIS);
 		// check the faster way
@@ -847,6 +857,7 @@ public class Microscope implements AdminPanelListener {
 		motor.setTarget(Z_AXIS, zposBeforeManualLaserOn);
 		while(motor.isMoving(Z_AXIS))
 			; // wait
+		resetBusy();
 	}
 
 	public static void sleep(long ms) {

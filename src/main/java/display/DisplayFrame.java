@@ -2,6 +2,7 @@ package display;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 
@@ -23,9 +24,10 @@ public class DisplayFrame extends JFrame {
 		getContentPane().add(panel);
 		setFocusable(false);
 
-		message = new JLabel("");
+		message = new JLabel("  ");
+		message.setPreferredSize(new Dimension(200, 15));
 		message.setAlignmentX(JLabel.CENTER_ALIGNMENT);
-		message.setForeground(Color.WHITE);
+		message.setForeground(Color.RED);
 		message.setBackground(Color.BLACK);
 		message.setOpaque(true);
 		getContentPane().add(message, BorderLayout.SOUTH);
