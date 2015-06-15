@@ -31,6 +31,10 @@ public class SimulatedMotor implements IMotor {
 	}
 
 	@Override
+	public void setAbsolutePosition(int axis, double val) {
+	}
+
+	@Override
 	public double getPosition(int axis) {
 		double ret = 0;
 		synchronized(lock) {

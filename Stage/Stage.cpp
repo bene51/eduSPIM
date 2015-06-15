@@ -166,7 +166,7 @@ void stageReferenceIfNeeded(int axis)
 		SAVE_CALL(PI_FRF(id, AXIS), id);
 		printf("device %d, Reference stage for axis %s by reference switch ", id, AXIS);
 	} else {
-		double pos = 1;
+		double pos = 2;
 		BOOL referenceOn = 0;
 		SAVE_CALL(PI_RON(id, AXIS, &referenceOn), id);
 		SAVE_CALL(PI_POS(id, AXIS, &pos), id);
@@ -229,6 +229,12 @@ bool stageIsMoving(int axis)
 	int moving;
 	SAVE_CALL(PI_IsMoving(ID[axis], AXIS, &moving), ID[axis]);
 	return moving;
+}
+
+void stageSetAbsolutePosition(int axis, double val)
+{
+	int id = ID[axis];
+	SAVE_CALL(PI_POS(id, AXIS, &val), id);
 }
 
 void main(int argc, char *argv[])

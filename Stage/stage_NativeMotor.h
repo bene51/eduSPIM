@@ -82,6 +82,9 @@ JNIEXPORT void JNICALL Java_stage_NativeMotor_stageStopMoving
 JNIEXPORT void JNICALL Java_stage_NativeMotor_stageClose
   (JNIEnv *, jclass);
 
+JNIEXPORT void JNICALL Java_stage_NativeMotor_stageSetAbsolutePosition
+  (JNIEnv *, jclass, jint, jdouble);
+
 #ifdef __cplusplus
 }
 #endif

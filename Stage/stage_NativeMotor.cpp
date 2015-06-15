@@ -91,3 +91,9 @@ JNIEXPORT void JNICALL Java_stage_NativeMotor_stageClose
 	stageClose();
 }
 
+JNIEXPORT void JNICALL Java_stage_NativeMotor_stageSetAbsolutePosition
+  (JNIEnv *, jclass, jint axis, jdouble val)
+{
+	stageSetAbsolutePosition(axis, val);
+}
+

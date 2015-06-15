@@ -23,5 +23,7 @@ bool stageIsMoving(int axis);
 
 void stageStopMoving(int axis);
 
+void stageSetAbsolutePosition(int axis, double val);
+
 #endif // _STAGE_H_
 

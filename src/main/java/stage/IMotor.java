@@ -15,11 +15,11 @@ public interface IMotor {
 
 	public static final double POS_MIN_Y = 0;
 	public static final double POS_MIN_Z = 0;
-	public static final double POS_MIN_M = 0;
+	public static final double POS_MIN_M = 1;
 
 	public static final double POS_MAX_Y = 25;
 	public static final double POS_MAX_Z = 15;
-	public static final double POS_MAX_M = 2;
+	public static final double POS_MAX_M = 3;
 
 	public static final double VEL_MIN_Y = 0;
 	public static final double VEL_MIN_Z = 0;
@@ -28,6 +28,8 @@ public interface IMotor {
 	public static final double VEL_MAX_Y = 1.5;
 	public static final double VEL_MAX_Z = 1.5;
 	public static final double VEL_MAX_M = 1;
+
+	public void setAbsolutePosition(int axis, double val) throws MotorException;
 
 	public double getPosition(int axis) throws MotorException;
 

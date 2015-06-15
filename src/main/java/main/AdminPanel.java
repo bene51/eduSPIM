@@ -498,23 +498,24 @@ public class AdminPanel extends JPanel {
 
 
 
-		JPanel mirror2Panel = new JPanel(new GridBagLayout());
-		mirror2Panel.setBackground(Color.BLACK);
-		mirror2Panel.setForeground(Color.WHITE);
-		titledBorder = BorderFactory.createTitledBorder(lineBorder, "Mirror pos. 2");
-		titledBorder.setTitleColor(Color.LIGHT_GRAY);
-		mirror2Panel.setBorder(titledBorder);
-
-		c.gridx = c.gridy = 0;
-		mirror2Panel.add(mirror2Z, c);
-
-		c.gridy++;
-		mirror2Panel.add(mirror2M, c);
-
-		cAll.gridx++;
-		cAll.fill = GridBagConstraints.BOTH;
-		cAll.weightx = 1;
-		add(mirror2Panel, cAll);
+		// TODO mirror
+//		JPanel mirror2Panel = new JPanel(new GridBagLayout());
+//		mirror2Panel.setBackground(Color.BLACK);
+//		mirror2Panel.setForeground(Color.WHITE);
+//		titledBorder = BorderFactory.createTitledBorder(lineBorder, "Mirror pos. 2");
+//		titledBorder.setTitleColor(Color.LIGHT_GRAY);
+//		mirror2Panel.setBorder(titledBorder);
+//
+//		c.gridx = c.gridy = 0;
+//		mirror2Panel.add(mirror2Z, c);
+//
+//		c.gridy++;
+//		mirror2Panel.add(mirror2M, c);
+//
+//		cAll.gridx++;
+//		cAll.fill = GridBagConstraints.BOTH;
+//		cAll.weightx = 1;
+//		add(mirror2Panel, cAll);
 
 
 
@@ -700,6 +701,8 @@ public class AdminPanel extends JPanel {
 		mirror1Z.setText(df.format(Preferences.getMirrorZ1()));
 		mirror2Z.setText(df.format(Preferences.getMirrorZ2()));
 		mirror1M.setText(df.format(Preferences.getMirrorM1()));
+		// TODO mirror
+		mirror1M.setText(df.format(2));
 		mirror2M.setText(df.format(Preferences.getMirrorM2()));
 		fCameraExp.setText(df.format(Preferences.getFCameraExposure()));
 		fCameraFPS.setText(df.format(Preferences.getFCameraFramerate()));

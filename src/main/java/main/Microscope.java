@@ -75,6 +75,8 @@ import display.PlaneDisplay;
  */
 public class Microscope implements AdminPanelListener {
 
+	private static final boolean useScanMirror = false;
+
 	private static final Logger logger;
 
 	static {
@@ -265,9 +267,11 @@ public class Microscope implements AdminPanelListener {
 
 	public void closeHardware() {
 		try {
-			motor.setTarget(MIRROR, 1);
-			while(motor.isMoving())
-				;
+			if(useScanMirror) {
+				motor.setTarget(MIRROR, 1);
+				while(motor.isMoving(MIRROR))
+					;
+			}
 			motor.close();
 		} catch(MotorException e) {
 			ExceptionHandler.handleException("Error closing the motors", e);
@@ -341,10 +345,21 @@ public class Microscope implements AdminPanelListener {
 				motor.setTarget(Y_AXIS, Preferences.getStackYEnd());
 
 			double mirrorPos = getMirrorPositionForZ(z0);
-			motor.setTarget(MIRROR, mirrorPos);
+			if(useScanMirror)
+				motor.setTarget(MIRROR, mirrorPos);
+			else
+				motor.setTarget(MIRROR, 2);
 
-			while(motor.isMoving())
+			// TODO only wait for the translation stages right now, later we'll have
+			// to wait for the objective motor, too
+			while(true) {
+				boolean b = motor.isMoving(Y_AXIS) || motor.isMoving(Z_AXIS);
+				if(!b && useScanMirror)
+					b = b || motor.isMoving(MIRROR);
+				if(!b)
+					break;
 				sleep(50);
+			}
 		} catch(Throwable e) {
 			ExceptionHandler.handleException("Error initializing the motors, using simulated motors instead", e);
 			motor = new SimulatedMotor();
@@ -353,7 +368,7 @@ public class Microscope implements AdminPanelListener {
 				motor.setVelocity(Z_AXIS, IMotor.VEL_MAX_Z);
 				motor.setTarget(Y_AXIS, Preferences.getStackYStart());
 				motor.setTarget(Z_AXIS, Preferences.getStackZStart());
-				while(motor.isMoving())
+				while(motor.isMoving(Z_AXIS) || motor.isMoving(Y_AXIS))
 					sleep(50);
 			} catch(Throwable ex) {
 				ExceptionHandler.handleException("Error initializing simulated motors, exiting...", ex);
@@ -515,9 +530,11 @@ public class Microscope implements AdminPanelListener {
 		// move mirror to start pos and wait until it's done
 		if(axis == Z_AXIS) {
 			double mirrorStart = getMirrorPositionForZ(zPos);
-			motor.setTarget(MIRROR, mirrorStart);
-			while(motor.isMoving(MIRROR))
-				; // do nothing
+			if(useScanMirror) {
+				motor.setTarget(MIRROR, mirrorStart);
+				while(motor.isMoving(MIRROR))
+					; // do nothing
+			}
 		}
 
 		// set the speed of the motor according to the frame rate
@@ -547,8 +564,10 @@ public class Microscope implements AdminPanelListener {
 		motor.setTarget(axis, target);
 		// set the mirror target position
 		if(axis == Z_AXIS) {
-			double mirrorTgt = getMirrorPositionForZ(target);
-			motor.setTarget(MIRROR, mirrorTgt);
+			if(useScanMirror) {
+				double mirrorTgt = getMirrorPositionForZ(target);
+				motor.setTarget(MIRROR, mirrorTgt);
+			}
 		}
 
 		fluorescenceCamera.startSequence();
@@ -593,8 +612,10 @@ public class Microscope implements AdminPanelListener {
 		plane = getPlaneForZ(zPos);
 		double tgt = axis == Y_AXIS ? yPos : zPos;
 		motor.setTarget(axis, tgt);
-		if(axis == Z_AXIS)
-			motor.setTarget(MIRROR, getMirrorPositionForZ(tgt));
+		if(axis == Z_AXIS) {
+			if(useScanMirror)
+				motor.setTarget(MIRROR, getMirrorPositionForZ(tgt));
+		}
 
 		while(motor.isMoving())
 			sleep(50);
@@ -686,9 +707,15 @@ public class Microscope implements AdminPanelListener {
 		// move motor and mirror back
 		double zStart = Preferences.getStackZStart();
 		motor.setTarget(Z_AXIS, zStart);
-		motor.setTarget(MIRROR, getMirrorPositionForZ(zStart));
+		if(useScanMirror)
+			motor.setTarget(MIRROR, getMirrorPositionForZ(zStart));
 		displayPanel.setStackMode(false);
-		while(motor.isMoving(Z_AXIS) || motor.isMoving(MIRROR)) {
+		while(true) {
+			boolean moving = motor.isMoving(Z_AXIS);
+			if(!moving && useScanMirror)
+				moving = moving || motor.isMoving(MIRROR);
+			if(!moving)
+				break;
 			int plane = getCurrentPlane();
 			displayPanel.display(null, null, yRel, plane);
 		}
@@ -725,7 +752,8 @@ public class Microscope implements AdminPanelListener {
 
 		double zEnd = Preferences.getStackZEnd();
 		motor.setTarget(Z_AXIS, zEnd);
-		motor.setTarget(MIRROR, getMirrorPositionForZ(zEnd));
+		if(useScanMirror)
+			motor.setTarget(MIRROR, getMirrorPositionForZ(zEnd));
 
 		fluorescenceCamera.startSequence();
 		if(recordStack)
@@ -1030,7 +1058,10 @@ public class Microscope implements AdminPanelListener {
 						@Override
 						public boolean shouldStop() {
 							try {
-								if(!motor.isMoving()) {
+								boolean moving = motor.isMoving(Z_AXIS) || motor.isMoving(Y_AXIS);
+								if(!moving && useScanMirror)
+									moving = moving || motor.isMoving(MIRROR);
+								if(!moving) {
 									System.out.println("motor stopped moving");
 									return true;
 								}
@@ -1044,7 +1075,8 @@ public class Microscope implements AdminPanelListener {
 				}
 				try {
 					double m = getMirrorPositionForZ(z);
-					motor.setTarget(MIRROR, m);
+					if(useScanMirror)
+						motor.setTarget(MIRROR, m);
 					motor.setTarget(Z_AXIS, z);
 					motor.setTarget(Y_AXIS, y);
 				} catch(Exception e) {
@@ -1068,14 +1100,6 @@ public class Microscope implements AdminPanelListener {
 					});
 				}
 				// TODO should actually change the camera parameters here
-//				try {
-//					double m = getMirrorPositionForZ(z);
-//					motor.setTarget(MIRROR, m);
-//					motor.setTarget(Z_AXIS, z);
-//					motor.setTarget(Y_AXIS, y);
-//				} catch(Exception e) {
-//					ExceptionHandler.showException("Error setting mirror position", e);
-//				}
 			} // run
 		});
 	}
@@ -1104,6 +1128,11 @@ public class Microscope implements AdminPanelListener {
 					String date = new SimpleDateFormat("yyyMMdd").format(new Date());
 					String name = "EduSPIM." + date + ".props";
 					Preferences.save(new File(propdir, name));
+					// TODO mirror
+					motor.setTarget(MIRROR, Preferences.getMirrorM1());
+					while(motor.isMoving(MIRROR))
+						;
+					motor.setAbsolutePosition(MIRROR, 2);
 				} catch(Exception e) {
 					ExceptionHandler.showException("Error saving properties in the property history folder", e);
 				}

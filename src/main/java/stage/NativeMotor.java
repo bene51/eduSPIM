@@ -44,6 +44,12 @@ public class NativeMotor implements IMotor {
 	private static native void stageSetTarget(int axis, double pos) throws MotorException;
 	private static native void stageStopMoving(int axis) throws MotorException;
 	private static native void stageClose() throws MotorException;
+	private static native void stageSetAbsolutePosition(int axis, double val) throws MotorException;
+
+	@Override
+	public void setAbsolutePosition(int axis, double val) throws MotorException {
+		stageSetAbsolutePosition(axis, val);
+	}
 
 	@Override
 	public double getPosition(int axis) throws MotorException {
