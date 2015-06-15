@@ -39,38 +39,47 @@ public class Mail {
 		Future<?> fut = exec.submit(new Runnable() {
 			@Override
 			public void run() {
-				final String username = "eduspim@gmail.com";
-				final String password = "cmlc2GFP";
+				boolean failed = false;
+				do {
+					final String username = "eduspim@gmail.com";
+					final String password = "cmlc2GFP";
 
-				Properties props = new Properties();
-				props.put("mail.smtp.auth", "true");
-				props.put("mail.smtp.starttls.enable", "true");
-				props.put("mail.smtp.host", "smtp.gmail.com");
-				props.put("mail.smtp.port", "587");
+					Properties props = new Properties();
+					props.put("mail.smtp.auth", "true");
+					props.put("mail.smtp.starttls.enable", "true");
+					props.put("mail.smtp.host", "smtp.gmail.com");
+					props.put("mail.smtp.port", "587");
 
-				Session session = Session.getInstance(props,
-						new javax.mail.Authenticator() {
-							@Override
-							protected PasswordAuthentication getPasswordAuthentication() {
-								return new PasswordAuthentication(username, password);
-							}
-						});
+					Session session = Session.getInstance(props,
+							new javax.mail.Authenticator() {
+								@Override
+								protected PasswordAuthentication getPasswordAuthentication() {
+									return new PasswordAuthentication(username, password);
+								}
+							});
 
-				try {
-					Message message = new MimeMessage(session);
-					message.setFrom(InternetAddress.parse("eduspim@gmail.com")[0]);
-					message.setRecipients(Message.RecipientType.TO,
-							InternetAddress.parse(to));
-					if(cc != null && cc.trim().length() != 0)
-						message.setRecipients(Message.RecipientType.CC,
-								InternetAddress.parse(cc));
-					message.setSubject(subject);
-					message.setText(text);
+					try {
+						Message message = new MimeMessage(session);
+						message.setFrom(InternetAddress.parse("eduspim@gmail.com")[0]);
+						message.setRecipients(Message.RecipientType.TO,
+								InternetAddress.parse(to));
+						if(cc != null && cc.trim().length() != 0)
+							message.setRecipients(Message.RecipientType.CC,
+									InternetAddress.parse(cc));
+						message.setSubject(subject);
+						message.setText(text);
 
-					Transport.send(message);
-				} catch (MessagingException e) {
-					ExceptionHandler.handleException("Error sending mail", e);
-				}
+						Transport.send(message);
+					} catch (MessagingException e) {
+						failed = true;
+						// ExceptionHandler.handleException("Error sending mail", e);
+						try {
+							// wait for half a minute so that internet connection can
+							// be established in the mean time
+							Thread.sleep(30000);
+						} catch(InterruptedException ex) {}
+					}
+				} while(failed);
 			} // run
 		});
 		if(wait) {
