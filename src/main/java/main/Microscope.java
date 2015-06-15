@@ -5,6 +5,7 @@ import static stage.IMotor.Y_AXIS;
 import static stage.IMotor.Z_AXIS;
 import ij.IJ;
 import ij.ImagePlus;
+import ij.ImageStack;
 import ij.plugin.LutLoader;
 
 import java.awt.BorderLayout;
@@ -652,6 +653,7 @@ public class Microscope implements AdminPanelListener {
 		}
 	}
 
+	boolean recordStack = false;
 	void acquireStack() throws MotorException, CameraException, LaserException {
 		synchronized(this) {
 			busy = true;
@@ -696,11 +698,21 @@ public class Microscope implements AdminPanelListener {
 		displayPanel.display(null, null, yRel, ICamera.DEPTH - 1);
 		sleep(100); // delay to ensure rendering before changing stack mode
 		displayPanel.setStackMode(true);
+
+		ImageStack fluorescenceStack = null;
+		ImageStack transmissionStack = null;
+		if(recordStack) {
+			fluorescenceStack = new ImageStack(ICamera.WIDTH, ICamera.HEIGHT);
+			transmissionStack = new ImageStack(ICamera.WIDTH, ICamera.HEIGHT);
+		}
+
 		double zEnd = Preferences.getStackZEnd();
 		motor.setTarget(Z_AXIS, zEnd);
 		motor.setTarget(MIRROR, getMirrorPositionForZ(zEnd));
 
 		fluorescenceCamera.startSequence();
+		if(recordStack)
+			transmissionCamera.startSequence();
 		laser.setOn();
 		for(int i = ICamera.DEPTH - 1; i >= 0; i--) {
 			if(fluorescenceCamera instanceof SimulatedCamera) {
@@ -708,10 +720,25 @@ public class Microscope implements AdminPanelListener {
 				((SimulatedCamera) fluorescenceCamera).setZPosition(i);
 			}
 			fluorescenceCamera.getNextSequenceImage(fluorescenceFrame);
+			if(recordStack) {
+				if(transmissionCamera instanceof SimulatedCamera) {
+					((SimulatedCamera) transmissionCamera).setYPosition(yRel);
+					((SimulatedCamera) transmissionCamera).setZPosition(i);
+				}
+				transmissionCamera.getNextSequenceImage(transmissionFrame);
+				fluorescenceStack.addSlice("", fluorescenceFrame.clone());
+				transmissionStack.addSlice("", transmissionFrame.clone());
+			}
 			displayPanel.display(fluorescenceFrame, null, yRel, i);
 		}
 		laser.setOff();
 		fluorescenceCamera.stopSequence();
+		if(recordStack) {
+			transmissionCamera.stopSequence();
+			new ij.ImageJ();
+			new ImagePlus("fluorescence", fluorescenceStack).show();
+			new ImagePlus("transmission", transmissionStack).show();
+		}
 
 		// reset the motor speed
 		motor.setVelocity(Y_AXIS, IMotor.VEL_MAX_Y);
