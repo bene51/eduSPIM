@@ -217,6 +217,7 @@ public class Microscope implements AdminPanelListener {
 					if(!beanshell.isShowing()) {
 						displayWindow.add(beanshell, BorderLayout.NORTH);
 						displayWindow.validate();
+						beanshell.getViewport().getView().requestFocusInWindow();
 					} else {
 						displayWindow.remove(beanshell);
 						displayWindow.validate();
@@ -421,6 +422,22 @@ public class Microscope implements AdminPanelListener {
 
 	public void initBeanshell() {
 		beanshell = new JConsole();
+		beanshell.getViewport().getView().addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_B) {
+					if(!beanshell.isShowing()) {
+						displayWindow.add(beanshell, BorderLayout.NORTH);
+						displayWindow.validate();
+						beanshell.getViewport().getView().requestFocusInWindow();
+					} else {
+						displayWindow.remove(beanshell);
+						displayWindow.validate();
+						displayPanel.requestFocusInWindow();
+					}
+				}
+			}
+		});
 		Interpreter interpreter = new Interpreter( beanshell );
 		try {
 			interpreter.set("microscope", Microscope.this);
