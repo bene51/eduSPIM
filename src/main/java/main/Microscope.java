@@ -51,6 +51,7 @@ import buttons.AWTButtons;
 import buttons.AbstractButtons;
 import buttons.ArduinoButtons;
 import buttons.ButtonsException;
+import buttons.KeyboardButtons;
 import cam.CameraException;
 import cam.ICamera;
 import cam.NativeCamera;
@@ -120,6 +121,7 @@ public class Microscope implements AdminPanelListener {
 	private ILaser laser;
 	private ICamera transmissionCamera, fluorescenceCamera;
 	private AbstractButtons buttons;
+	private KeyboardButtons keyboard;
 
 	private final SingleElementThreadQueue mirrorQueue;
 
@@ -230,7 +232,10 @@ public class Microscope implements AdminPanelListener {
 		displayPanel.requestFocusInWindow();
 		displayPanel.display(null, null, yRel, 0);
 
-		buttons.addButtonsListener(new SPIMButtonsListener(this));
+		SPIMButtonsListener list = new SPIMButtonsListener(this);
+		buttons.addButtonsListener(list);
+		keyboard.addButtonsListener(list);
+		displayPanel.addKeyListener(keyboard);
 		logger.info("Successfully initialized the microscope");
 		Mail.send("Successful EduSPIM startup", Preferences.getMailto(), null,
 				"Hi,\n\n"
@@ -301,6 +306,7 @@ public class Microscope implements AdminPanelListener {
 				buttons = new AWTButtons();
 			}
 		}
+		keyboard = new KeyboardButtons();
 	}
 
 	private static boolean between(double v, double b1, double b2) {
@@ -473,6 +479,7 @@ public class Microscope implements AdminPanelListener {
 	void showInfo() {
 		if(info == null) {
 			info = new InfoFrame();
+			info.addKeyListener(keyboard);
 			setBusy();
 		}
 	}
@@ -480,6 +487,7 @@ public class Microscope implements AdminPanelListener {
 	void closeInfo() {
 		if(info != null) {
 			info.dispose();
+			info.removeKeyListener(keyboard);
 			info = null;
 			resetBusy();
 		}
@@ -570,7 +578,7 @@ public class Microscope implements AdminPanelListener {
 			fluorescenceCamera.getNextSequenceImage(fluorescenceFrame);
 			transmissionCamera.getNextSequenceImage(transmissionFrame);
 			displayPanel.display(fluorescenceFrame, transmissionFrame, yRel, plane);
-		} while(buttons.getButtonDown() == button);
+		} while(buttons.getButtonDown() == button || keyboard.getButtonDown() == button);
 
 		laser.setOff();
 		fluorescenceCamera.stopSequence();
