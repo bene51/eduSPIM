@@ -44,7 +44,7 @@ static unsigned short shift(unsigned short val)
 static void shiftArray(unsigned short *arr, int N)
 {
 	for(int i = 0; i < N; i++)
-		arr[i] = swap(arr[i]);
+		arr[i] = shift(arr[i]);
 }
 
 void
