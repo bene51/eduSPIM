@@ -28,7 +28,6 @@ import javax.swing.border.TitledBorder;
 import laser.LaserException;
 import stage.IMotor;
 import cam.CameraException;
-import cam.ICamera;
 
 @SuppressWarnings("serial")
 public class AdminPanel extends JPanel {
@@ -644,53 +643,53 @@ public class AdminPanel extends JPanel {
 		// final double vm = 0.02 / 1.5; // for 2000 Hz
 		// final double vm = 0.02 / 3.0; // for 500 Hz
 		// final double vm = 0.02 / 7.0; // for 200 Hz
-		final double vm = 0.02 / 8.000;  // for 150 Hz
+//		final double vm = 0.02 / 8.000;  // for 150 Hz
 
 		// calculate mirror coefficients
-		double x1 = Double.parseDouble(mirror1Z.getText());
-		double y1 = Double.parseDouble(mirror1M.getText());
-		double x2 = Double.parseDouble(mirror2Z.getText());
-		double y2 = Double.parseDouble(mirror2M.getText());
+//		double x1 = Double.parseDouble(mirror1Z.getText());
+//		double y1 = Double.parseDouble(mirror1M.getText());
+//		double x2 = Double.parseDouble(mirror2Z.getText());
+//		double y2 = Double.parseDouble(mirror2M.getText());
+//
+//		if(Math.abs(y1 - y2) < 1e-6)
+//			return;
 
-		if(Math.abs(y1 - y2) < 1e-6)
-			return;
-
-		double m = (y2 - y1) / (x2 - x1);
-		double t = y1 - m * x1;
-
-		double z1 = Double.parseDouble(volumeStartZ.getText());
-		double z2 = Double.parseDouble(volumeEndZ.getText());
-
-		double m1 = m * z1 + t;
-		double m2 = m * z2 + t;
-
-		double dm = Math.abs(m1 - m2);
-		double dt = dm / vm;
-
-		double fps = ICamera.DEPTH / dt;
-
-
-
-
-		try {
-			double tmp = Microscope.getInstance().getTransmissionCamera().setFramerate(fps);
-			tCameraFPS.setText(df.format(tmp));
-			tmp = Microscope.getInstance().getTransmissionCamera().setExposuretime(
-					Double.parseDouble(tCameraExp.getText()));
-			tCameraExp.setText(df.format(tmp));
-		} catch(Exception e) {
-			ExceptionHandler.showException("Error updating transmission camera parameters", e);
-		}
-
-		try {
-			double tmp = Microscope.getInstance().getFluorescenceCamera().setFramerate(fps);
-			fCameraFPS.setText(df.format(tmp));
-			tmp = Microscope.getInstance().getFluorescenceCamera().setExposuretime(
-					Double.parseDouble(fCameraExp.getText()));
-			fCameraExp.setText(df.format(tmp));
-		} catch(Exception e) {
-			ExceptionHandler.showException("Error updating transmission camera parameters", e);
-		}
+//		double m = (y2 - y1) / (x2 - x1);
+//		double t = y1 - m * x1;
+//
+//		double z1 = Double.parseDouble(volumeStartZ.getText());
+//		double z2 = Double.parseDouble(volumeEndZ.getText());
+//
+//		double m1 = m * z1 + t;
+//		double m2 = m * z2 + t;
+//
+//		double dm = Math.abs(m1 - m2);
+//		double dt = dm / vm;
+//
+//		double fps = ICamera.DEPTH / dt;
+//
+//
+//
+//
+//		try {
+//			double tmp = Microscope.getInstance().getTransmissionCamera().setFramerate(fps);
+//			tCameraFPS.setText(df.format(tmp));
+//			tmp = Microscope.getInstance().getTransmissionCamera().setExposuretime(
+//					Double.parseDouble(tCameraExp.getText()));
+//			tCameraExp.setText(df.format(tmp));
+//		} catch(Exception e) {
+//			ExceptionHandler.showException("Error updating transmission camera parameters", e);
+//		}
+//
+//		try {
+//			double tmp = Microscope.getInstance().getFluorescenceCamera().setFramerate(fps);
+//			fCameraFPS.setText(df.format(tmp));
+//			tmp = Microscope.getInstance().getFluorescenceCamera().setExposuretime(
+//					Double.parseDouble(fCameraExp.getText()));
+//			fCameraExp.setText(df.format(tmp));
+//		} catch(Exception e) {
+//			ExceptionHandler.showException("Error updating transmission camera parameters", e);
+//		}
 	}
 
 	public void init() {
