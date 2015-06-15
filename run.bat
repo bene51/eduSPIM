@@ -7,7 +7,7 @@ set args=""
 set /A CNT=%CNT% + 1
 echo iteration: %CNT%
 
-java -cp target/EduSPIM-0.0.1-SNAPSHOT-jar-with-dependencies.jar main.Microscope %args%
+java -Xmx4g -cp target/EduSPIM-0.0.1-SNAPSHOT-jar-with-dependencies.jar main.Microscope %args%
 
 echo Error level:
 echo %ERRORLEVEL%
