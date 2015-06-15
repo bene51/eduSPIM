@@ -69,6 +69,8 @@ public class DisplayFrame extends JFrame {
 		setResizable(!fullscreen);
 		if (fullscreen)
 			setExtendedState(MAXIMIZED_BOTH);
+		else
+			setExtendedState(NORMAL);
 		this.fullscreen = fullscreen;
 		setVisible(true);
 	}
