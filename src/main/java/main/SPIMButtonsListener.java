@@ -35,10 +35,10 @@ public class SPIMButtonsListener implements ButtonsListener {
 			acquireStack();
 			break;
 		case AbstractButtons.BUTTON_Y_DOWN:
-			startPreview(button, Y_AXIS, Math.min(Preferences.getStackYStart(), Preferences.getStackYEnd()));
+			startPreview(button, Y_AXIS, Math.max(Preferences.getStackYStart(), Preferences.getStackYEnd()));
 			break;
 		case AbstractButtons.BUTTON_Y_UP:
-			startPreview(button, Y_AXIS, Math.max(Preferences.getStackYStart(), Preferences.getStackYEnd()));
+			startPreview(button, Y_AXIS, Math.min(Preferences.getStackYStart(), Preferences.getStackYEnd()));
 			break;
 		case AbstractButtons.BUTTON_Z_DOWN:
 			startPreview(button, Z_AXIS, Math.min(Preferences.getStackZStart(), Preferences.getStackZEnd()));

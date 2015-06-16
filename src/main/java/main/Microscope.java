@@ -501,7 +501,7 @@ public class Microscope implements AdminPanelListener {
 	double getCurrentRelativeYPos(double yPos) {
 		double y0 = Math.min(Preferences.getStackYStart(), Preferences.getStackYEnd());
 		double y1 = Math.max(Preferences.getStackYStart(), Preferences.getStackYEnd());
-		return (yPos - y0) / (y1 - y0);
+		return 1 - ((yPos - y0) / (y1 - y0));
 	}
 
 	double getCurrentRelativeYPos() throws MotorException {
