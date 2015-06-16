@@ -255,6 +255,13 @@ public class Microscope implements AdminPanelListener {
 		return instance;
 	}
 
+	public int getButtonDown() {
+		int b = buttons.getButtonDown();
+		if(b == -1)
+			b = keyboard.getButtonDown();
+		return b;
+	}
+
 	public void initHardware() {
 		initMotor();
 		initLaser(Preferences.getLaserPower());
@@ -618,7 +625,7 @@ public class Microscope implements AdminPanelListener {
 			fluorescenceCamera.getNextSequenceImage(fluorescenceFrame);
 			transmissionCamera.getNextSequenceImage(transmissionFrame);
 			displayPanel.display(fluorescenceFrame, transmissionFrame, yRel, plane);
-		} while(buttons.getButtonDown() == button || keyboard.getButtonDown() == button);
+		} while(getButtonDown() == button);
 
 		laser.setOff();
 		fluorescenceCamera.stopSequence();
