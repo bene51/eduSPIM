@@ -71,7 +71,6 @@ import display.PlaneDisplay;
  *
  * TODO re-direct stdout to a shared dropbox file
  *
- * TODO artificial data set
  */
 public class Microscope implements AdminPanelListener {
 
