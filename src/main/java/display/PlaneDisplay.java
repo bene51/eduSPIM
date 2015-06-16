@@ -52,7 +52,7 @@ public class PlaneDisplay extends JPanel {
 	private byte[] fluorescence = null;
 	private byte[] transmission = null;
 	private final IndexColorModel[] stackColorModels;
-	private final IndexColorModel planeColorModel;
+	private final IndexColorModel planeColorModel, transmissionColorModel;
 	private int z = 0;
 	private double yRel = 0;
 
@@ -65,6 +65,7 @@ public class PlaneDisplay extends JPanel {
 		setOpaque(false);
 		this.stackColorModels = prepareStackColorcode(ICamera.DEPTH, lut);
 		this.planeColorModel = preparePlaneColorcode();
+		this.transmissionColorModel = prepareTransmissionColorcode();
 	}
 
 	public void setStackMode(boolean b) {
@@ -101,7 +102,9 @@ public class PlaneDisplay extends JPanel {
 	}
 
 	public Image getTransmissionImage() {
+		// IndexColorModel cm = transmissionColorModel;
 		BufferedImage bi = new BufferedImage(ICamera.WIDTH, ICamera.HEIGHT, BufferedImage.TYPE_BYTE_GRAY);
+		// BufferedImage bi = new BufferedImage(ICamera.WIDTH, ICamera.HEIGHT, BufferedImage.TYPE_BYTE_INDEXED, cm);
 		byte[] array = ((DataBufferByte) bi.getRaster().getDataBuffer()).getData();
 		System.arraycopy(transmission, 0, array, 0, array.length);
 		return bi;
@@ -349,6 +352,28 @@ public class PlaneDisplay extends JPanel {
 			g[j] = (byte)j;
 			b[j] = 0;
 			a[j] = (byte)j;
+			// newA[j] = (byte) Math.round(255 * Math.pow(j / 255.0, 2));
+		}
+
+		IndexColorModel cm = new IndexColorModel(8, 256, r, g, b, a);
+		return cm;
+	}
+
+	private static IndexColorModel prepareTransmissionColorcode() {
+		byte[] r = new byte[256];
+		byte[] g = new byte[256];
+		byte[] b = new byte[256];
+		byte[] a = new byte[256];
+
+		for (int j = 0; j < 256; j++) {
+			// map to 7-75
+			// int l = (j - 7) * 255 / (75 - 7);
+			// int l = 7 + j * (75 - 7) / 255;
+			byte v = (byte)(255 - j);
+			r[j] = v;
+			g[j] = v;
+			b[j] = v;
+			a[j] = v;
 			// newA[j] = (byte) Math.round(255 * Math.pow(j / 255.0, 2));
 		}
 
