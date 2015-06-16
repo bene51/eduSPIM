@@ -613,7 +613,7 @@ public class Microscope implements AdminPanelListener {
 			}
 			if(transmissionCamera instanceof SimulatedCamera) {
 				((SimulatedCamera) transmissionCamera).setYPosition(yRel);
-				((SimulatedCamera) transmissionCamera).setZPosition(0);
+				((SimulatedCamera) transmissionCamera).setZPosition(plane);
 			}
 			fluorescenceCamera.getNextSequenceImage(fluorescenceFrame);
 			transmissionCamera.getNextSequenceImage(transmissionFrame);
@@ -855,7 +855,7 @@ public class Microscope implements AdminPanelListener {
 			transmissionCamera.startSequence();
 			if(transmissionCamera instanceof SimulatedCamera) {
 				((SimulatedCamera) transmissionCamera).setYPosition(yRel);
-				((SimulatedCamera) transmissionCamera).setZPosition(0);
+				((SimulatedCamera) transmissionCamera).setZPosition(z);
 			}
 			transmissionCamera.getNextSequenceImage(transmissionFrame);
 			transmissionCamera.stopSequence();
