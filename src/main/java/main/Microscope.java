@@ -784,8 +784,7 @@ public class Microscope implements AdminPanelListener {
 			motor.setTarget(MIRROR, getMirrorPositionForZ(zEnd));
 
 		fluorescenceCamera.startSequence();
-		if(recordStack)
-			transmissionCamera.startSequence();
+		transmissionCamera.startSequence();
 		laser.setOn();
 		for(int i = ICamera.DEPTH - 1; i >= 0; i--) {
 			if(fluorescenceCamera instanceof SimulatedCamera) {
@@ -793,12 +792,12 @@ public class Microscope implements AdminPanelListener {
 				((SimulatedCamera) fluorescenceCamera).setZPosition(i);
 			}
 			fluorescenceCamera.getNextSequenceImage(fluorescenceFrame);
-			if(recordStack) {
-				if(transmissionCamera instanceof SimulatedCamera) {
-					((SimulatedCamera) transmissionCamera).setYPosition(yRel);
-					((SimulatedCamera) transmissionCamera).setZPosition(i);
-				}
-				transmissionCamera.getNextSequenceImage(transmissionFrame);
+			if(transmissionCamera instanceof SimulatedCamera) {
+				((SimulatedCamera) transmissionCamera).setYPosition(yRel);
+				((SimulatedCamera) transmissionCamera).setZPosition(i);
+			}
+			transmissionCamera.getNextSequenceImage(transmissionFrame);
+ 			if(recordStack) {
 				fluorescenceStack.addSlice("", fluorescenceFrame.clone());
 				transmissionStack.addSlice("", transmissionFrame.clone());
 			}
@@ -806,8 +805,8 @@ public class Microscope implements AdminPanelListener {
 		}
 		laser.setOff();
 		fluorescenceCamera.stopSequence();
+		transmissionCamera.stopSequence();
 		if(recordStack) {
-			transmissionCamera.stopSequence();
 			new ij.ImageJ();
 			new ImagePlus("fluorescence", fluorescenceStack).show();
 			new ImagePlus("transmission", transmissionStack).show();
