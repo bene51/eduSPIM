@@ -19,10 +19,11 @@ public class SPIMButtonsListener implements ButtonsListener {
 	public void buttonPressed(int button) {
 		System.out.println("mic: button pressed " + button);
 		ToFront.toFront();
-		if(microscope.isBusy()) {
-			microscope.requestFocus();
-			return;
+		while(microscope.isBusy()) {
+			Microscope.sleep(30);
 		}
+		if(microscope.getButtonDown() != button)
+			return;
 
 		switch(button) {
 		case AbstractButtons.BUTTON_INFO:
