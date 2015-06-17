@@ -22,7 +22,6 @@ public class DisplayFrame extends JFrame {
 		super("Display");
 		JPanel panel = fatal ? makeUnavailablePanel() : disp;
 		getContentPane().add(panel);
-		setFocusable(false);
 
 		message = new JLabel("  ");
 		message.setPreferredSize(new Dimension(200, 15));
