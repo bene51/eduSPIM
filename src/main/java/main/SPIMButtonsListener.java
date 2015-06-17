@@ -3,7 +3,6 @@ package main;
 import static stage.IMotor.Y_AXIS;
 import static stage.IMotor.Z_AXIS;
 import stage.IMotor;
-import windows.ToFront;
 import buttons.AbstractButtons;
 import buttons.ButtonsListener;
 
@@ -18,7 +17,6 @@ public class SPIMButtonsListener implements ButtonsListener {
 	@Override
 	public void buttonPressed(int button) {
 		System.out.println("mic: button pressed " + button);
-		ToFront.toFront();
 		while(microscope.isBusy()) {
 			Microscope.sleep(30);
 		}

@@ -8,6 +8,7 @@ import ij.ImagePlus;
 import ij.ImageStack;
 import ij.plugin.LutLoader;
 
+import java.awt.AWTException;
 import java.awt.BorderLayout;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -44,6 +45,7 @@ import stage.IMotor;
 import stage.MotorException;
 import stage.NativeMotor;
 import stage.SimulatedMotor;
+import windows.ToFront;
 import bsh.EvalError;
 import bsh.Interpreter;
 import bsh.util.JConsole;
@@ -142,19 +144,33 @@ public class Microscope implements AdminPanelListener {
 
 		logger.info("Initializing microscope");
 
-		Timer timer = new Timer("eduSPIM shutdown", true);
+		Timer shutdownTimer = new Timer("eduSPIM shutdown", true);
 		Calendar c = Calendar.getInstance();
 		c.set(Calendar.HOUR_OF_DAY, 21);
 		c.set(Calendar.MINUTE, 0);
 		c.set(Calendar.SECOND, 0);
 		c.set(Calendar.MILLISECOND, 0);
 		Date shutdownTime = c.getTime();
-		timer.schedule(new TimerTask() {
+		shutdownTimer.schedule(new TimerTask() {
 			@Override
 			public void run() {
 				shutdown(EXIT_NORMAL);
 			}
 		}, shutdownTime);
+
+		Timer foregroundTimer = new Timer("eduSPIM foreground", true);
+		foregroundTimer.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				try {
+					if(displayWindow != null && displayWindow.isFullscreen() && mode == Mode.NORMAL) {
+						ToFront.toFront();
+					}
+				} catch (AWTException e) {
+					e.printStackTrace();
+				}
+			}
+		}, 0, 5000);
 
 		if(fatal) {
 			displayPanel = null;
