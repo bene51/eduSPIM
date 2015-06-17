@@ -281,10 +281,8 @@ camGetLastPreviewImage(int camIdx, char *image)
 	do {
 		SAVE_CALL(is_GetActSeqBuf(cam, &id, &next, &last), camIdx);
 		lastId = (N_BUFFERS + id - 2) % N_BUFFERS + 1;
-		printf("id = %d lastId = %d\n", id, lastId);
 		if(is_LockSeqBuf(cam, lastId, last) == IS_SUCCESS)
 			break;
-		printf("waiting for a valid image\n");
 	} while(true);
 	SAVE_CALL(is_CopyImageMem(cam, last, lastId, image), camIdx);
 	SAVE_CALL(is_UnlockSeqBuf(cam, lastId, last), camIdx);
