@@ -150,6 +150,8 @@ public class Microscope implements AdminPanelListener {
 		c.set(Calendar.MINUTE, 0);
 		c.set(Calendar.SECOND, 0);
 		c.set(Calendar.MILLISECOND, 0);
+		if(c.before(Calendar.getInstance()))
+			c.add(Calendar.DAY_OF_MONTH, 1);
 		Date shutdownTime = c.getTime();
 		shutdownTimer.schedule(new TimerTask() {
 			@Override
