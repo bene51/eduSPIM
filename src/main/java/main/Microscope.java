@@ -223,10 +223,11 @@ public class Microscope implements AdminPanelListener {
 				} else if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_A) {
 					if(mode == Mode.NORMAL) {
 						mode = Mode.ADMIN;
-						adminPanel.init();
 						displayWindow.add(adminPanel, BorderLayout.WEST);
 						displayWindow.validate();
-						displayPanel.requestFocusInWindow();
+						adminPanel.init();
+						// displayPanel.requestFocusInWindow();
+						startContinuousPreview();
 					}
 				} else if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_B) {
 					if(!beanshell.isShowing()) {
@@ -979,15 +980,18 @@ public class Microscope implements AdminPanelListener {
 		}
 	}
 
-	private boolean continuousPreviewRunning = false;
-	void continuousPreview(
-			final boolean trans,
-			final boolean fluor,
-			final boolean zChanges,
-			final StopCriterion stopCrit) {
-		if(!trans && !fluor)
-			return;
+	public void setContinuousPreviewLaserOn(boolean b) {
+		continuousPreviewManualLaserOn = b;
+	}
 
+	private boolean continuousPreviewRunning = false;
+	private boolean continuousPreviewManualLaserOn = false;
+
+	private void stopContinuousPreview() {
+		continuousPreviewRunning = false;
+	}
+
+	private void startContinuousPreview() {
 		continuousPreviewRunning = true;
 		Thread previewThread = new Thread() {
 			@Override
@@ -996,60 +1000,57 @@ public class Microscope implements AdminPanelListener {
 					double yRel = getCurrentRelativeYPos();
 					int z = getCurrentPlane();
 					displayPanel.setStackMode(false);
-					if(fluor) {
-						fluorescenceCamera.startPreview();
-						if(fluorescenceCamera instanceof SimulatedCamera) {
-							((SimulatedCamera) fluorescenceCamera).setYPosition(yRel);
-							((SimulatedCamera) fluorescenceCamera).setZPosition(z);
-						}
+
+					fluorescenceCamera.startPreview();
+					if(fluorescenceCamera instanceof SimulatedCamera) {
+						((SimulatedCamera) fluorescenceCamera).setYPosition(yRel);
+						((SimulatedCamera) fluorescenceCamera).setZPosition(z);
 					}
-					if(trans) {
-						transmissionCamera.startPreview();
-						if(transmissionCamera instanceof SimulatedCamera) {
-							((SimulatedCamera) transmissionCamera).setYPosition(yRel);
-							((SimulatedCamera) transmissionCamera).setZPosition(z);
-						}
+					transmissionCamera.startPreview();
+					if(transmissionCamera instanceof SimulatedCamera) {
+						((SimulatedCamera) transmissionCamera).setYPosition(yRel);
+						((SimulatedCamera) transmissionCamera).setZPosition(z);
 					}
 
-					if(fluor)
-						laser.setOn();
+					boolean updateFluorescence = false;
+					boolean updateTransmission = true;
 					do {
-						if(zChanges)
-							z = getCurrentPlane();
-						if(fluor)
+						z = getCurrentPlane();
+
+						boolean fluorChanged = continuousPreviewManualLaserOn ||
+								!mirrorQueue.isIdle() ||
+								motor.isMoving();
+
+						if(fluorChanged && !updateFluorescence) {
+							updateFluorescence = true;
+							laser.setOn();
+						}
+						else if(!fluorChanged && updateFluorescence) {
+							updateFluorescence = false;
+							laser.setOff();
+						}
+
+						if(updateFluorescence)
 							fluorescenceCamera.getPreviewImage(fluorescenceFrame);
-						if(trans)
+						if(updateTransmission)
 							transmissionCamera.getPreviewImage(transmissionFrame);
 
-						// if both are acquired, display it normally
-						if(trans && fluor)
-							displayPanel.display(fluorescenceFrame, transmissionFrame, yRel, z);
-						// if only one is present, display it as transmission image,
-						// to avoid the translucent lookup table:
-						else if(trans)
-							displayPanel.display(null, transmissionFrame, yRel, z);
-						else if(fluor)
-							displayPanel.display(null, fluorescenceFrame, yRel, z);
-					} while(!mirrorQueue.isIdle() || !stopCrit.shouldStop());
+						displayPanel.display(fluorescenceFrame, transmissionFrame, yRel, z);
+					} while(continuousPreviewRunning);
 
-					if(fluor)
-						laser.setOff();
-					if(fluor)
-						fluorescenceCamera.stopPreview();
-					if(trans)
-						transmissionCamera.stopPreview();
-					continuousPreviewRunning = false;
+					fluorescenceCamera.stopPreview();
+					transmissionCamera.stopPreview();
+					continuousPreviewManualLaserOn = false;
+					laser.setOff();
 					System.out.println("Stopped preview");
 				} catch(Throwable e) {
 					ExceptionHandler.showException("Error during preview", e);
 					try {
-						if(fluor)
 							fluorescenceCamera.stopPreview();
 					} catch(Throwable ex) {
 						ExceptionHandler.showException("Error stopping preview", ex);
 					}
 					try {
-						if(trans)
 							transmissionCamera.stopPreview();
 					} catch(Throwable ex) {
 						ExceptionHandler.showException("Error stopping preview", ex);
@@ -1068,19 +1069,6 @@ public class Microscope implements AdminPanelListener {
 		mirrorQueue.push(new Runnable() {
 			@Override
 			public void run() {
-				if(!continuousPreviewRunning) {
-					continuousPreview(true, true, true, new StopCriterion() {
-						@Override
-						public boolean shouldStop() {
-							try {
-								return !(motor.isMoving(MIRROR) || motor.isMoving(Z_AXIS));
-							} catch(Exception e) {
-								ExceptionHandler.showException("Error querying motor", e);
-								return true;
-							}
-						}
-					});
-				}
 				try {
 					motor.setTarget(MIRROR, m);
 					motor.setTarget(Z_AXIS, z);
@@ -1096,26 +1084,6 @@ public class Microscope implements AdminPanelListener {
 		mirrorQueue.push(new Runnable() {
 			@Override
 			public void run() {
-				if(!continuousPreviewRunning) {
-					continuousPreview(true, true, true, new StopCriterion() {
-						@Override
-						public boolean shouldStop() {
-							try {
-								boolean moving = motor.isMoving(Z_AXIS) || motor.isMoving(Y_AXIS);
-								if(!moving && useScanMirror)
-									moving = moving || motor.isMoving(MIRROR);
-								if(!moving) {
-									System.out.println("motor stopped moving");
-									return true;
-								}
-								return false;
-							} catch(Exception e) {
-								ExceptionHandler.showException("Error querying motor", e);
-								return true;
-							}
-						}
-					});
-				}
 				try {
 					double m = getMirrorPositionForZ(z);
 					if(useScanMirror)
@@ -1134,15 +1102,7 @@ public class Microscope implements AdminPanelListener {
 		mirrorQueue.push(new Runnable() {
 			@Override
 			public void run() {
-				if(!continuousPreviewRunning) {
-					continuousPreview(true, true, true, new StopCriterion() {
-						@Override
-						public boolean shouldStop() {
-							return true;
-						}
-					});
-				}
-				// TODO should actually change the camera parameters here
+				; // TODO should actually change the camera parameters here
 			} // run
 		});
 	}
@@ -1150,6 +1110,7 @@ public class Microscope implements AdminPanelListener {
 	@Override
 	public void adminPanelDone(boolean cancelled) {
 		if(mode == Mode.ADMIN) {
+			stopContinuousPreview();
 			boolean sampleExchanged = JOptionPane.showConfirmDialog(
 					displayWindow,
 					"Did you exchange the sample?\n\nThis information is needed for logs and statistics.",
