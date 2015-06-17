@@ -9,6 +9,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.text.DecimalFormat;
@@ -17,6 +19,7 @@ import java.util.HashMap;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -45,6 +48,7 @@ public class AdminPanel extends JPanel {
 	private NumberField fCameraExp, fCameraFPS;
 	private NumberField tCameraExp, tCameraFPS;
 	private NumberField laserPower;
+	private MCheckBox manualLaser;
 	private ArrayList<AdminPanelListener> listeners = new ArrayList<AdminPanelListener>();
 
 	private double yPos, zPos;
@@ -384,6 +388,15 @@ public class AdminPanel extends JPanel {
 			}
 		});
 
+		manualLaser = new MCheckBox("Laser for preview", false);
+		manualLaser.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				boolean state = manualLaser.isSelected();
+				Microscope.getInstance().setContinuousPreviewLaserOn(state);
+			}
+		});
+
 
 		cancel = new MButton("Cancel");
 		cancel.addActionListener(new ActionListener() {
@@ -607,6 +620,11 @@ public class AdminPanel extends JPanel {
 		c.gridx++;
 		laserPanel.add(laserPower, c);
 
+		c.gridx = 0;
+		c.gridy++;
+		c.gridwidth = GridBagConstraints.REMAINDER;
+		laserPanel.add(manualLaser, c);
+
 		cAll.gridx = 0;
 		cAll.gridy++;
 		cAll.fill = GridBagConstraints.BOTH;
@@ -711,6 +729,7 @@ public class AdminPanel extends JPanel {
 		tCameraFPS.setText(df.format(Preferences.getTCameraFramerate()));
 		tCameraGain.setText(Integer.toString(Preferences.getTCameraGain()));
 		laserPower.setText(Integer.toString((int)Math.round(Preferences.getLaserPower())));
+		manualLaser.setSelected(false);
 
 		oldPreferences = Preferences.backup();
 
@@ -718,6 +737,8 @@ public class AdminPanel extends JPanel {
 		Preferences.setStackZStart(IMotor.POS_MIN_Z);
 		Preferences.setStackYEnd(IMotor.POS_MAX_Y);
 		Preferences.setStackZEnd(IMotor.POS_MAX_Z);
+
+		volumeStartY.requestFocusInWindow();
 	}
 
 	public void cancel() {
@@ -883,6 +904,14 @@ public class AdminPanel extends JPanel {
 		}
 	}
 
+	private static class MCheckBox extends JCheckBox {
+		public MCheckBox(String n, boolean state) {
+			super(n, state);
+			setBackground(Color.BLACK);
+			setForeground(Color.WHITE);
+		}
+	}
+
 	private static class MButton extends JButton {
 		public MButton(String text) {
 			super(text);
@@ -907,9 +936,11 @@ public class AdminPanel extends JPanel {
 			e.printStackTrace();
 		}
 		JFrame f = new JFrame();
-		f.getContentPane().add(new AdminPanel(0, 0));
+		AdminPanel ap = new AdminPanel(0, 0);
+		f.getContentPane().add(ap);
 		f.pack();
 		f.setVisible(true);
 		System.out.println(f.getFont());
+		ap.init();
 	}
 }
