@@ -59,7 +59,7 @@ public class Toptica implements ILaser {
 		try {
 			port.writeString("la on"   + TERM_CHAR);
 			port.writeString("dis ext" + TERM_CHAR);
-			sleep(20);
+			sleep(40);
 		} catch (Exception e) {
 			throw new LaserException("Error switching laser to continuous mode", e);
 		}
