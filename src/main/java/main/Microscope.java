@@ -197,6 +197,7 @@ public class Microscope implements AdminPanelListener {
 		initHardware();
 
 		double yRel = getCurrentRelativeYPos();
+		int z = getCurrentPlane();
 
 		fluorescenceFrame = new byte[ICamera.WIDTH * ICamera.HEIGHT];
 		transmissionFrame = new byte[ICamera.WIDTH * ICamera.HEIGHT];
@@ -254,7 +255,12 @@ public class Microscope implements AdminPanelListener {
 		displayWindow.setVisible(true);
 		displayWindow.setFullscreen(true);
 		displayPanel.requestFocusInWindow();
-		displayPanel.display(null, null, yRel, 0);
+		displayPanel.display(null, null, yRel, z);
+		try {
+			singlePreview(true, true);
+		} catch(Exception e) {
+			ExceptionHandler.handleException("Error getting initial preview", e);
+		}
 
 		SPIMButtonsListener list = new SPIMButtonsListener(this);
 		buttons.addButtonsListener(list);
