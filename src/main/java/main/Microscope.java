@@ -165,7 +165,10 @@ public class Microscope implements AdminPanelListener {
 			@Override
 			public void run() {
 				try {
-					if(displayWindow != null && displayWindow.isFullscreen() && mode == Mode.NORMAL) {
+					if(displayWindow != null &&
+							displayWindow.isFullscreen() &&
+							mode == Mode.NORMAL &&
+							info == null) {
 						ToFront.toFront();
 					}
 				} catch (AWTException e) {
