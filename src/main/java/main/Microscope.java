@@ -245,6 +245,8 @@ public class Microscope implements AdminPanelListener {
 						displayWindow.validate();
 						displayPanel.requestFocusInWindow();
 					}
+				} else if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_V) {
+					toggleSimulated();
 				}
 			}
 		});
@@ -446,6 +448,17 @@ public class Microscope implements AdminPanelListener {
 		System.out.println("loaded " + path);
 		fluorescenceCamera = new SimulatedCamera(fluor);
 		transmissionCamera = new SimulatedCamera(trans);
+	}
+
+	private void toggleSimulated() {
+		try {
+			transmissionCamera.close();
+			fluorescenceCamera.close();
+		} catch(Exception e) {
+			ExceptionHandler.showException("Error toggling camera mode", e);
+		}
+		simulated = !simulated;
+		initCameras();
 	}
 
 	private void initLaser(double power) {
