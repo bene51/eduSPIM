@@ -861,11 +861,11 @@ public class Microscope implements AdminPanelListener {
 		adminPanel.setPosition(motor.getPosition(Y_AXIS), motor.getPosition(Z_AXIS));
 
 		// save the rendered projection // TODO only if we are in a head region
+		final BufferedImage im = displayPanel.getSnapshot();
 		exec.submit(new Runnable() {
 			@Override
 			public void run() {
 				try {
-					BufferedImage im = displayPanel.getSnapshot();
 					File f = new File(Preferences.getStacksDir());
 					if(!f.exists())
 						f.mkdirs();
