@@ -557,6 +557,10 @@ public class Microscope implements AdminPanelListener {
 
 	void showInfo() {
 		if(info == null) {
+			if(mode == Mode.NORMAL) {
+				logger.info("Show info screen");
+				Statistics.incrementInfos();
+			}
 			info = new InfoFrame();
 			info.addKeyListener(keyboard);
 			setBusy();
@@ -565,6 +569,8 @@ public class Microscope implements AdminPanelListener {
 
 	void closeInfo() {
 		if(info != null) {
+			if(mode == Mode.NORMAL)
+				logger.info("Close info screen");
 			info.dispose();
 			info.removeKeyListener(keyboard);
 			info = null;
