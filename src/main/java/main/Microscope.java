@@ -701,12 +701,12 @@ public class Microscope implements AdminPanelListener {
 			Statistics.incrementMoves();
 		}
 
+		final BufferedImage im = displayPanel.getSnapshot();
 		exec.submit(new Runnable() {
 			@Override
 			public void run() {
 				// save the current snapshot
 				try {
-					BufferedImage im = displayPanel.getSnapshot();
 					File f = new File(Preferences.getSnapshotPath());
 					ImageIO.write(im, "png", f);
 				} catch(Throwable e) {
