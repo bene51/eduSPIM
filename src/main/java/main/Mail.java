@@ -72,7 +72,7 @@ public class Mail {
 						Transport.send(message);
 					} catch (MessagingException e) {
 						failed = true;
-						// ExceptionHandler.handleException("Error sending mail", e);
+						ExceptionHandler.handleException("Error sending mail", e);
 						try {
 							// wait for half a minute so that internet connection can
 							// be established in the mean time
