@@ -8,7 +8,6 @@ import ij.ImagePlus;
 import ij.ImageStack;
 import ij.plugin.LutLoader;
 
-import java.awt.AWTException;
 import java.awt.BorderLayout;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -164,15 +163,11 @@ public class Microscope implements AdminPanelListener {
 		foregroundTimer.schedule(new TimerTask() {
 			@Override
 			public void run() {
-				try {
-					if(displayWindow != null &&
-							displayWindow.isFullscreen() &&
-							mode == Mode.NORMAL &&
-							info == null) {
-						ToFront.toFront();
-					}
-				} catch (AWTException e) {
-					e.printStackTrace();
+				if(displayWindow != null &&
+						displayWindow.isFullscreen() &&
+						mode == Mode.NORMAL &&
+						info == null) {
+					ToFront.toFront();
 				}
 			}
 		}, 0, 5000);
