@@ -165,10 +165,10 @@ public class Statistics {
 			try {
 				entry.date = toks[0];
 				entry.stacks       = Integer.parseInt(toks[1]);
-				entry.moves        = Integer.parseInt(toks[1]);
-				entry.lasers       = Integer.parseInt(toks[1]);
-				entry.infos        = Integer.parseInt(toks[1]);
-				entry.sampleChange = Integer.parseInt(toks[1]) > 0;
+				entry.moves        = Integer.parseInt(toks[2]);
+				entry.lasers       = Integer.parseInt(toks[3]);
+				entry.infos        = Integer.parseInt(toks[4]);
+				entry.sampleChange = Integer.parseInt(toks[5]) > 0;
 				return entry;
 			} catch(RuntimeException e) {
 				throw new Exception("Error parsing line of statistics file: " + line, e);
