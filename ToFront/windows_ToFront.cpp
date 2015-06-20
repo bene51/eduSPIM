@@ -4,7 +4,6 @@
 void toFront(void)
 {
 	HWND hndl = NULL;
-	printf("hi\n");
 	hndl = FindWindowEx(NULL, NULL, NULL, "Sponsored session");
 	if(hndl != NULL) {
 		BOOL tmp = SetForegroundWindow(hndl);
