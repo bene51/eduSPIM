@@ -56,6 +56,7 @@ import buttons.KeyboardButtons;
 import cam.CameraException;
 import cam.ICamera;
 import cam.NativeCamera;
+import cam.NoopCamera;
 import cam.SimulatedCamera;
 import display.DisplayFrame;
 import display.InfoFrame;
@@ -441,8 +442,10 @@ public class Microscope implements AdminPanelListener {
 		path = dir + "fluorescence.tif";
 		ImagePlus fluor = IJ.openImage(path);
 		System.out.println("loaded " + path);
-		fluorescenceCamera = new SimulatedCamera(fluor);
-		transmissionCamera = new SimulatedCamera(trans);
+		fluorescenceCamera = fluor != null ?
+				new SimulatedCamera(fluor) : new NoopCamera();
+		transmissionCamera = trans != null ?
+				new SimulatedCamera(trans) : new NoopCamera();
 	}
 
 	private void toggleSimulated() {
