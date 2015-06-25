@@ -3,6 +3,7 @@ package display;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 
@@ -16,20 +17,48 @@ public class DisplayFrame extends JFrame {
 
 	private boolean fullscreen = false;
 
+	private final JLabel busy;
 	private final JLabel message;
+	private boolean simulated = false;
 
 	public DisplayFrame(PlaneDisplay disp, boolean fatal) {
 		super("Display");
 		JPanel panel = fatal ? makeUnavailablePanel() : disp;
 		getContentPane().add(panel);
 
-		message = new JLabel("  ");
-		message.setPreferredSize(new Dimension(200, 15));
+		busy = new JLabel("  ");
+		busy.setPreferredSize(new Dimension(200, 15));
+		busy.setAlignmentX(JLabel.CENTER_ALIGNMENT);
+		busy.setForeground(Color.RED);
+		busy.setBackground(Color.BLACK);
+		busy.setOpaque(true);
+		getContentPane().add(busy, BorderLayout.SOUTH);
+
+		message = new JLabel(
+				" \n" +
+				" Please note, that the sample currently needs to be exchanged" +
+				" before live view is possible again. To still provide you with" +
+				" the same user experience, data is shown that has been acquired" +
+				" previously on this system.");
+		message.setFont(new Font("Helvetica", Font.PLAIN, 16));
+		message.setPreferredSize(new Dimension(200, 40));
 		message.setAlignmentX(JLabel.CENTER_ALIGNMENT);
-		message.setForeground(Color.RED);
-		message.setBackground(Color.BLACK);
+		message.setBackground(Color.BLACK);// new Color(255, 80, 60));
+		message.setForeground(new Color(255, 255, 200));
 		message.setOpaque(true);
-		getContentPane().add(message, BorderLayout.SOUTH);
+		getContentPane().add(message, BorderLayout.NORTH);
+	}
+
+	public void showSimulatedMessage(boolean b) {
+		if(b && !simulated) {
+			getContentPane().add(message, BorderLayout.NORTH);
+			validate();
+		}
+		else if(!b && simulated) {
+			getContentPane().remove(message);
+			validate();
+		}
+		simulated = b;
 	}
 
 	public JPanel makeUnavailablePanel() {
@@ -48,13 +77,13 @@ public class DisplayFrame extends JFrame {
 		return panel;
 	}
 
-	public void showMessage(String message) {
-		this.message.setText(message);
-		this.message.repaint();
+	public void showBusy(String message) {
+		this.busy.setText(message);
+		this.busy.repaint();
 	}
 
-	public void clearMessage() {
-		this.message.setText("");
+	public void clearBusy() {
+		this.busy.setText("");
 	}
 
 	public boolean isFullscreen() {

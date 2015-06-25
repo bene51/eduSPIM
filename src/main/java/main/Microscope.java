@@ -247,6 +247,7 @@ public class Microscope implements AdminPanelListener {
 			}
 		});
 		displayWindow = new DisplayFrame(displayPanel, false);
+		displayWindow.showSimulatedMessage(simulated);
 		if(buttons instanceof AWTButtons)
 			displayWindow.add(((AWTButtons)buttons).getPanel(), BorderLayout.EAST);
 		displayWindow.pack();
@@ -457,6 +458,7 @@ public class Microscope implements AdminPanelListener {
 		}
 		simulated = !simulated;
 		initCameras();
+		displayWindow.showSimulatedMessage(simulated);
 	}
 
 	private void initLaser(double power) {
@@ -507,12 +509,12 @@ public class Microscope implements AdminPanelListener {
 
 	synchronized void resetBusy() {
 		this.busy = false;
-		displayWindow.clearMessage();
+		displayWindow.clearBusy();
 	}
 
 	private void setBusy() {
 		this.busy = true;
-		displayWindow.showMessage("Busy...");
+		displayWindow.showBusy("Busy...");
 	}
 
 	public IMotor getMotor() {
