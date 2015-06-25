@@ -6,6 +6,7 @@ import static stage.IMotor.Z_AXIS;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
+import ij.WindowManager;
 import ij.plugin.LutLoader;
 
 import java.awt.BorderLayout;
@@ -766,6 +767,48 @@ public class Microscope implements AdminPanelListener {
 		}
 	}
 
+	void acquireStitchableData() throws MotorException, CameraException, LaserException {
+		double minOverlap = 0.15;
+
+		File dir = new File(System.getProperty("user.home") + "/pre-acquired/");
+		String date = new SimpleDateFormat("yyyyMMdd").format(new Date());
+		dir = new File(dir, date);
+		if(!dir.exists())
+			dir.mkdirs();
+
+		// setup motor positions
+		double y0 = Preferences.getStackYStart();
+		double y1 = Preferences.getStackYEnd();
+		double dy = Preferences.getPixelWidth();
+
+		double yRange = y1 - y0;
+		double frameHeight = ICamera.HEIGHT * dy;
+		int n = (int)Math.ceil(yRange / (frameHeight - minOverlap * frameHeight));
+		double yDist = yRange / n;
+
+		recordStack = true;
+		for(int i = 0; i < n + 1; i++) {
+			// save as hyperstacks
+			motor.setTarget(Y_AXIS, y0 + i * yDist);
+			while(motor.isMoving(Y_AXIS))
+				; // wait
+			acquireStack();
+			ImagePlus transmission = WindowManager.getImage("transmission");
+			ImagePlus fluorescence = WindowManager.getImage("fluorescence");
+
+			int d = transmission.getStackSize();
+			for(int z = 0; z < d; z++)
+				fluorescence.getStack().addSlice("", transmission.getStack().getProcessor(z + 1));
+
+			fluorescence.setOpenAsHyperStack(true);
+			fluorescence.setDimensions(1, d, 2);
+			transmission.close();
+			String path = new File(dir, "tile" + (i + 1) + ".tif").getAbsolutePath();
+			IJ.save(fluorescence, path);
+			fluorescence.close();
+		}
+	}
+
 	boolean recordStack = false;
 	void acquireStack() throws MotorException, CameraException, LaserException {
 		synchronized(this) {
@@ -854,6 +897,7 @@ public class Microscope implements AdminPanelListener {
 		fluorescenceCamera.stopSequence();
 		transmissionCamera.stopSequence();
 		if(recordStack) {
+			if(IJ.getInstance() == null)
 			new ij.ImageJ();
 			new ImagePlus("fluorescence", fluorescenceStack).show();
 			new ImagePlus("transmission", transmissionStack).show();
