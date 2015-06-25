@@ -33,7 +33,7 @@ public class Toptica implements ILaser {
 	}
 
 	@Override
-	public void close() throws LaserException {
+	public synchronized void close() throws LaserException {
 		if(port != null) {
 			try {
 				port.writeString("la off" + TERM_CHAR);
@@ -45,7 +45,7 @@ public class Toptica implements ILaser {
 	}
 
 	@Override
-	public void setPower(double power) throws LaserException {
+	public synchronized void setPower(double power) throws LaserException {
 		try {
 			port.writeString("ch 2 pow " + (int)Math.round(power) + TERM_CHAR);
 			sleep(20);
@@ -55,7 +55,7 @@ public class Toptica implements ILaser {
 	}
 
 	@Override
-	public void setOn() throws LaserException {
+	public synchronized void setOn() throws LaserException {
 		try {
 			port.writeString("la on"   + TERM_CHAR);
 			port.writeString("dis ext" + TERM_CHAR);
@@ -66,7 +66,7 @@ public class Toptica implements ILaser {
 	}
 
 	@Override
-	public void setTriggered() throws LaserException {
+	public synchronized void setTriggered() throws LaserException {
 		try {
 			port.writeString("la on"   + TERM_CHAR);
 			port.writeString("en ext"  + TERM_CHAR);
@@ -77,7 +77,7 @@ public class Toptica implements ILaser {
 	}
 
 	@Override
-	public void setOff() throws LaserException {
+	public synchronized void setOff() throws LaserException {
 		try {
 			port.writeString("la off" + TERM_CHAR);
 			sleep(20);
