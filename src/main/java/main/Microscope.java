@@ -807,6 +807,9 @@ public class Microscope implements AdminPanelListener {
 			IJ.save(fluorescence, path);
 			fluorescence.close();
 		}
+		ImagePlus stitched = Stitching.stitch(dir.getAbsolutePath(), 1, n + 1);
+		Stitching.postProcess(stitched);
+		stitched.show();
 	}
 
 	boolean recordStack = false;
