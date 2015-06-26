@@ -133,7 +133,7 @@ public class Statistics {
 	}
 
 	public Entry getTodaysEntry() {
-		String date = new SimpleDateFormat("yyyMMdd").format(new Date());
+		String date = new SimpleDateFormat("yyyyMMdd").format(new Date());
 		if(today == null || !today.date.equals(date)) {
 			today = new Entry();
 			today.date = date;
