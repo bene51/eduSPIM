@@ -6,6 +6,7 @@ import static stage.IMotor.Z_AXIS;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
+import ij.WindowManager;
 import ij.plugin.LutLoader;
 
 import java.awt.BorderLayout;
@@ -56,6 +57,7 @@ import buttons.KeyboardButtons;
 import cam.CameraException;
 import cam.ICamera;
 import cam.NativeCamera;
+import cam.NoopCamera;
 import cam.SimulatedCamera;
 import display.DisplayFrame;
 import display.InfoFrame;
@@ -246,6 +248,7 @@ public class Microscope implements AdminPanelListener {
 			}
 		});
 		displayWindow = new DisplayFrame(displayPanel, false);
+		displayWindow.showSimulatedMessage(simulated);
 		if(buttons instanceof AWTButtons)
 			displayWindow.add(((AWTButtons)buttons).getPanel(), BorderLayout.EAST);
 		displayWindow.pack();
@@ -441,8 +444,10 @@ public class Microscope implements AdminPanelListener {
 		path = dir + "fluorescence.tif";
 		ImagePlus fluor = IJ.openImage(path);
 		System.out.println("loaded " + path);
-		fluorescenceCamera = new SimulatedCamera(fluor);
-		transmissionCamera = new SimulatedCamera(trans);
+		fluorescenceCamera = fluor != null ?
+				new SimulatedCamera(fluor) : new NoopCamera();
+		transmissionCamera = trans != null ?
+				new SimulatedCamera(trans) : new NoopCamera();
 	}
 
 	private void toggleSimulated() {
@@ -454,6 +459,7 @@ public class Microscope implements AdminPanelListener {
 		}
 		simulated = !simulated;
 		initCameras();
+		displayWindow.showSimulatedMessage(simulated);
 	}
 
 	private void initLaser(double power) {
@@ -504,12 +510,12 @@ public class Microscope implements AdminPanelListener {
 
 	synchronized void resetBusy() {
 		this.busy = false;
-		displayWindow.clearMessage();
+		displayWindow.clearBusy();
 	}
 
 	private void setBusy() {
 		this.busy = true;
-		displayWindow.showMessage("Busy...");
+		displayWindow.showBusy("Busy...");
 	}
 
 	public IMotor getMotor() {
@@ -761,6 +767,51 @@ public class Microscope implements AdminPanelListener {
 		}
 	}
 
+	void acquireStitchableData() throws MotorException, CameraException, LaserException {
+		double minOverlap = 0.15;
+
+		File dir = new File(System.getProperty("user.home") + "/pre-acquired/");
+		String date = new SimpleDateFormat("yyyyMMdd").format(new Date());
+		dir = new File(dir, date);
+		if(!dir.exists())
+			dir.mkdirs();
+
+		// setup motor positions
+		double y0 = Preferences.getStackYStart();
+		double y1 = Preferences.getStackYEnd();
+		double dy = Preferences.getPixelWidth();
+
+		double yRange = y1 - y0;
+		double frameHeight = ICamera.HEIGHT * dy;
+		int n = (int)Math.ceil(yRange / (frameHeight - minOverlap * frameHeight));
+		double yDist = yRange / n;
+
+		recordStack = true;
+		for(int i = 0; i < n + 1; i++) {
+			// save as hyperstacks
+			motor.setTarget(Y_AXIS, y0 + i * yDist);
+			while(motor.isMoving(Y_AXIS))
+				; // wait
+			acquireStack();
+			ImagePlus transmission = WindowManager.getImage("transmission");
+			ImagePlus fluorescence = WindowManager.getImage("fluorescence");
+
+			int d = transmission.getStackSize();
+			for(int z = 0; z < d; z++)
+				fluorescence.getStack().addSlice("", transmission.getStack().getProcessor(z + 1));
+
+			fluorescence.setOpenAsHyperStack(true);
+			fluorescence.setDimensions(1, d, 2);
+			transmission.close();
+			String path = new File(dir, "tile" + (i + 1) + ".tif").getAbsolutePath();
+			IJ.save(fluorescence, path);
+			fluorescence.close();
+		}
+		ImagePlus stitched = Stitching.stitch(dir.getAbsolutePath(), 1, n + 1);
+		Stitching.postProcess(stitched);
+		stitched.show();
+	}
+
 	boolean recordStack = false;
 	void acquireStack() throws MotorException, CameraException, LaserException {
 		synchronized(this) {
@@ -849,6 +900,7 @@ public class Microscope implements AdminPanelListener {
 		fluorescenceCamera.stopSequence();
 		transmissionCamera.stopSequence();
 		if(recordStack) {
+			if(IJ.getInstance() == null)
 			new ij.ImageJ();
 			new ImagePlus("fluorescence", fluorescenceStack).show();
 			new ImagePlus("transmission", transmissionStack).show();
