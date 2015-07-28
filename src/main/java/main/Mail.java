@@ -14,7 +14,12 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class Mail {
+
+	private static final Logger logger = LoggerFactory.getLogger(Mail.class);
 
 	private static final ExecutorService exec = Executors.newSingleThreadExecutor();
 
@@ -39,7 +44,7 @@ public class Mail {
 		Future<?> fut = exec.submit(new Runnable() {
 			@Override
 			public void run() {
-				boolean failed = false;
+				int failed = 0;
 				do {
 					final String username = "eduspim@gmail.com";
 					final String password = "cmlc2GFP";
@@ -71,18 +76,20 @@ public class Mail {
 
 						Transport.send(message);
 					} catch (MessagingException e) {
-						failed = true;
-						ExceptionHandler.handleException("Error sending mail", e);
+						failed++;
+						// ExceptionHandler.handleException("Error sending mail", e);
+						e.printStackTrace();
+						logger.error("Error sending mail", e);
 						try {
 							// wait for half a minute so that internet connection can
 							// be established in the mean time
 							Thread.sleep(30000);
 						} catch(InterruptedException ex) {}
 					}
-				} while(failed);
+				} while(failed > 0 && failed < 10);
 			} // run
 		});
-		if(wait) {
+		if(wait) { // Timeout
 			try {
 				fut.get();
 			} catch (InterruptedException e) {
