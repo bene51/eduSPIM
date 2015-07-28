@@ -17,8 +17,8 @@ public class ExceptionHandler {
 
 	public static void handleException(String message, Throwable e) {
 		e.printStackTrace();
-		Mail.sendError(exceptionToString(e));
 		logger.error(message, e);
+		Mail.sendError(exceptionToString(e));
 	}
 
 	private static String exceptionToString(Throwable e) {
