@@ -91,8 +91,10 @@ public class Microscope implements AdminPanelListener {
 			}
 		}
 		logfile = new File(logfile, date + ".txt");
+		System.out.println("logfile = " + logfile);
 		System.setProperty(SimpleLogger.LOG_FILE_KEY, logfile.getAbsolutePath());
 		logger = LoggerFactory.getLogger(Microscope.class);
+		System.out.println("logger = " + logger.getClass());
 	}
 
 	public static final int EXIT_NORMAL             =  0;
