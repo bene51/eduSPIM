@@ -511,7 +511,6 @@ public class AdminPanel extends JPanel {
 
 
 
-		// TODO mirror
 		JPanel mirror2Panel = new JPanel(new GridBagLayout());
 		mirror2Panel.setBackground(Color.BLACK);
 		mirror2Panel.setForeground(Color.WHITE);
@@ -719,8 +718,6 @@ public class AdminPanel extends JPanel {
 		mirror1Z.setText(df.format(Preferences.getMirrorZ1()));
 		mirror2Z.setText(df.format(Preferences.getMirrorZ2()));
 		mirror1M.setText(df.format(Preferences.getMirrorM1()));
-		// TODO mirror
-		mirror1M.setText(df.format(2));
 		mirror2M.setText(df.format(Preferences.getMirrorM2()));
 		fCameraExp.setText(df.format(Preferences.getFCameraExposure()));
 		fCameraFPS.setText(df.format(Preferences.getFCameraFramerate()));
