@@ -1,5 +1,11 @@
 @ECHO OFF
 
+echo Parameter 1: %1
+
+if "%1" EQU "--startup" (
+	timeout 60 /nobreak
+)
+
 set CNT=-1
 set args=""
 
