@@ -64,13 +64,7 @@ import display.InfoFrame;
 import display.PlaneDisplay;
 
 /*
- * Things to test there:
- * - Sending mail
- * - Check preferences
- *
  * TODO move the sample back to the 'home position' after some idle time.
- *
- * TODO continuous preview mode in the admin panel for alignment
  *
  * TODO re-direct stdout to a shared dropbox file
  *
@@ -369,18 +363,11 @@ public class Microscope implements AdminPanelListener {
 				motor.setTarget(Z_AXIS, z0);
 			}
 
-			inRange = between(
-					motor.getPosition(Y_AXIS),
-					Preferences.getStackYStart(),
-					Preferences.getStackYEnd());
-			// if(!inRange)
 			motor.setTarget(Y_AXIS, Preferences.getStackYEnd());
 
 			double mirrorPos = getMirrorPositionForZ(z0);
 			if(useScanMirror)
 				motor.setTarget(MIRROR, mirrorPos);
-			else // TODO remove this line
-				motor.setTarget(MIRROR, 2);
 
 			// TODO only wait for the translation stages right now, later we'll have
 			// to wait for the objective motor, too
@@ -711,7 +698,6 @@ public class Microscope implements AdminPanelListener {
 			}
 		});
 
-		// TODO still needed?
 		adminPanel.setPosition(motor.getPosition(Y_AXIS), motor.getPosition(Z_AXIS));
 		displayPanel.requestFocusInWindow();
 
@@ -895,7 +881,6 @@ public class Microscope implements AdminPanelListener {
 		motor.setVelocity(Z_AXIS, IMotor.VEL_MAX_Z);
 		motor.setVelocity(MIRROR, IMotor.VEL_MAX_M);
 
-		// TODO still needed?
 		adminPanel.setPosition(motor.getPosition(Y_AXIS), motor.getPosition(Z_AXIS));
 
 		// save the rendered projection // TODO only if we are in a head region
@@ -1194,11 +1179,6 @@ public class Microscope implements AdminPanelListener {
 					String date = new SimpleDateFormat("yyyMMdd").format(new Date());
 					String name = "EduSPIM." + date + ".props";
 					Preferences.save(new File(propdir, name));
-					// TODO mirror remove
-//					motor.setTarget(MIRROR, Preferences.getMirrorM1());
-//					while(motor.isMoving(MIRROR))
-//						;
-//					motor.setAbsolutePosition(MIRROR, 2);
 				} catch(Exception e) {
 					ExceptionHandler.showException("Error saving properties in the property history folder", e);
 				}
