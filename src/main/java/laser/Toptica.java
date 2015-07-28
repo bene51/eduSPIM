@@ -33,7 +33,7 @@ public class Toptica implements ILaser {
 	}
 
 	@Override
-	public synchronized void close() throws LaserException {
+	public void close() throws LaserException {
 		if(port != null) {
 			try {
 				port.writeString("la off" + TERM_CHAR);
@@ -45,7 +45,7 @@ public class Toptica implements ILaser {
 	}
 
 	@Override
-	public synchronized void setPower(double power) throws LaserException {
+	public void setPower(double power) throws LaserException {
 		try {
 			port.writeString("ch 2 pow " + (int)Math.round(power) + TERM_CHAR);
 			sleep(20);

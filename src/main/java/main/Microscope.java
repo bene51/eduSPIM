@@ -988,7 +988,7 @@ public class Microscope implements AdminPanelListener {
 	}
 
 	private double zposBeforeManualLaserOn;
-	public void manualLaserOn() throws LaserException, MotorException {
+	public synchronized void manualLaserOn() throws LaserException, MotorException {
 		if(mode == Mode.NORMAL) {
 			logger.info("Manual laser on");
 			Statistics.incrementLasers();
@@ -1007,7 +1007,7 @@ public class Microscope implements AdminPanelListener {
 		laser.setOn();
 	}
 
-	public void manualLaserOff() throws LaserException, MotorException {
+	public synchronized void manualLaserOff() throws LaserException, MotorException {
 		if(mode == Mode.NORMAL)
 			logger.info("Manual laser off");
 
