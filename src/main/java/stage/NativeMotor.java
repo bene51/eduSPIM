@@ -8,7 +8,7 @@ public class NativeMotor implements IMotor {
 
 	public static final String STAGE_Y = "M-112.2DG-NEW";
 	public static final String STAGE_Z = "M-111.1DG-NEW";
-	public static final String STAGE_M = "N-470K021";
+	public static final String STAGE_M = "M-111.1DG-NEW";
 
 	private static final String[] STAGES = new String[N_AXES];
 	static {

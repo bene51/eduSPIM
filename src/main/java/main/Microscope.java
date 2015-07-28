@@ -77,7 +77,7 @@ import display.PlaneDisplay;
  */
 public class Microscope implements AdminPanelListener {
 
-	private static final boolean useScanMirror = false;
+	private static final boolean useScanMirror = true;
 
 	private static final Logger logger;
 
@@ -106,7 +106,7 @@ public class Microscope implements AdminPanelListener {
 	public static final int EXIT_BUTTON_ERROR       = -6;
 
 	// TODO save these in Preferences
-	private static final int STAGE_COM_PORT = 5;
+	private static final int STAGE_COM_PORT = 7;
 	private static final int LASER_COM_PORT = 6;
 	private static final int ARDUINO_COM_PORT = 3;
 
@@ -304,11 +304,6 @@ public class Microscope implements AdminPanelListener {
 
 	public void closeHardware() {
 		try {
-			if(useScanMirror) {
-				motor.setTarget(MIRROR, 1);
-				while(motor.isMoving(MIRROR))
-					;
-			}
 			motor.close();
 		} catch(MotorException e) {
 			ExceptionHandler.handleException("Error closing the motors", e);
@@ -384,7 +379,7 @@ public class Microscope implements AdminPanelListener {
 			double mirrorPos = getMirrorPositionForZ(z0);
 			if(useScanMirror)
 				motor.setTarget(MIRROR, mirrorPos);
-			else
+			else // TODO remove this line
 				motor.setTarget(MIRROR, 2);
 
 			// TODO only wait for the translation stages right now, later we'll have
@@ -622,12 +617,6 @@ public class Microscope implements AdminPanelListener {
 		motor.setVelocity(axis, Math.abs(dz * framerate));
 
 		// set the speed of the mirror
-		/*
-		 * This is commented out since our current mirror doesn't allow to
-		 * adjust its velocity, so the framerate needs to be adjusted to the
-		 * mirror speed, and the latter is not touched at any time.
-		 */
-		/*
 		if(axis == Z_AXIS) {
 			double dMirror = Math.abs(
 					getMirrorPositionForZ(Preferences.getStackZEnd()) -
@@ -635,7 +624,6 @@ public class Microscope implements AdminPanelListener {
 				) / ICamera.DEPTH;
 			motor.setVelocity(MIRROR, dMirror * framerate);
 		}
-		*/
 
 
 		displayPanel.setStackMode(false);
@@ -701,7 +689,7 @@ public class Microscope implements AdminPanelListener {
 		// reset the motor speed
 		motor.setVelocity(Y_AXIS, IMotor.VEL_MAX_Y);
 		motor.setVelocity(Z_AXIS, IMotor.VEL_MAX_Z);
-		// motor.setVelocity(MIRROR, IMotor.VEL_MAX_M);
+		motor.setVelocity(MIRROR, IMotor.VEL_MAX_M);
 
 		// log the move
 		if(mode == Mode.NORMAL) {
@@ -723,6 +711,7 @@ public class Microscope implements AdminPanelListener {
 			}
 		});
 
+		// TODO still needed?
 		adminPanel.setPosition(motor.getPosition(Y_AXIS), motor.getPosition(Z_AXIS));
 		displayPanel.requestFocusInWindow();
 
@@ -849,18 +838,11 @@ public class Microscope implements AdminPanelListener {
 		motor.setVelocity(Z_AXIS, Math.abs(dz * framerate));
 
 		// set the speed of the mirror
-		/*
-		 * This is commented out since our current mirror doesn't allow to
-		 * adjust its velocity, so the framerate needs to be adjusted to the
-		 * mirror speed, and the latter is not touched at any time.
-		 */
-		/*
 		double dMirror = Math.abs(
 				getMirrorPositionForZ(Preferences.getStackZEnd()) -
 				getMirrorPositionForZ(Preferences.getStackZStart())
 			) / ICamera.DEPTH;
 		motor.setVelocity(MIRROR, dMirror * framerate);
-		*/
 
 		displayPanel.display(null, null, yRel, ICamera.DEPTH - 1);
 		sleep(100); // delay to ensure rendering before changing stack mode
@@ -911,8 +893,9 @@ public class Microscope implements AdminPanelListener {
 		// reset the motor speed
 		motor.setVelocity(Y_AXIS, IMotor.VEL_MAX_Y);
 		motor.setVelocity(Z_AXIS, IMotor.VEL_MAX_Z);
-		// motor.setVelocity(MIRROR, IMotor.VEL_MAX_M);
+		motor.setVelocity(MIRROR, IMotor.VEL_MAX_M);
 
+		// TODO still needed?
 		adminPanel.setPosition(motor.getPosition(Y_AXIS), motor.getPosition(Z_AXIS));
 
 		// save the rendered projection // TODO only if we are in a head region
@@ -1211,11 +1194,11 @@ public class Microscope implements AdminPanelListener {
 					String date = new SimpleDateFormat("yyyMMdd").format(new Date());
 					String name = "EduSPIM." + date + ".props";
 					Preferences.save(new File(propdir, name));
-					// TODO mirror
-					motor.setTarget(MIRROR, Preferences.getMirrorM1());
-					while(motor.isMoving(MIRROR))
-						;
-					motor.setAbsolutePosition(MIRROR, 2);
+					// TODO mirror remove
+//					motor.setTarget(MIRROR, Preferences.getMirrorM1());
+//					while(motor.isMoving(MIRROR))
+//						;
+//					motor.setAbsolutePosition(MIRROR, 2);
 				} catch(Exception e) {
 					ExceptionHandler.showException("Error saving properties in the property history folder", e);
 				}

@@ -63,8 +63,8 @@ void stageConnect(int com_port, int baud, int nstages, const char **stages)
 	char szDevices[16 * 128];
 	printf("Trying to open daisy chain on port %d\n", com_port);
 	while(daisyChain < 0) {
-		daisyChain = PI_OpenRS232DaisyChain(com_port, baud, &nrDevices, szDevices, 16 * 128);
-		// daisyChain = PI_OpenUSBDaisyChain("PI C-863 Mercury SN 0125500219", &nrDevices, szDevices, 16 * 128);
+		// daisyChain = PI_OpenRS232DaisyChain(com_port, baud, &nrDevices, szDevices, 16 * 128);
+		daisyChain = PI_OpenUSBDaisyChain("PI C-863 Mercury SN 0155500508", &nrDevices, szDevices, 16 * 128);
 		// daisyChain = PI_OpenUSBDaisyChain("PI E-871 Controller SN 0112068289", &nrDevices, szDevices, 16 * 128);
 		printf("Trying again: %d\n", daisyChain);
 	}
@@ -87,7 +87,7 @@ void stageConnect(int com_port, int baud, int nstages, const char **stages)
 
 	for(int i = 0; i < n_stages; i++) {
 		int id = ID[i];
-		SAVE_CALL(PI_qIDN(id, buffer, 255), id);
+		// SAVE_CALL(PI_qIDN(id, buffer, 255), id);
 		SAVE_CALL(PI_qSAI_ALL(id, buffer, 255), id);
 		printf("Device %d, Init axis %s, stage type %s\n", id, AXIS, stages[i]);
 		SAVE_CALL(PI_qCST(id, AXIS, buffer, 255), id);
@@ -166,21 +166,16 @@ void stageReferenceIfNeeded(int axis)
 		SAVE_CALL(PI_FRF(id, AXIS), id);
 		printf("device %d, Reference stage for axis %s by reference switch ", id, AXIS);
 	} else {
-		double pos = 2;
-		BOOL referenceOn = 0;
-		SAVE_CALL(PI_RON(id, AXIS, &referenceOn), id);
-		SAVE_CALL(PI_POS(id, AXIS, &pos), id);
-		printf("Setting absolute position to 0\n");
-//		SAVE_CALL(PI_qLIM(id, AXIS, &bFlag), id);
-//		if(bFlag) {
-//			SAVE_CALL(!PI_FNL(id, AXIS), id);
-//			printf("device %d, Reference stage for axis %s by negative limit switch ", id, AXIS);
-//		} else {
-//			char msg[1024];
-//			sprintf(msg, "Error (Stage has no reference or limit switch) in %s, line %d\n", __FILE__, __LINE__);
-//			error_callback(msg, hparam);
-//			return;
-//		}
+		SAVE_CALL(PI_qLIM(id, AXIS, &bFlag), id);
+		if(bFlag) {
+			SAVE_CALL(!PI_FNL(id, AXIS), id);
+			printf("device %d, Reference stage for axis %s by negative limit switch ", id, AXIS);
+		} else {
+			char msg[1024];
+			sprintf(msg, "Error (Stage has no reference or limit switch) in %s, line %d\n", __FILE__, __LINE__);
+			error_callback(msg, hparam);
+			return;
+		}
 	}
 
 	do {

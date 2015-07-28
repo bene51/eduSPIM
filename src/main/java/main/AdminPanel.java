@@ -512,23 +512,23 @@ public class AdminPanel extends JPanel {
 
 
 		// TODO mirror
-//		JPanel mirror2Panel = new JPanel(new GridBagLayout());
-//		mirror2Panel.setBackground(Color.BLACK);
-//		mirror2Panel.setForeground(Color.WHITE);
-//		titledBorder = BorderFactory.createTitledBorder(lineBorder, "Mirror pos. 2");
-//		titledBorder.setTitleColor(Color.LIGHT_GRAY);
-//		mirror2Panel.setBorder(titledBorder);
-//
-//		c.gridx = c.gridy = 0;
-//		mirror2Panel.add(mirror2Z, c);
-//
-//		c.gridy++;
-//		mirror2Panel.add(mirror2M, c);
-//
-//		cAll.gridx++;
-//		cAll.fill = GridBagConstraints.BOTH;
-//		cAll.weightx = 1;
-//		add(mirror2Panel, cAll);
+		JPanel mirror2Panel = new JPanel(new GridBagLayout());
+		mirror2Panel.setBackground(Color.BLACK);
+		mirror2Panel.setForeground(Color.WHITE);
+		titledBorder = BorderFactory.createTitledBorder(lineBorder, "Mirror pos. 2");
+		titledBorder.setTitleColor(Color.LIGHT_GRAY);
+		mirror2Panel.setBorder(titledBorder);
+
+		c.gridx = c.gridy = 0;
+		mirror2Panel.add(mirror2Z, c);
+
+		c.gridy++;
+		mirror2Panel.add(mirror2M, c);
+
+		cAll.gridx++;
+		cAll.fill = GridBagConstraints.BOTH;
+		cAll.weightx = 1;
+		add(mirror2Panel, cAll);
 
 
 
