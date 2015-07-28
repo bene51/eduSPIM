@@ -64,8 +64,11 @@ void stageConnect(int com_port, int baud, int nstages, const char **stages)
 	printf("Trying to open daisy chain on port %d\n", com_port);
 	while(daisyChain < 0) {
 		// daisyChain = PI_OpenRS232DaisyChain(com_port, baud, &nrDevices, szDevices, 16 * 128);
-		daisyChain = PI_OpenUSBDaisyChain("PI C-863 Mercury SN 0155500508", &nrDevices, szDevices, 16 * 128);
-		// daisyChain = PI_OpenUSBDaisyChain("PI E-871 Controller SN 0112068289", &nrDevices, szDevices, 16 * 128);
+		daisyChain = PI_OpenUSBDaisyChain(
+				"PI C-863 Mercury SN 0155500508",
+				&nrDevices,
+				szDevices,
+				16 * 128);
 		printf("Trying again: %d\n", daisyChain);
 	}
 	printf("daisyChain = %d: %d devices\n", daisyChain, nrDevices);
@@ -87,7 +90,6 @@ void stageConnect(int com_port, int baud, int nstages, const char **stages)
 
 	for(int i = 0; i < n_stages; i++) {
 		int id = ID[i];
-		// SAVE_CALL(PI_qIDN(id, buffer, 255), id);
 		SAVE_CALL(PI_qSAI_ALL(id, buffer, 255), id);
 		printf("Device %d, Init axis %s, stage type %s\n", id, AXIS, stages[i]);
 		SAVE_CALL(PI_qCST(id, AXIS, buffer, 255), id);
