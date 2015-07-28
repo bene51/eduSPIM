@@ -16,7 +16,10 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.IndexColorModel;
+import java.io.IOException;
+import java.io.InputStream;
 
+import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
 import main.Preferences;
@@ -56,6 +59,7 @@ public class PlaneDisplay extends JPanel {
 	private int z = 0;
 	private double yRel = 0;
 	private final Overview3D overview;
+	private final BufferedImage buttons;
 
 	private boolean isStack = false;
 
@@ -74,6 +78,21 @@ public class PlaneDisplay extends JPanel {
 			e.printStackTrace();
 		}
 		this.overview = overview;
+
+		InputStream is = getClass().getResourceAsStream("/Buttons_Labels.png");
+		BufferedImage bi = null;
+		if(is != null) {
+			try {
+				bi = ImageIO.read(is);
+			} catch (IOException e) {
+				e.printStackTrace();
+			} finally {
+				try {
+					is.close();
+				} catch(Exception e) {}
+			}
+		}
+		buttons = bi == null ? null : bi;
 	}
 
 	public void setStackMode(boolean b) {
@@ -308,8 +327,6 @@ public class PlaneDisplay extends JPanel {
 			}
 
 			g.drawImage(overview.get(yRel, (double)z / ICamera.DEPTH), xOffs, yOffs, cw, ch, null);
-
-
 		} else {
 			// fall back to drawing it manually
 
@@ -336,6 +353,24 @@ public class PlaneDisplay extends JPanel {
 
 			int cy = (int)Math.round(yRel * (fullh - ch));
 			g.drawRect(xOffs, yOffs + fullh - ch - cy, cw, fullh);
+		}
+
+		if(buttons != null) {
+			int ow = buttons.getWidth();
+			int oh = buttons.getHeight();
+
+			int cw = w - xOffs - 20;
+			int ch;
+
+			if(cw > ow) {
+				xOffs = (int)Math.round((w + imageWidth) / 2.0) + (cw - ow) / 2;
+				cw = ow;
+				ch = oh;
+			} else {
+				// xOffs and cw are fine
+				ch = cw * oh / ow;
+			}
+			g.drawImage(buttons, xOffs, yOffs + imageHeight - ch, cw, ch, null);
 		}
 	}
 
