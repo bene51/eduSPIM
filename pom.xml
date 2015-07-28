@@ -84,6 +84,12 @@
 			<groupId>sc.fiji</groupId>
 			<artifactId>Stitching_</artifactId>
 			<version>3.0.3-SNAPSHOT</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>logback-classic</artifactId>
+					<groupId>ch.qos.logback</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 	</dependencies>
 
