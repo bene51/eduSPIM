@@ -46,7 +46,8 @@ public class DisplayFrame extends JFrame {
 		message.setBackground(Color.BLACK);// new Color(255, 80, 60));
 		message.setForeground(new Color(255, 255, 200));
 		message.setOpaque(true);
-		getContentPane().add(message, BorderLayout.NORTH);
+		if(simulated)
+			getContentPane().add(message, BorderLayout.NORTH);
 	}
 
 	public void showSimulatedMessage(boolean b) {
