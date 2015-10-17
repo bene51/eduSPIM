@@ -114,7 +114,8 @@ camSetup(int camIdx)
 	if(cameras == NULL) {
 		printf("initializing cameras\n");
 		nCameras = 0;
-		SAVE_CALL(is_GetNumberOfCameras(&nCameras), camIdx);
+		if(!SAVE_CALL(is_GetNumberOfCameras(&nCameras), camIdx))
+			return;
 		printf("%d camera(s) connected\n", nCameras);
 		if(nCameras == 0) {
 			error_callback("No camera connected", hparam);
@@ -279,19 +280,23 @@ camGetLastPreviewImage(int camIdx, char *image)
 	HCAM cam = cameras[camIdx];
 
 	do {
-		SAVE_CALL(is_GetActSeqBuf(cam, &id, &next, &last), camIdx);
+		if(!SAVE_CALL(is_GetActSeqBuf(cam, &id, &next, &last), camIdx))
+			return;
 		lastId = (N_BUFFERS + id - 2) % N_BUFFERS + 1;
 		if(is_LockSeqBuf(cam, lastId, last) == IS_SUCCESS)
 			break;
 	} while(true);
-	SAVE_CALL(is_CopyImageMem(cam, last, lastId, image), camIdx);
-	SAVE_CALL(is_UnlockSeqBuf(cam, lastId, last), camIdx);
+	if(!SAVE_CALL(is_CopyImageMem(cam, last, lastId, image), camIdx))
+		return;
+	if(!SAVE_CALL(is_UnlockSeqBuf(cam, lastId, last), camIdx))
+		return;
 	// swapArray((unsigned short *)image, WIDTH * HEIGHT);
 }
 
 void
 camStartSequence(int camIdx)
 {
+	printf("camStartSequence (%d)\n", camIdx);
 	int start = GetTickCount();
 	HCAM cam = cameras[camIdx];
 	if(!SAVE_CALL(is_InitImageQueue(cam, 0), camIdx))
@@ -299,7 +304,7 @@ camStartSequence(int camIdx)
 	if(!SAVE_CALL(is_CaptureVideo(cam, IS_DONT_WAIT), camIdx))
 		return;
 	int end = GetTickCount();
-	printf("Starting acquisition took %d ms\n", (end - start));
+	printf("Starting acquisition took %d ms (cam %d)\n", (end - start), camIdx);
 }
 
 void
@@ -308,18 +313,25 @@ camGetNextSequenceImage(int camIdx, char *image)
 	int nMemID = 0;
 	char *pBuffer = NULL;
 	HCAM cam = cameras[camIdx];
-	SAVE_CALL(is_WaitForNextImage(cam, 20000, &pBuffer, &nMemID), camIdx);
-	SAVE_CALL(is_CopyImageMem(cam, pBuffer, nMemID, image), camIdx);
-	SAVE_CALL(is_UnlockSeqBuf(cam, nMemID, pBuffer), camIdx);
+	if(!SAVE_CALL(is_WaitForNextImage(cam, 20000, &pBuffer, &nMemID), camIdx))
+		return;
+	if(!SAVE_CALL(is_CopyImageMem(cam, pBuffer, nMemID, image), camIdx))
+		return;
+	if(!SAVE_CALL(is_UnlockSeqBuf(cam, nMemID, pBuffer), camIdx))
+		return;
 	// swapArray((unsigned short *)image, WIDTH * HEIGHT);
 }
 
 void
 camStopSequence(int camIdx)
 {
+	printf("camStopSequence(%d)\n", camIdx);
 	HCAM cam = cameras[camIdx];
-	SAVE_CALL(is_StopLiveVideo(cam, IS_WAIT), camIdx);
-	SAVE_CALL(is_ExitImageQueue(cam), camIdx);
+	if(!SAVE_CALL(is_StopLiveVideo(cam, IS_WAIT), camIdx))
+		return;
+	if(!SAVE_CALL(is_ExitImageQueue(cam), camIdx))
+		return;
+	printf("camStopSequence(%d) done\n", camIdx);
 }
 
 double
