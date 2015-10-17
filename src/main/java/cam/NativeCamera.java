@@ -6,20 +6,20 @@ import java.io.InputStreamReader;
 
 public class NativeCamera implements ICamera {
 
-	private static native void camSetup(int camIdx) throws CameraException;
-	private static native void camStartPreview(int camIdx) throws CameraException;
-	private static native void camStopPreview(int camIdx) throws CameraException;
-	private static native void camGetPreviewImage(int camIdx, byte[] ret) throws CameraException;
-	private static native void camStartSequence(int camIdx) throws CameraException;
-	private static native void camGetNextSequenceImage(int camIdx, byte[] ret) throws CameraException;
-	private static native void camStopSequence(int camIdx) throws CameraException;
-	private static native double camGetFramerate(int camIdx) throws CameraException;
-	private static native double camSetFramerate(int camIdx, double fps) throws CameraException;
-	private static native double camGetExposuretime(int camIdx) throws CameraException;
-	private static native double camSetExposuretime(int camIdx, double exposure) throws CameraException;
-	private static native int camGetGain(int camIdx) throws CameraException;
-	private static native void camSetGain(int camIdx, int gain) throws CameraException;
-	private static native void camClose(int camIdx) throws CameraException;
+	private synchronized static native void camSetup(int camIdx) throws CameraException;
+	private synchronized static native void camStartPreview(int camIdx) throws CameraException;
+	private synchronized static native void camStopPreview(int camIdx) throws CameraException;
+	private synchronized static native void camGetPreviewImage(int camIdx, byte[] ret) throws CameraException;
+	private synchronized static native void camStartSequence(int camIdx) throws CameraException;
+	private synchronized static native void camGetNextSequenceImage(int camIdx, byte[] ret) throws CameraException;
+	private synchronized static native void camStopSequence(int camIdx) throws CameraException;
+	private synchronized static native double camGetFramerate(int camIdx) throws CameraException;
+	private synchronized static native double camSetFramerate(int camIdx, double fps) throws CameraException;
+	private synchronized static native double camGetExposuretime(int camIdx) throws CameraException;
+	private synchronized static native double camSetExposuretime(int camIdx, double exposure) throws CameraException;
+	private synchronized static native int camGetGain(int camIdx) throws CameraException;
+	private synchronized static native void camSetGain(int camIdx, int gain) throws CameraException;
+	private synchronized static native void camClose(int camIdx) throws CameraException;
 
 	private boolean previewRunning = false;
 	private int camIdx;
