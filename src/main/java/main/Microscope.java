@@ -116,6 +116,7 @@ public class Microscope implements AdminPanelListener {
 	private Mode mode = Mode.NORMAL;
 
 	private boolean busy = false;
+	private boolean timelapseRunning = false;
 
 	private IMotor motor;
 	private ILaser laser;
@@ -492,6 +493,10 @@ public class Microscope implements AdminPanelListener {
 		return busy;
 	}
 
+	public synchronized boolean isTimelapseRunning() {
+		return timelapseRunning;
+	}
+
 	synchronized void resetBusy() {
 		this.busy = false;
 		displayWindow.clearBusy();
@@ -727,6 +732,7 @@ public class Microscope implements AdminPanelListener {
 	}
 
 	void timelapse(double durationInHours, double intervalInMinutes, String dir) throws MotorException, CameraException, LaserException {
+		timelapseRunning = true;
 		long durationMillis = (long)(durationInHours * 60 * 60 * 1000);
 		long intervalMillis = (long)(intervalInMinutes * 60 * 1000);
 		int n = (int)Math.ceil(durationMillis / (double)intervalMillis);
@@ -742,6 +748,7 @@ public class Microscope implements AdminPanelListener {
 			acquireStack();
 			saveSnapshot(path);
 		}
+		timelapseRunning = false;
 	}
 
 	void acquireStitchableData() throws MotorException, CameraException, LaserException {

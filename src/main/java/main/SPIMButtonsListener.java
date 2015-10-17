@@ -17,6 +17,10 @@ public class SPIMButtonsListener implements ButtonsListener {
 	@Override
 	public void buttonPressed(int button) {
 		System.out.println("mic: button pressed " + button);
+		// ignore buttons if timelapse is running
+		if(microscope.isTimelapseRunning())
+			return;
+
 		while(microscope.isBusy()) {
 			Microscope.sleep(30);
 		}
