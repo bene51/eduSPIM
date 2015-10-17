@@ -25,7 +25,7 @@ if %ERRORLEVEL% EQU -5 (
 	set args="--fatal"
 	GOTO start
 )
-if %ERRORLEVEL% LSS 0 (
+if %ERRORLEVEL% NEQ 0 (
 	echo Error, starting again.
 	set args=""
 	GOTO start
