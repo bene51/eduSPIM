@@ -101,7 +101,7 @@ public class Microscope implements AdminPanelListener {
 
 	// TODO save these in Preferences
 	private static final int STAGE_COM_PORT = 7;
-	private static final int LASER_COM_PORT = 6;
+	private static final int LASER_COM_PORT = 4;
 	private static final int ARDUINO_COM_PORT = 3;
 
 	private static enum Mode {
