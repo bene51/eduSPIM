@@ -10,6 +10,7 @@ import ij.WindowManager;
 import ij.plugin.LutLoader;
 import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
+import ij.process.StackStatistics;
 
 import java.awt.BorderLayout;
 import java.awt.event.KeyAdapter;
@@ -17,8 +18,10 @@ import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.IndexColorModel;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -742,13 +745,25 @@ public class Microscope implements AdminPanelListener {
 		System.out.println("Running timelapse over " + n + " timepoints");
 		long startMillis = System.currentTimeMillis();
 		File dirf = new File(dir);
+		long[] times = new long[n];
+		double[] means = new double[n];
+		File meansFile = new File(dirf, "means.csv");
 		for(int it = 0; it < n; it++) {
-			while(System.currentTimeMillis() < startMillis + it * intervalMillis)
+			long time = 0;
+			while((time = System.currentTimeMillis()) < startMillis + it * intervalMillis)
 				sleep(100);
 
 			String file = String.format("t%04d.png", it);
 			String path = new File(dirf, file).getAbsolutePath();
-			acquireStack();
+
+			means[it] = acquireStack();
+			times[it] = time;
+
+			try {
+				writeMeans(meansFile, times, means, it + 1);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 			saveSnapshot(path);
 		}
 		timelapseRunning = false;
@@ -800,8 +815,8 @@ public class Microscope implements AdminPanelListener {
 	}
 
 	boolean recordStack = false;
-	void acquireStack() throws MotorException, CameraException, LaserException {
 	boolean animateStack = false;
+	double acquireStack() throws MotorException, CameraException, LaserException {
 		synchronized(this) {
 			setBusy();
 		}
@@ -847,7 +862,7 @@ public class Microscope implements AdminPanelListener {
 
 		ImageStack fluorescenceStack = null;
 		ImageStack transmissionStack = null;
-		if(recordStack) {
+		if(recordStack || timelapseRunning) {
 			fluorescenceStack = new ImageStack(ICamera.WIDTH, ICamera.HEIGHT);
 			transmissionStack = new ImageStack(ICamera.WIDTH, ICamera.HEIGHT);
 		}
@@ -873,7 +888,7 @@ public class Microscope implements AdminPanelListener {
 				((SimulatedCamera) transmissionCamera).setZPosition(i);
 			}
 			transmissionCamera.getNextSequenceImage(transmissionFrame);
- 			if(recordStack) {
+ 			if(recordStack || timelapseRunning) {
 				fluorescenceStack.addSlice("", fluorescenceFrame.clone());
 				transmissionStack.addSlice("", transmissionFrame.clone());
 			}
@@ -896,9 +911,14 @@ public class Microscope implements AdminPanelListener {
 		}
 		if(recordStack) {
 			if(IJ.getInstance() == null)
-			new ij.ImageJ();
+				new ij.ImageJ();
 			new ImagePlus("fluorescence", fluorescenceStack).show();
 			new ImagePlus("transmission", transmissionStack).show();
+
+		}
+		double mean = 0;
+		if(timelapseRunning) {
+			mean = new StackStatistics(new ImagePlus("fluorescence", fluorescenceStack)).mean;
 		}
 
 		// reset the motor speed
@@ -936,6 +956,15 @@ public class Microscope implements AdminPanelListener {
 		synchronized(this) {
 			resetBusy();
 		}
+		return mean;
+	}
+
+	public void writeMeans(File file, long[] times, double[] means, int nRows) throws IOException {
+		PrintStream out = new PrintStream(new FileOutputStream(file));
+		for(int r = 0; r < nRows && r < means.length; r++) {
+			out.println(times[r] + "\t" + means[r]);
+		}
+		out.close();
 	}
 
 	void singlePreview(boolean trans, boolean fluor) throws CameraException, LaserException {
