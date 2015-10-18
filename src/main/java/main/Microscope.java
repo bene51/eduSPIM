@@ -8,6 +8,8 @@ import ij.ImagePlus;
 import ij.ImageStack;
 import ij.WindowManager;
 import ij.plugin.LutLoader;
+import ij.process.ColorProcessor;
+import ij.process.ImageProcessor;
 
 import java.awt.BorderLayout;
 import java.awt.event.KeyAdapter;
@@ -799,6 +801,7 @@ public class Microscope implements AdminPanelListener {
 
 	boolean recordStack = false;
 	void acquireStack() throws MotorException, CameraException, LaserException {
+	boolean animateStack = false;
 		synchronized(this) {
 			setBusy();
 		}
@@ -857,11 +860,13 @@ public class Microscope implements AdminPanelListener {
 		fluorescenceCamera.startSequence();
 		transmissionCamera.startSequence();
 		laser.setOn();
+		ImageStack anim = null;
 		for(int i = ICamera.DEPTH - 1; i >= 0; i--) {
 			if(fluorescenceCamera instanceof SimulatedCamera) {
 				((SimulatedCamera) fluorescenceCamera).setYPosition(yRel);
 				((SimulatedCamera) fluorescenceCamera).setZPosition(i);
 			}
+
 			fluorescenceCamera.getNextSequenceImage(fluorescenceFrame);
 			if(transmissionCamera instanceof SimulatedCamera) {
 				((SimulatedCamera) transmissionCamera).setYPosition(yRel);
@@ -873,10 +878,22 @@ public class Microscope implements AdminPanelListener {
 				transmissionStack.addSlice("", transmissionFrame.clone());
 			}
 			displayPanel.display(fluorescenceFrame, null, yRel, i);
+			if(animateStack) {
+				sleep(100);
+				ImageProcessor ip = new ColorProcessor(displayPanel.getSnapshot());
+				if(anim == null)
+					anim = new ImageStack(ip.getWidth(), ip.getHeight());
+				anim.addSlice(ip);
+			}
 		}
 		laser.setOff();
 		fluorescenceCamera.stopSequence();
 		transmissionCamera.stopSequence();
+		if(animateStack) {
+			if(IJ.getInstance() == null)
+				new ij.ImageJ();
+			new ImagePlus("animation", anim).show();
+		}
 		if(recordStack) {
 			if(IJ.getInstance() == null)
 			new ij.ImageJ();
