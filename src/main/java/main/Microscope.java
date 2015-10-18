@@ -556,7 +556,7 @@ public class Microscope implements AdminPanelListener {
 		return Preferences.getMirrorCoefficientM() * zPos + Preferences.getMirrorCoefficientT();
 	}
 
-	void showInfo() {
+	synchronized void showInfo() {
 		if(info == null) {
 			if(mode == Mode.NORMAL) {
 				logger.info("Show info screen");
@@ -568,7 +568,7 @@ public class Microscope implements AdminPanelListener {
 		}
 	}
 
-	void closeInfo() {
+	synchronized void closeInfo() {
 		if(info != null) {
 			if(mode == Mode.NORMAL)
 				logger.info("Close info screen");
@@ -579,7 +579,7 @@ public class Microscope implements AdminPanelListener {
 		}
 	}
 
-	void startPreview(int button, int axis, double target) throws MotorException, CameraException, LaserException {
+	synchronized void startPreview(int button, int axis, double target) throws MotorException, CameraException, LaserException {
 		synchronized(this) {
 			setBusy();
 		}
@@ -862,7 +862,7 @@ public class Microscope implements AdminPanelListener {
 
 	boolean recordStack = false;
 	boolean animateStack = false;
-	double acquireStack() throws MotorException, CameraException, LaserException {
+	synchronized double acquireStack() throws MotorException, CameraException, LaserException {
 		synchronized(this) {
 			setBusy();
 		}
