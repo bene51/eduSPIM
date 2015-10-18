@@ -154,7 +154,8 @@ public class Microscope implements AdminPanelListener {
 		shutdownTimer.schedule(new TimerTask() {
 			@Override
 			public void run() {
-				shutdown(EXIT_NORMAL);
+				if(!timelapseRunning)
+					shutdown(EXIT_NORMAL);
 			}
 		}, shutdownTime);
 
