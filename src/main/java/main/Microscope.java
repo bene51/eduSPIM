@@ -769,6 +769,52 @@ public class Microscope implements AdminPanelListener {
 		timelapseRunning = false;
 	}
 
+	void timelapse(
+			double outerDurationInHours,
+			double outerIntervalInMinutes,
+			double innerDurationInHours,
+			double innerIntervalInMinutes,
+			String dir) throws MotorException, CameraException, LaserException {
+
+		timelapseRunning = true;
+		long innerDurationMillis = (long)(innerDurationInHours * 60 * 60 * 1000);
+		long innerIntervalMillis = (long)(innerIntervalInMinutes * 60 * 1000);
+		long outerDurationMillis = (long)(outerDurationInHours * 60 * 60 * 1000);
+		long outerIntervalMillis = (long)(outerIntervalInMinutes * 60 * 1000);
+		int nInner = (int)Math.ceil(innerDurationMillis / (double)innerIntervalMillis);
+		int nOuter = (int)Math.ceil(outerDurationMillis / (double)outerIntervalMillis);
+		long outerStartMillis = System.currentTimeMillis();
+		File dirf = new File(dir);
+		int N = nInner * nOuter;
+		long[] times = new long[N];
+		double[] means = new double[N];
+		File meansFile = new File(dirf, "means.csv");
+		for(int outerIt = 0, idx = 0; outerIt < nOuter; outerIt++) {
+			while(System.currentTimeMillis() < outerStartMillis + outerIt * outerIntervalMillis)
+				sleep(100);
+
+			long innerStartMillis = System.currentTimeMillis();
+			for(int innerIt = 0; innerIt < nInner; innerIt++, idx++) {
+				long time = 0;
+				while((time = System.currentTimeMillis()) < innerStartMillis + innerIt * innerIntervalMillis)
+					sleep(100);
+
+				String file = String.format("t%04d.png", idx);
+				String path = new File(dirf, file).getAbsolutePath();
+				means[idx] = acquireStack();
+				times[idx] = time;
+
+				try {
+					writeMeans(meansFile, times, means, idx + 1);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				saveSnapshot(path);
+			}
+		}
+		timelapseRunning = false;
+	}
+
 	void acquireStitchableData() throws MotorException, CameraException, LaserException {
 		double minOverlap = 0.15;
 
