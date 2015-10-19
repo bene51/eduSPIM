@@ -17,8 +17,10 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.IndexColorModel;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -29,6 +31,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -135,6 +138,7 @@ public class Microscope implements AdminPanelListener {
 	private final DisplayFrame displayWindow;
 	private final AdminPanel adminPanel;
 	private JConsole beanshell;
+	private Interpreter beanshellInterpreter;
 	private InfoFrame info;
 
 	private final byte[] fluorescenceFrame, transmissionFrame;
@@ -464,6 +468,35 @@ public class Microscope implements AdminPanelListener {
 		}
 	}
 
+	private void loadBeanshellHistory() throws IOException, EvalError {
+		File f = new File(System.getProperty("user.home"), ".eduSPIM_bsh_history");
+		if(!f.exists())
+			return;
+		beanshellInterpreter.eval("microscope.beanshell.history.clear()");
+		BufferedReader in = new BufferedReader(new FileReader(f));
+		String line;
+		while((line = in.readLine()) != null)
+			beanshellInterpreter.eval("microscope.beanshell.history.add(\"" + line + "\")");
+		in.close();
+	}
+
+	private void saveBeanshellHistory() {
+		PrintStream out = null;
+		try {
+			Vector<?> history = (Vector<?>)beanshellInterpreter.get("microscope.beanshell.history");
+			File f = new File(System.getProperty("user.home"), ".eduSPIM_bsh_history");
+			out = new PrintStream(new FileOutputStream(f));
+			for(Object o : history)
+				out.println(o);
+			out.close();
+		} catch(Exception e) {
+			ExceptionHandler.handleException("Error saving beanshell history", e);
+		} finally {
+			if(out != null)
+				out.close();
+		}
+	}
+
 	public void initBeanshell() {
 		beanshell = new JConsole();
 		beanshell.getViewport().getView().addKeyListener(new KeyAdapter() {
@@ -482,13 +515,15 @@ public class Microscope implements AdminPanelListener {
 				}
 			}
 		});
-		Interpreter interpreter = new Interpreter( beanshell );
+		beanshellInterpreter = new Interpreter( beanshell );
 		try {
-			interpreter.set("microscope", Microscope.this);
-		} catch (EvalError e) {
-			ExceptionHandler.showException("Error evaluating beanshell commands", e);
+			beanshellInterpreter.set("microscope", Microscope.this);
+			beanshellInterpreter.eval("setAccessibility(true)");
+			loadBeanshellHistory();
+		} catch (Exception e) {
+			ExceptionHandler.handleException("Error initializing beanshell", e);
 		}
-		new Thread( interpreter ).start();
+		new Thread( beanshellInterpreter ).start();
 	}
 
 	public void requestFocus() {
@@ -1119,6 +1154,7 @@ public class Microscope implements AdminPanelListener {
 				sleep(100);
 
 			closeHardware();
+			saveBeanshellHistory();
 
 			mirrorQueue.shutdown();
 			displayWindow.dispose();
