@@ -1107,6 +1107,7 @@ public class Microscope implements AdminPanelListener {
 		while(motor.isMoving(Z_AXIS))
 			; // wait
 
+		laser.setPower(laser.getMaxPower());
 		laser.setOn();
 	}
 
@@ -1115,6 +1116,7 @@ public class Microscope implements AdminPanelListener {
 			logger.info("Manual laser off");
 
 		laser.setTriggered();
+		laser.setPower(Preferences.getLaserPower());
 		// move mirror in place
 		motor.setTarget(Z_AXIS, zposBeforeManualLaserOn);
 		while(motor.isMoving(Z_AXIS))
