@@ -13,8 +13,14 @@ import ij.process.ImageProcessor;
 import ij.process.StackStatistics;
 
 import java.awt.BorderLayout;
+import java.awt.Cursor;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.awt.image.BufferedImage;
 import java.awt.image.IndexColorModel;
 import java.io.BufferedReader;
@@ -254,6 +260,23 @@ public class Microscope implements AdminPanelListener {
 				}
 			}
 		});
+		final javax.swing.Timer cursorTimer = new javax.swing.Timer(2000, new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// displayPanel.setCursor(null);
+				displayPanel.setCursor(
+						displayPanel.getToolkit().createCustomCursor(new BufferedImage(
+								3, 3, BufferedImage.TYPE_INT_ARGB), new Point(0, 0), "null"));
+			}
+		});
+		displayPanel.addMouseMotionListener(new MouseMotionAdapter() {
+			@Override
+			public void mouseMoved(MouseEvent e) {
+				displayPanel.setCursor(Cursor.getDefaultCursor());
+				cursorTimer.restart();
+			}
+		});
+
 		displayWindow = new DisplayFrame(displayPanel, false);
 		displayWindow.showSimulatedMessage(simulated);
 		if(buttons instanceof AWTButtons)
