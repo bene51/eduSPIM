@@ -431,7 +431,7 @@ public class Microscope implements AdminPanelListener {
 			try {
 				motor.setVelocity(Y_AXIS, IMotor.VEL_MAX_Y);
 				motor.setVelocity(Z_AXIS, IMotor.VEL_MAX_Z);
-				motor.setTarget(Y_AXIS, Preferences.getStackYStart());
+				motor.setTarget(Y_AXIS, Preferences.getStackYEnd());
 				motor.setTarget(Z_AXIS, Preferences.getStackZStart());
 				while(motor.isMoving(Z_AXIS) || motor.isMoving(Y_AXIS))
 					sleep(50);
