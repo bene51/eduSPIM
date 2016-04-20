@@ -76,6 +76,8 @@ import cam.SimulatedCamera;
 import display.DisplayFrame;
 import display.InfoFrame;
 import display.PlaneDisplay;
+import download.Download;
+import download.DownloadManager;
 
 /*
  * TODO move the sample back to the 'home position' after some idle time.
@@ -465,13 +467,33 @@ public class Microscope implements AdminPanelListener {
 		}
 
 		simulated = true;
-		String dir = System.getProperty("user.home") + "/pre-acquired/";
-		String path = dir + "transmission.tif";
-		ImagePlus trans = IJ.openImage(path);
-		System.out.println("loaded " + path);
-		path = dir + "fluorescence.tif";
-		ImagePlus fluor = IJ.openImage(path);
-		System.out.println("loaded " + path);
+		String dir = System.getProperty("user.home") + File.separator + ".eduSPIM" + File.separator + "pre-acquired" + File.separator;
+		String trpath = dir + "transmission.tif";
+		ImagePlus trans = IJ.openImage(trpath);
+		System.out.println("loaded " + trpath);
+		String flpath = dir + "fluorescence.tif";
+		ImagePlus fluor = IJ.openImage(flpath);
+		System.out.println("loaded " + flpath);
+		if(trans == null || fluor == null) {
+			boolean approved = IJ.showMessageWithCancel(
+					"Download example data",
+					"It seems that the hardware is not fully functional. eduSPIM tries to start in \n" +
+					"simulating mode, i.e. pretending full hardware functionality, but using pre-acquired \n" +
+					"data. For this, example data is necessary. eduSPIM tried to load \n \n" +
+					trpath + "\nand\n" + flpath +
+					"\n \nbut it seems these files could not be opened correctly. Maybe you haven't installed\n" +
+					"these example data on this computer? \n \n" +
+					"Do you want to download and install it now? ");
+			if(approved) {
+				try {
+					ImagePlus[] data = downloadExampleData(trans, fluor);
+					trans = data[0];
+					fluor = data[1];
+				} catch(Exception e) {
+					ExceptionHandler.handleException("Cannot download example data", e);
+				}
+			}
+		}
 		fluorescenceCamera = fluor != null ?
 				new SimulatedCamera(fluor) : new NoopCamera();
 		transmissionCamera = trans != null ?
@@ -1387,6 +1409,34 @@ public class Microscope implements AdminPanelListener {
 				ExceptionHandler.showException("Cannot apply camera settings", t);
 			}
 		}
+	}
+
+	private ImagePlus[] downloadExampleData(final ImagePlus trans, final ImagePlus fluor) throws Exception {
+		final File outdir = new File(System.getProperty("user.home") + File.separator
+				+ ".eduSPIM" + File.separator + "pre-acquired");
+		if (!outdir.exists())
+			outdir.mkdirs();
+
+		final ImagePlus[] ret = new ImagePlus[2];
+		DownloadManager manager = new DownloadManager();
+		Download tr = null, fl = null;
+		if(trans == null) {
+			tr = manager.addURL(
+					"https://idisk-srv1.mpi-cbg.de/~bschmid/eduSPIM/transmission.avi",
+					new File(outdir, "transmission.avi").getAbsolutePath(),
+					new File(outdir, "transmission.tif").getAbsolutePath());
+		}
+		if(fluor == null) {
+			fl = manager.addURL(
+					"https://idisk-srv1.mpi-cbg.de/~bschmid/eduSPIM/fluorescence.avi",
+					new File(outdir, "fluorescence.avi").getAbsolutePath(),
+					new File(outdir, "fluorescence.tif").getAbsolutePath());
+		}
+		manager.setVisible(true);
+		ret[0] = trans != null ? trans : tr.getImage();
+		ret[1] = fluor != null ? fluor : fl.getImage();
+
+		return ret;
 	}
 
 	public static void main(String... args) {
