@@ -1342,13 +1342,16 @@ public class Microscope implements AdminPanelListener {
 			if(!cancelled) {
 				logger.info("Successfully changed EduSPIM settings.");
 				try {
-					File propdir = new File(Preferences.getPropertiesDir());
-					if(!propdir.exists()) {
-						propdir.mkdirs();
+					String dir = Preferences.getPropertiesDir();
+					if(!dir.isEmpty()) {
+						File propdir = new File(dir);
+						if(!propdir.exists()) {
+							propdir.mkdirs();
+						}
+						String date = new SimpleDateFormat("yyyMMdd").format(new Date());
+						String name = "EduSPIM." + date + ".props";
+						Preferences.save(new File(propdir, name));
 					}
-					String date = new SimpleDateFormat("yyyMMdd").format(new Date());
-					String name = "EduSPIM." + date + ".props";
-					Preferences.save(new File(propdir, name));
 				} catch(Exception e) {
 					ExceptionHandler.showException("Error saving properties in the property history folder", e);
 				}
