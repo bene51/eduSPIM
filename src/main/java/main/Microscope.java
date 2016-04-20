@@ -397,7 +397,7 @@ public class Microscope implements AdminPanelListener {
 				motor.setTarget(Z_AXIS, z0);
 			}
 
-			motor.setTarget(Y_AXIS, Preferences.getStackYStart());
+			motor.setTarget(Y_AXIS, Preferences.getStackYEnd());
 
 			double mirrorPos = getMirrorPositionForZ(z0);
 			if(useScanMirror)
