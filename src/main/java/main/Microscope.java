@@ -762,8 +762,9 @@ public class Microscope implements AdminPanelListener {
 			public void run() {
 				// save the current snapshot
 				try {
-					File f = new File(Preferences.getSnapshotPath());
-					ImageIO.write(im, "png", f);
+					String path = Preferences.getSnapshotPath();
+					if(!path.isEmpty())
+						ImageIO.write(im, "png", new File(path));
 				} catch(Throwable e) {
 					ExceptionHandler.handleException("Error saving snapshot", e);
 				}
@@ -1052,9 +1053,11 @@ public class Microscope implements AdminPanelListener {
 
 				// save the current snapshot
 				try {
-					BufferedImage im = displayPanel.getSnapshot();
-					File f = new File(Preferences.getSnapshotPath());
-					ImageIO.write(im, "png", f);
+					String path = Preferences.getSnapshotPath();
+					if(!path.isEmpty()) {
+						BufferedImage im = displayPanel.getSnapshot();
+						ImageIO.write(im, "png", new File(path));
+					}
 				} catch(Throwable e) {
 					ExceptionHandler.handleException("Error saving snapshot", e);
 				}
