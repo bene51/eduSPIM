@@ -43,6 +43,8 @@ public class Preferences {
 	public static final String STATISTICS_LINK      = "statistics_link";
 	public static final String MAIL_TO              = "mail_to";
 	public static final String MAIL_CC              = "mail_cc";
+	public static final String MAIL_SMTP_USER       = "smtp_username";
+	public static final String MAIL_SMTP_PASSWORD   = "smtp_password";
 	public static final String FAIL_WITHOUT_ARDUINO = "fail_without_arduino";
 
 	private static final double DEFAULT_STACK_ZSTART          = IMotor.POS_MIN_Z;
@@ -91,6 +93,8 @@ public class Preferences {
 	private static final String DEFAULT_STATISTICS_LINK       = "https://www.dropbox.com/s/jt6mw71s6zk635m/Statistics.csv?dl=0";
 	private static final String DEFAULT_MAIL_TO               = "bene.schmid@gmail.com";
 	private static final String DEFAULT_MAIL_CC               = ""; // TODO labhuisken@mpi-cbg.de
+	private static final String DEFAULT_MAIL_SMTP_USER        = "";
+	private static final String DEFAULT_MAIL_SMTP_PASSWORD    = "";
 	private static final boolean DEFAULT_FAIL_WITHOUT_ARDUINO = false;
 
 
@@ -107,7 +111,7 @@ public class Preferences {
 	private double  pixelWidth;
 	private String stacksdir, logsdir, propertiesdir, statisticspath, snapshotpath;
 	private String logslink, stackslink, statisticslink;
-	private String mailto, mailcc;
+	private String mailto, mailcc, mailuser, mailpassword;
 	private boolean failWithoutArduino;
 
 	public static double getStackZStart() {
@@ -220,6 +224,14 @@ public class Preferences {
 
 	public static String getMailcc() {
 		return getInstance().mailcc;
+	}
+
+	public static String getSMTPUsername() {
+		return getInstance().mailuser;
+	}
+
+	public static String getSMTPPassword() {
+		return getInstance().mailpassword;
 	}
 
 	public static boolean getFailWithoutArduino() {
@@ -341,6 +353,8 @@ public class Preferences {
 		properties.put(STATISTICS_LINK,      DEFAULT_STATISTICS_LINK);
 		properties.put(MAIL_TO,              DEFAULT_MAIL_TO);
 		properties.put(MAIL_CC,              DEFAULT_MAIL_CC);
+		properties.put(MAIL_SMTP_USER,       DEFAULT_MAIL_SMTP_USER);
+		properties.put(MAIL_SMTP_PASSWORD,   DEFAULT_MAIL_SMTP_PASSWORD);
 		properties.put(FAIL_WITHOUT_ARDUINO, Boolean.toString(DEFAULT_FAIL_WITHOUT_ARDUINO));
 
 		propertiesFile = new File(PROPERTY_FILE);
@@ -387,6 +401,8 @@ public class Preferences {
 		statisticslink= properties.getProperty(STATISTICS_LINK, DEFAULT_STATISTICS_LINK);
 		mailto        = properties.getProperty(MAIL_TO, DEFAULT_MAIL_TO);
 		mailcc        = properties.getProperty(MAIL_CC, DEFAULT_MAIL_TO);
+		mailuser      = properties.getProperty(MAIL_SMTP_USER, DEFAULT_MAIL_SMTP_USER);
+		mailpassword  = properties.getProperty(MAIL_SMTP_PASSWORD, DEFAULT_MAIL_SMTP_PASSWORD);
 		failWithoutArduino = Boolean.parseBoolean(properties.getProperty(FAIL_WITHOUT_ARDUINO));
 	}
 
@@ -431,6 +447,8 @@ public class Preferences {
 		p.statisticslink     = backup.get(STATISTICS_LINK);
 		p.mailto             = backup.get(MAIL_TO);
 		p.mailcc             = backup.get(MAIL_CC);
+		p.mailuser           = backup.get(MAIL_SMTP_USER);
+		p.mailpassword       = backup.get(MAIL_SMTP_PASSWORD);
 		p.failWithoutArduino = Boolean.parseBoolean(backup.get(FAIL_WITHOUT_ARDUINO));
 		Preferences.setAll(backup);
 	}
@@ -532,6 +550,8 @@ public class Preferences {
 		out.println("# Email addresses");
 		out.println(MAIL_TO + "=" + escape(p.mailto));
 		out.println(MAIL_CC + "=" + escape(p.mailcc));
+		out.println(MAIL_SMTP_USER + "=" + escape(p.mailuser));
+		out.println(MAIL_SMTP_PASSWORD + "=" + escape(p.mailpassword));
 		out.println();
 		out.println("# Fails if communication to the arduino cannot be established.");
 		out.println("# If false, GUI buttons will be used instead.");

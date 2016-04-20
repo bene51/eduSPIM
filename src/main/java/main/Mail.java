@@ -39,8 +39,18 @@ public class Mail {
 		send(subject, to, cc, text, false);
 	}
 
-
 	public static void send(final String subject, final String to, final String cc, final String text, boolean wait) {
+		send(subject, to, cc, text, Preferences.getSMTPUsername(), Preferences.getSMTPPassword(), wait);
+	}
+
+	public static void send(
+			final String subject,
+			final String to,
+			final String cc,
+			final String text,
+			final String username,
+			final String password,
+			boolean wait) {
 		Future<?> fut = exec.submit(new Runnable() {
 			@Override
 			public void run() {
