@@ -248,6 +248,8 @@ public class PlaneDisplay extends JPanel {
 		int xOffs = (int)Math.round((w - imageWidth) / 2.0);
 		int yOffs = (int)Math.round((h - imageHeight) / 2.0);
 
+		// drawToOffscreenBuffer(offscreenGraphics); // TODO should not be needed here
+
 		BufferedImage image = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g2d = (Graphics2D)image.getGraphics();
 		g2d.drawImage(offscreenImage, -xOffs, -yOffs, null);
@@ -255,7 +257,7 @@ public class PlaneDisplay extends JPanel {
 		return image;
 	}
 
-	private void drawToOffscreenBuffer(Graphics g) {
+	private synchronized void drawToOffscreenBuffer(Graphics g) {
 		Graphics2D g2d = (Graphics2D) g;
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
 		    RenderingHints.VALUE_ANTIALIAS_ON);
