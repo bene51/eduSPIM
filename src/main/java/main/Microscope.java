@@ -300,16 +300,23 @@ public class Microscope implements AdminPanelListener {
 		keyboard.addButtonsListener(list);
 		displayPanel.addKeyListener(keyboard);
 		logger.info("Successfully initialized the microscope");
-		Mail.send("Successful EduSPIM startup", Preferences.getMailto(), null,
-				"Hi,\n\n"
-				+ "EduSPIM was just started successfully.\n\n"
-				+ "Logs are here:\n"
-				+ Preferences.getLogsLink() + "\n\n"
-				+ "stack projections:\n"
-				+ Preferences.getStacksLink() + "\n\n"
-				+ "and statistics:\n"
-				+ Preferences.getStatisticsLink() + "\n\n"
-				+ "Greetings,\nEduSPIM");
+		StringBuilder text = new StringBuilder();
+		text.append("Hi,\n\n")
+			.append("EduSPIM was just started successfully.\n\n");
+		if(!Preferences.getLogsLink().isEmpty()) {
+			text.append("Logs are here:\n");
+			text.append(Preferences.getLogsLink()).append("\n\n");
+		}
+		if(!Preferences.getStacksLink().isEmpty()) {
+			text.append("stack projections:\n");
+			text.append(Preferences.getStacksLink()).append("\n\n");
+		}
+		if(!Preferences.getStatisticsLink().isEmpty()) {
+			text.append("and statistics:\n");
+			text.append(Preferences.getStatisticsLink()).append("\n\n");
+		}
+		text.append("Greetings,\nEduSPIM");
+		Mail.send("Successful EduSPIM startup", Preferences.getMailto(), null, text.toString());
 	}
 
 	public static Microscope getInstance() {
@@ -1171,18 +1178,26 @@ public class Microscope implements AdminPanelListener {
 	public void shutdown(int exitcode) {
 		try {
 			logger.info("Shutting down with exit code " + exitcode);
+			StringBuilder text = new StringBuilder();
+			text.append("Hi,\n\n")
+				.append("EduSPIM was just shut down with exit status " + exitcode + ".\n\n");
+			if(!Preferences.getLogsLink().isEmpty()) {
+				text.append("Logs are here:\n");
+				text.append(Preferences.getLogsLink()).append("\n\n");
+			}
+			if(!Preferences.getStacksLink().isEmpty()) {
+				text.append("stack projections:\n");
+				text.append(Preferences.getStacksLink()).append("\n\n");
+			}
+			if(!Preferences.getStatisticsLink().isEmpty()) {
+				text.append("and statistics:\n");
+				text.append(Preferences.getStatisticsLink()).append("\n\n");
+			}
+			text.append("Greetings,\nEduSPIM");
 			Mail.send("EduSPIM shutdown (exit code " + exitcode + ")",
 					Preferences.getMailto(),
 					null,
-					"Hi,\n\n"
-					+ "EduSPIM was just shut down with exit status " + exitcode + ".\n\n"
-					+ "Logs are here:\n"
-					+ Preferences.getLogsLink() + "\n\n"
-					+ "stack projections:\n"
-					+ Preferences.getStacksLink() + "\n\n"
-					+ "and statistics:\n"
-					+ Preferences.getStatisticsLink() + "\n\n"
-					+ "Greetings,\nEduSPIM",
+					text.toString(),
 					true);
 			while(!mirrorQueue.isIdle())
 				sleep(100);
