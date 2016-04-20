@@ -1365,19 +1365,19 @@ public class Microscope implements AdminPanelListener {
 	public void adminPanelDone(boolean cancelled) {
 		if(mode == Mode.ADMIN) {
 			stopContinuousPreview();
-			boolean sampleExchanged = JOptionPane.showConfirmDialog(
-					displayWindow,
-					"Did you exchange the sample?\n\nThis information is needed for logs and statistics.",
-					"Sample exchange",
-					JOptionPane.YES_NO_OPTION,
-					JOptionPane.QUESTION_MESSAGE,
-					null) == JOptionPane.YES_OPTION;
-			if(sampleExchanged) {
-				logger.info("Exchanged sample");
-				Statistics.changeSample();
-			}
 			if(!cancelled) {
 				logger.info("Successfully changed EduSPIM settings.");
+				boolean sampleExchanged = JOptionPane.showConfirmDialog(
+						displayWindow,
+						"Did you exchange the sample?\n\nThis information is needed for logs and statistics.",
+						"Sample exchange",
+						JOptionPane.YES_NO_OPTION,
+						JOptionPane.QUESTION_MESSAGE,
+						null) == JOptionPane.YES_OPTION;
+				if(sampleExchanged) {
+					logger.info("Exchanged sample");
+					Statistics.changeSample();
+				}
 				try {
 					String dir = Preferences.getPropertiesDir();
 					if(!dir.isEmpty()) {
