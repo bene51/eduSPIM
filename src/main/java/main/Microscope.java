@@ -1042,11 +1042,14 @@ public class Microscope implements AdminPanelListener {
 			@Override
 			public void run() {
 				try {
-					File f = new File(Preferences.getStacksDir());
-					if(!f.exists())
-						f.mkdirs();
-					String date = new SimpleDateFormat("yyyMMdd-HHmmss").format(new Date());
-					ImageIO.write(im, "png", new File(f, date + ".png"));
+					String dir = Preferences.getStacksDir();
+					if(!dir.isEmpty()) {
+						File f = new File(dir);
+						if(!f.exists())
+							f.mkdirs();
+						String date = new SimpleDateFormat("yyyMMdd-HHmmss").format(new Date());
+						ImageIO.write(im, "png", new File(f, date + ".png"));
+					}
 				} catch(Throwable e) {
 					ExceptionHandler.handleException("Error saving projected stack", e);
 				}
