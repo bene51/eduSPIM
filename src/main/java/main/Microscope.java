@@ -91,16 +91,19 @@ public class Microscope implements AdminPanelListener {
 
 	static {
 		String date = new SimpleDateFormat("yyyMMdd").format(new Date());
-		File logfile = new File(Preferences.getLogsDir());
-		if(!logfile.exists()) {
-			if(!logfile.mkdirs()) {
-				Mail.send("Error creating directory for log files",
-						"Cannot create directory " + logfile.getAbsolutePath());
+		String dir = Preferences.getLogsDir();
+		if(!dir.isEmpty()) {
+			File logfile = new File(dir);
+			if(!logfile.exists()) {
+				if(!logfile.mkdirs()) {
+					Mail.send("Error creating directory for log files",
+							"Cannot create directory " + logfile.getAbsolutePath());
+				}
 			}
+			logfile = new File(logfile, date + ".txt");
+			System.out.println("logfile = " + logfile);
+			System.setProperty(SimpleLogger.LOG_FILE_KEY, logfile.getAbsolutePath());
 		}
-		logfile = new File(logfile, date + ".txt");
-		System.out.println("logfile = " + logfile);
-		System.setProperty(SimpleLogger.LOG_FILE_KEY, logfile.getAbsolutePath());
 		logger = LoggerFactory.getLogger(Microscope.class);
 		System.out.println("logger = " + logger.getClass());
 	}
