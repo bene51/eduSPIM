@@ -1,19 +1,19 @@
 package main;
 
+import ij.gui.GenericDialog;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Properties;
 
 import stage.IMotor;
 
 public class Preferences {
 
-	public static final String PROPERTY_FILE =
-		System.getProperty("user.home") + File.separator + ".EduSPIM.props";
+	public static final String PROPERTY_FILE_DIR = System.getProperty("user.home") + File.separator + ".eduSPIM" + File.separator;
+	public static final String PROPERTY_FILE = PROPERTY_FILE_DIR + "EduSPIM.props";
 
 	public static final String STACK_Z_START        = "stack_z_start";
 	public static final String STACK_Z_END          = "stack_z_end";
@@ -67,32 +67,17 @@ public class Preferences {
 	private static final double DEFAULT_PIXEL_WIDHT           = 5.3 *  // pixel width on sensor
 	                                                            0.1 *  // magnification
 	                                                            0.001; // convert to mm
-	private static final String DEFAULT_STACKS_DIR            = System.getProperty("user.home") +
-																File.separator + "Dropbox" +
-																File.separator + "EduSPIM" +
-																File.separator + "Stacks";
-	private static final String DEFAULT_LOGS_DIR              = System.getProperty("user.home") +
-																File.separator + "Dropbox" +
-																File.separator + "EduSPIM" +
-																File.separator + "Logs";
-	private static final String DEFAULT_PROPERTIES_DIR        = System.getProperty("user.home") +
-																File.separator + "Dropbox" +
-																File.separator + "EduSPIM" +
-																File.separator + "Properties";
-	private static final String DEFAULT_STATISTICS_PATH       = System.getProperty("user.home") +
-																File.separator + "Dropbox" +
-																File.separator + "EduSPIM" +
-																File.separator + "Statistics.csv";
-	private static final String DEFAULT_SNAPSHOT_PATH         = System.getProperty("user.home") +
-																File.separator + "Dropbox" +
-																File.separator + "EduSPIM" +
-																File.separator + "Snapshot.png";
+	private static final String DEFAULT_STACKS_DIR            = PROPERTY_FILE_DIR + "Stacks";
+	private static final String DEFAULT_LOGS_DIR              = PROPERTY_FILE_DIR + "Logs";
+	private static final String DEFAULT_PROPERTIES_DIR        = PROPERTY_FILE_DIR + "Settings";
+	private static final String DEFAULT_STATISTICS_PATH       = PROPERTY_FILE_DIR + "statistics.csv";
+	private static final String DEFAULT_SNAPSHOT_PATH         = PROPERTY_FILE_DIR + "snapshot.png";
 
-	private static final String DEFAULT_LOGS_LINK             = "https://www.dropbox.com/sh/bccsscts2gc8i6r/AADQb3myigWu1JoZDVEyANWwa?dl=0";
-	private static final String DEFAULT_STACKS_LINK           = "https://www.dropbox.com/sh/2guke4kp2ff43xi/AAANS6pPXvphxwCu6SclSh6Ua?dl=0";
-	private static final String DEFAULT_STATISTICS_LINK       = "https://www.dropbox.com/s/jt6mw71s6zk635m/Statistics.csv?dl=0";
-	private static final String DEFAULT_MAIL_TO               = "bene.schmid@gmail.com";
-	private static final String DEFAULT_MAIL_CC               = ""; // TODO labhuisken@mpi-cbg.de
+	private static final String DEFAULT_LOGS_LINK             = "";
+	private static final String DEFAULT_STACKS_LINK           = "";
+	private static final String DEFAULT_STATISTICS_LINK       = "";
+	private static final String DEFAULT_MAIL_TO               = "";
+	private static final String DEFAULT_MAIL_CC               = "";
 	private static final String DEFAULT_MAIL_SMTP_USER        = "";
 	private static final String DEFAULT_MAIL_SMTP_PASSWORD    = "";
 	private static final boolean DEFAULT_FAIL_WITHOUT_ARDUINO = false;
@@ -100,19 +85,135 @@ public class Preferences {
 
 	private static Preferences instance;
 
-	private final Properties properties;
-	private final File propertiesFile;
+	public static void main(String[] args) {
+		new Preferences();
+	}
 
-	private double stackZStart, stackZEnd, stackYStart, stackYEnd;
-	private double mirrorZ1, mirrorM1, mirrorZ2, mirrorM2, mirrorCoeffM, mirrorCoeffT;
-	private double laserpower;
-	private double tCameraFPS, tCameraExp, fCameraFPS, fCameraExp;
-	private int tCameraGain, fCameraGain;
-	private double  pixelWidth;
-	private String stacksdir, logsdir, propertiesdir, statisticspath, snapshotpath;
-	private String logslink, stackslink, statisticslink;
-	private String mailto, mailcc, mailuser, mailpassword;
-	private boolean failWithoutArduino;
+	private void initialConfiguration() {
+		if(!new File(PROPERTY_FILE).exists()) {
+			GenericDialog gd = new GenericDialog("Initial configuration");
+			gd.addMessage(
+					"Please enter some information in the following dialogs.\n" +
+					"You can cancel at any time, in which case default values for all\n" +
+					"parameters will be used. The software will still be usable, but\n" +
+					"you won't get any email notifications.");
+			gd.showDialog();
+			if(gd.wasCanceled())
+				return;
+
+			gd = new GenericDialog("Initial configuration");
+			gd.addMessage(
+					"Please enter a (possibly shared) directory \n" +
+					"where stack renderings are saved. Leave empty \n" +
+					"to skip saving stack renderings");
+			gd.addStringField("Stack_directory", DEFAULT_STACKS_DIR, 30);
+			gd.addMessage(
+					"Please enter a link under which the stack \n" +
+					"directory can be accessed publically (e.g. a \n" +
+					"publically shared Dropbox link) (optional)");
+			gd.addStringField("Stacks_link", DEFAULT_STACKS_LINK, 30);
+			gd.showDialog();
+			if(gd.wasCanceled())
+				return;
+			String stacksdir = gd.getNextString();
+			String stackslink = gd.getNextString();
+
+			gd = new GenericDialog("Initial configuration");
+			gd.addMessage(
+					"Please enter a (possibly shared) directory \n" +
+					"where log files are saved. Leave empty \n" +
+					"to skip saving logs");
+			gd.addStringField("Log_directory", DEFAULT_LOGS_DIR, 30);
+			gd.addMessage(
+					"Please enter a link under which the log \n" +
+					"directory can be accessed publically (e.g. a \n" +
+					"publically shared Dropbox link) (optional)");
+			gd.addStringField("Log_link", DEFAULT_LOGS_LINK, 30);
+			gd.showDialog();
+			if(gd.wasCanceled())
+				return;
+			String logsdir = gd.getNextString();
+			String logslink = gd.getNextString();
+
+			gd = new GenericDialog("Initial configuration");
+			gd.addMessage(
+					"Please enter a (possibly shared) path to a statistics \n" +
+					"file (csv). This file saves information about user button presses \n" +
+					"and can be used for evaluating microscope usage, e.g. for the \n" +
+					"website. Leave empty to not write a statistics file.");
+			gd.addStringField("Statistics_path", DEFAULT_STATISTICS_PATH, 30);
+			gd.addMessage(
+					"Please enter a link under which the statistics \n" +
+					"file can be accessed publically (e.g. a \n" +
+					"publically shared Dropbox link) (optional)");
+			gd.addStringField("Statistics_link", DEFAULT_STATISTICS_LINK, 30);
+			gd.addMessage(
+					"Please enter a (possibly shared) path (png file) where the \n" +
+					"latest snapshot will be saved as an image. \n" +
+					"Leave empty to not save snapshots.");
+			gd.addStringField("Snapshot_path", DEFAULT_SNAPSHOT_PATH, 30);
+			gd.showDialog();
+			if(gd.wasCanceled())
+				return;
+			String statisticspath = gd.getNextString();
+			String statisticslink = gd.getNextString();
+			String snapshotpath = gd.getNextString();
+
+
+			gd = new GenericDialog("Initial configuration");
+			gd.addMessage(
+					"Please enter a (possibly shared) directory for saving backups \n" +
+					"of used settings. Leave empty to not backing up settings files.");
+			gd.addStringField("Settings_folder", DEFAULT_PROPERTIES_DIR, 30);
+			gd.addMessage(
+					"Please enter a primary email address to which emails are sent \n" +
+					"on startup, shut down or if an error occurs. Leave empty to \n" +
+					"not send emails.");
+			gd.addStringField("Primary_email", DEFAULT_MAIL_TO, 30);
+			gd.addMessage(
+					"Please enter an optional secondary email address. Emails are \n" +
+					"CC'ed to this address.");
+			gd.addStringField("Secondary_email", DEFAULT_MAIL_CC, 30);
+			gd.addMessage(
+					"Please enter a user name for the Google mail account that is \n" +
+					"used for sending emails. Leave empty to not send emails.");
+			gd.addStringField("SMTP_username", DEFAULT_MAIL_SMTP_USER, 30);
+			gd.addMessage(
+					"Please enter a password for the Google mail account that is \n" +
+					"used for sending emails. Leave empty to not send emails. Attention: \n" +
+					"This password is saved as plain text on your hard-drive");
+			gd.addStringField("SMTP_password", DEFAULT_MAIL_SMTP_PASSWORD, 30);
+			gd.addMessage(
+					"Please specify whether the software should fail (show \n" +
+					"an error screen) if no Arduino is connected to receive \n" +
+					"button inputs. If you do not check the box, the software \n" +
+					"will still be usable using the computer keyboard");
+			gd.addCheckbox("Fail_without_Arduino", DEFAULT_FAIL_WITHOUT_ARDUINO);
+			gd.showDialog();
+			if(gd.wasCanceled())
+				return;
+			String propertiesdir = gd.getNextString();
+			String mailto = gd.getNextString();
+			String mailcc = gd.getNextString();
+			String mailuser = gd.getNextString();
+			String mailpassword = gd.getNextString();
+			boolean failWithoutArduino = gd.getNextBoolean();
+
+			this.stacksdir = stacksdir;
+			this.logsdir = logsdir;
+			this.stackslink = stackslink;
+			this.logslink = logslink;
+			this.statisticspath = statisticspath;
+			this.snapshotpath = snapshotpath;
+			this.statisticslink = statisticslink;
+			this.propertiesdir = propertiesdir;
+			this.mailto = mailto;
+			this.mailcc = mailcc;
+			this.mailuser = mailuser;
+			this.mailpassword = mailpassword;
+			this.failWithoutArduino = failWithoutArduino;
+		}
+	}
 
 	public static double getStackZStart() {
 		return getInstance().stackZStart;
@@ -240,217 +341,97 @@ public class Preferences {
 
 	public static void setStackZStart(double stackZStart) {
 		getInstance().stackZStart = stackZStart;
-		set(STACK_Z_START, stackZStart);
+		getInstance().write();
 	}
 
 	public static void setStackZEnd(double stackZEnd) {
 		getInstance().stackZEnd = stackZEnd;
-		set(STACK_Z_END, stackZEnd);
+		getInstance().write();
 	}
 
 	public static void setStackYStart(double stackYStart) {
 		getInstance().stackYStart = stackYStart;
-		set(STACK_Y_START, stackYStart);
+		getInstance().write();
 	}
 
 	public static void setStackYEnd(double stackYEnd) {
 		getInstance().stackYEnd = stackYEnd;
-		set(STACK_Y_END, stackYEnd);
+		getInstance().write();
 	}
 
 	public static void setMirrorZ1(double mirrorZ1) {
 		getInstance().mirrorZ1 = mirrorZ1;
-		set(MIRROR_Z1, mirrorZ1);
+		getInstance().write();
 	}
 
 	public static void setMirrorM1(double mirrorM1) {
 		getInstance().mirrorM1 = mirrorM1;
-		set(MIRROR_M1, mirrorM1);
+		getInstance().write();
 	}
 
 	public static void setMirrorZ2(double mirrorZ2) {
 		getInstance().mirrorZ2 = mirrorZ2;
-		set(MIRROR_Z2, mirrorZ2);
+		getInstance().write();
 	}
 
 	public static void setMirrorM2(double mirrorM2) {
 		getInstance().mirrorM2 = mirrorM2;
-		set(MIRROR_M2, mirrorM2);
+		getInstance().write();
 	}
 
 	public static void setMirrorCoefficientM(double m) {
 		getInstance().mirrorCoeffM = m;
-		set(MIRROR_COEFF_M, m);
+		getInstance().write();
 	}
 
 	public static void setMirrorCoefficientT(double t) {
 		getInstance().mirrorCoeffT = t;
-		set(MIRROR_COEFF_T, t);
+		getInstance().write();
 	}
 
 	public static void setLaserPower(double p) {
 		getInstance().laserpower = p;
-		set(LASER_POWER, p);
+		getInstance().write();
 	}
 
 	public static void setTCameraFramerate(double fps) {
 		getInstance().tCameraFPS = fps;
-		set(CAMERA_T_FRAMERATE, fps);
+		getInstance().write();
 	}
 
 	public static void setTCameraExposure(double t) {
 		getInstance().tCameraExp = t;
-		set(CAMERA_T_EXPOSURE, t);
+		getInstance().write();
 	}
 
 	public static void setTCameraGain(int gain) {
 		getInstance().tCameraGain = gain;
-		set(CAMERA_T_GAIN, gain);
+		getInstance().write();
 	}
 
 	public static void setFCameraFramerate(double fps) {
 		getInstance().fCameraFPS = fps;
-		set(CAMERA_F_FRAMERATE, fps);
+		getInstance().write();
 	}
 
 	public static void setFCameraExposure(double t) {
 		getInstance().fCameraExp = t;
-		set(CAMERA_F_EXPOSURE, t);
+		getInstance().write();
 	}
 
 	public static void setFCameraGain(int gain) {
 		getInstance().fCameraGain = gain;
-		set(CAMERA_F_GAIN, gain);
+		getInstance().write();
 	}
 
-	private Preferences() {
-		properties = new Properties();
-		properties.put(STACK_Z_START,        Double.toString(DEFAULT_STACK_ZSTART));
-		properties.put(STACK_Z_END,          Double.toString(DEFAULT_STACK_ZEND));
-		properties.put(STACK_Y_START,        Double.toString(DEFAULT_STACK_YSTART));
-		properties.put(STACK_Y_END,          Double.toString(DEFAULT_STACK_YEND));
-		properties.put(MIRROR_Z1,            Double.toString(DEFAULT_MIRROR_Z1));
-		properties.put(MIRROR_M1,            Double.toString(DEFAULT_MIRROR_M1));
-		properties.put(MIRROR_Z2,            Double.toString(DEFAULT_MIRROR_Z2));
-		properties.put(MIRROR_M2,            Double.toString(DEFAULT_MIRROR_M2));
-		properties.put(MIRROR_COEFF_M,       Double.toString(DEFAULT_MIRROR_COEFF_M));
-		properties.put(MIRROR_COEFF_T,       Double.toString(DEFAULT_MIRROR_COEFF_T));
-		properties.put(LASER_POWER,          Double.toString(DEFAULT_LASER_POWER));
-		properties.put(CAMERA_T_FRAMERATE,   Double.toString(DEFAULT_CAMERA_T_FRAMERATE));
-		properties.put(CAMERA_T_EXPOSURE,    Double.toString(DEFAULT_CAMERA_T_EXPOSURE));
-		properties.put(CAMERA_T_GAIN,        Integer.toString(DEFAULT_CAMERA_T_GAIN));
-		properties.put(CAMERA_F_FRAMERATE,   Double.toString(DEFAULT_CAMERA_F_FRAMERATE));
-		properties.put(CAMERA_F_EXPOSURE,    Double.toString(DEFAULT_CAMERA_F_EXPOSURE));
-		properties.put(CAMERA_F_GAIN,        Integer.toString(DEFAULT_CAMERA_F_GAIN));
-		properties.put(PIXEL_WIDTH,          Double.toString(DEFAULT_PIXEL_WIDHT));
-		properties.put(STACKS_DIR,           DEFAULT_STACKS_DIR);
-		properties.put(LOGS_DIR,             DEFAULT_LOGS_DIR);
-		properties.put(PROPERTIES_DIR,       DEFAULT_PROPERTIES_DIR);
-		properties.put(STATISTICS_PATH,      DEFAULT_STATISTICS_PATH);
-		properties.put(SNAPSHOT_PATH,        DEFAULT_SNAPSHOT_PATH);
-		properties.put(STACKS_LINK,          DEFAULT_STACKS_LINK);
-		properties.put(LOGS_LINK,            DEFAULT_LOGS_LINK);
-		properties.put(STATISTICS_LINK,      DEFAULT_STATISTICS_LINK);
-		properties.put(MAIL_TO,              DEFAULT_MAIL_TO);
-		properties.put(MAIL_CC,              DEFAULT_MAIL_CC);
-		properties.put(MAIL_SMTP_USER,       DEFAULT_MAIL_SMTP_USER);
-		properties.put(MAIL_SMTP_PASSWORD,   DEFAULT_MAIL_SMTP_PASSWORD);
-		properties.put(FAIL_WITHOUT_ARDUINO, Boolean.toString(DEFAULT_FAIL_WITHOUT_ARDUINO));
-
-		propertiesFile = new File(PROPERTY_FILE);
-
-		FileReader reader = null;
-		try {
-			reader = new FileReader(propertiesFile);
-			properties.load(reader);
-		} catch(Exception e) {
-			ExceptionHandler.handleException("Error loading properties file", e);
-		} finally {
-			try {
-				if(reader != null)
-					reader.close();
-			} catch(IOException e) {
-				ExceptionHandler.handleException("Error closing properties file", e);
-			}
-		}
-		stackZStart   = Double.parseDouble(properties.getProperty(STACK_Z_START,  Double.toString(DEFAULT_STACK_ZSTART)));
-		stackZEnd     = Double.parseDouble(properties.getProperty(STACK_Z_END,    Double.toString(DEFAULT_STACK_ZEND)));
-		stackYStart   = Double.parseDouble(properties.getProperty(STACK_Y_START,  Double.toString(DEFAULT_STACK_YSTART)));
-		stackYEnd     = Double.parseDouble(properties.getProperty(STACK_Y_END,    Double.toString(DEFAULT_STACK_YEND)));
-		mirrorZ1      = Double.parseDouble(properties.getProperty(MIRROR_Z1,      Double.toString(DEFAULT_MIRROR_Z1)));
-		mirrorM1      = Double.parseDouble(properties.getProperty(MIRROR_M1,      Double.toString(DEFAULT_MIRROR_M1)));
-		mirrorZ2      = Double.parseDouble(properties.getProperty(MIRROR_Z2,      Double.toString(DEFAULT_MIRROR_Z2)));
-		mirrorM2      = Double.parseDouble(properties.getProperty(MIRROR_M2,      Double.toString(DEFAULT_MIRROR_M2)));
-		mirrorCoeffM  = Double.parseDouble(properties.getProperty(MIRROR_COEFF_M, Double.toString(DEFAULT_MIRROR_COEFF_M)));
-		mirrorCoeffT  = Double.parseDouble(properties.getProperty(MIRROR_COEFF_T, Double.toString(DEFAULT_MIRROR_COEFF_T)));
-		laserpower    = Double.parseDouble(properties.getProperty(LASER_POWER,    Double.toString(DEFAULT_LASER_POWER)));
-		tCameraFPS    = Double.parseDouble(properties.getProperty(CAMERA_T_FRAMERATE, Double.toString(DEFAULT_CAMERA_T_FRAMERATE)));
-		tCameraExp    = Double.parseDouble(properties.getProperty(CAMERA_T_EXPOSURE,  Double.toString(DEFAULT_CAMERA_T_EXPOSURE)));
-		tCameraGain   = Integer.parseInt(  properties.getProperty(CAMERA_T_GAIN,      Double.toString(DEFAULT_CAMERA_T_GAIN)));
-		fCameraFPS    = Double.parseDouble(properties.getProperty(CAMERA_F_FRAMERATE, Double.toString(DEFAULT_CAMERA_F_FRAMERATE)));
-		fCameraExp    = Double.parseDouble(properties.getProperty(CAMERA_F_EXPOSURE,  Double.toString(DEFAULT_CAMERA_F_EXPOSURE)));
-		fCameraGain   = Integer.parseInt(  properties.getProperty(CAMERA_F_GAIN,      Double.toString(DEFAULT_CAMERA_F_GAIN)));
-		pixelWidth    = Double.parseDouble(properties.getProperty(PIXEL_WIDTH,    Double.toString(DEFAULT_PIXEL_WIDHT)));
-		stacksdir     = properties.getProperty(STACKS_DIR, DEFAULT_STACKS_DIR);
-		logsdir       = properties.getProperty(LOGS_DIR, DEFAULT_LOGS_DIR);
-		propertiesdir = properties.getProperty(PROPERTIES_DIR, DEFAULT_PROPERTIES_DIR);
-		statisticspath= properties.getProperty(STATISTICS_PATH, DEFAULT_STATISTICS_PATH);
-		snapshotpath  = properties.getProperty(SNAPSHOT_PATH, DEFAULT_SNAPSHOT_PATH);
-		stackslink    = properties.getProperty(STACKS_LINK, DEFAULT_STACKS_LINK);
-		logslink      = properties.getProperty(LOGS_LINK, DEFAULT_LOGS_LINK);
-		statisticslink= properties.getProperty(STATISTICS_LINK, DEFAULT_STATISTICS_LINK);
-		mailto        = properties.getProperty(MAIL_TO, DEFAULT_MAIL_TO);
-		mailcc        = properties.getProperty(MAIL_CC, DEFAULT_MAIL_TO);
-		mailuser      = properties.getProperty(MAIL_SMTP_USER, DEFAULT_MAIL_SMTP_USER);
-		mailpassword  = properties.getProperty(MAIL_SMTP_PASSWORD, DEFAULT_MAIL_SMTP_PASSWORD);
-		failWithoutArduino = Boolean.parseBoolean(properties.getProperty(FAIL_WITHOUT_ARDUINO));
+	public static Properties backup() {
+		return getInstance().toProperties();
 	}
 
-	public static HashMap<String, String> backup() {
-		HashMap<String, String> backup = new HashMap<String, String>();
+	public static void restoreAndSave(Properties properties) {
 		Preferences p = getInstance();
-		Enumeration<?> e = p.properties.propertyNames();
-		while(e.hasMoreElements()) {
-			String key = (String)e.nextElement();
-			backup.put(key, p.properties.getProperty(key));
-		}
-		return backup;
-	}
-
-	public static void restore(HashMap<String, String> backup) {
-		Preferences p = getInstance();
-		p.stackZStart        = Double.parseDouble(backup.get(STACK_Z_START));
-		p.stackZEnd          = Double.parseDouble(backup.get(STACK_Z_END));
-		p.stackYStart        = Double.parseDouble(backup.get(STACK_Y_START));
-		p.stackYEnd          = Double.parseDouble(backup.get(STACK_Y_END));
-		p.mirrorZ1           = Double.parseDouble(backup.get(MIRROR_Z1));
-		p.mirrorM1           = Double.parseDouble(backup.get(MIRROR_M1));
-		p.mirrorZ2           = Double.parseDouble(backup.get(MIRROR_Z2));
-		p.mirrorM2           = Double.parseDouble(backup.get(MIRROR_M2));
-		p.mirrorCoeffM       = Double.parseDouble(backup.get(MIRROR_COEFF_M));
-		p.mirrorCoeffT       = Double.parseDouble(backup.get(MIRROR_COEFF_T));
-		p.laserpower         = Double.parseDouble(backup.get(LASER_POWER));
-		p.tCameraFPS         = Double.parseDouble(backup.get(CAMERA_T_FRAMERATE));
-		p.tCameraExp         = Double.parseDouble(backup.get(CAMERA_T_EXPOSURE));
-		p.tCameraGain        = Integer.parseInt(  backup.get(CAMERA_T_GAIN));
-		p.fCameraFPS         = Double.parseDouble(backup.get(CAMERA_F_FRAMERATE));
-		p.fCameraExp         = Double.parseDouble(backup.get(CAMERA_F_EXPOSURE));
-		p.fCameraGain        = Integer.parseInt(  backup.get(CAMERA_F_GAIN));
-		p.pixelWidth         = Double.parseDouble(backup.get(PIXEL_WIDTH));
-		p.stacksdir          = backup.get(STACKS_DIR);
-		p.logsdir            = backup.get(LOGS_DIR);
-		p.propertiesdir      = backup.get(PROPERTIES_DIR);
-		p.statisticspath     = backup.get(STATISTICS_PATH);
-		p.snapshotpath       = backup.get(SNAPSHOT_PATH);
-		p.stackslink         = backup.get(STACKS_LINK);
-		p.logslink           = backup.get(LOGS_LINK);
-		p.statisticslink     = backup.get(STATISTICS_LINK);
-		p.mailto             = backup.get(MAIL_TO);
-		p.mailcc             = backup.get(MAIL_CC);
-		p.mailuser           = backup.get(MAIL_SMTP_USER);
-		p.mailpassword       = backup.get(MAIL_SMTP_PASSWORD);
-		p.failWithoutArduino = Boolean.parseBoolean(backup.get(FAIL_WITHOUT_ARDUINO));
-		Preferences.setAll(backup);
+		p.fromProperties(properties);
+		p.write();
 	}
 
 	private static Preferences getInstance() {
@@ -459,22 +440,128 @@ public class Preferences {
 		return instance;
 	}
 
-	private static synchronized String get(String key) {
-		return getInstance().properties.getProperty(key);
-	}
-
-	private static void setAll(HashMap<String, String> table) {
-		for(String key : table.keySet())
-			getInstance().properties.setProperty(key, table.get(key));
-		save(getInstance().propertiesFile);
-	}
-
-	private static void set(String key, Object value) {
-		getInstance().properties.setProperty(key, value.toString());
-		save(getInstance().propertiesFile);
-	}
-
 	public static void save(File file) {
+		getInstance().write(file);
+	}
+
+	/********************************************************
+	 * Here starts the non-static part.
+	 ********************************************************/
+	private final File propertiesFile;
+
+	private double stackZStart, stackZEnd, stackYStart, stackYEnd;
+	private double mirrorZ1, mirrorM1, mirrorZ2, mirrorM2, mirrorCoeffM, mirrorCoeffT;
+	private double laserpower;
+	private double tCameraFPS, tCameraExp, fCameraFPS, fCameraExp;
+	private int tCameraGain, fCameraGain;
+	private double  pixelWidth;
+	private String stacksdir, logsdir, propertiesdir, statisticspath, snapshotpath;
+	private String logslink, stackslink, statisticslink;
+	private String mailto, mailcc, mailuser, mailpassword;
+	private boolean failWithoutArduino;
+
+	private Preferences() {
+		Properties properties = new Properties();
+		propertiesFile = new File(PROPERTY_FILE);
+
+		FileReader reader = null;
+		try {
+			reader = new FileReader(propertiesFile);
+			properties.load(reader);
+		} catch(Exception e) {
+			initialConfiguration();
+			// ExceptionHandler.handleException("Error loading properties file", e);
+		} finally {
+			try {
+				if(reader != null)
+					reader.close();
+			} catch(IOException e) {
+				ExceptionHandler.handleException("Error closing properties file", e);
+			}
+		}
+		// properties might not contain a value for every key. If a value is missing, the default will be used (see restore()).
+		fromProperties(properties);
+		write();
+	}
+
+	private Properties toProperties() {
+		Properties properties = new Properties();
+		properties.put(STACK_Z_START,        Double.toString(stackZStart));
+		properties.put(STACK_Z_END,          Double.toString(stackZEnd));
+		properties.put(STACK_Y_START,        Double.toString(stackYStart));
+		properties.put(STACK_Y_END,          Double.toString(stackYEnd));
+		properties.put(MIRROR_Z1,            Double.toString(mirrorZ1));
+		properties.put(MIRROR_M1,            Double.toString(mirrorM1));
+		properties.put(MIRROR_Z2,            Double.toString(mirrorZ2));
+		properties.put(MIRROR_M2,            Double.toString(mirrorM2));
+		properties.put(MIRROR_COEFF_M,       Double.toString(mirrorCoeffM));
+		properties.put(MIRROR_COEFF_T,       Double.toString(mirrorCoeffT));
+		properties.put(LASER_POWER,          Double.toString(laserpower));
+		properties.put(CAMERA_T_FRAMERATE,   Double.toString(tCameraFPS));
+		properties.put(CAMERA_T_EXPOSURE,    Double.toString(tCameraExp));
+		properties.put(CAMERA_T_GAIN,        Integer.toString(tCameraGain));
+		properties.put(CAMERA_F_FRAMERATE,   Double.toString(fCameraFPS));
+		properties.put(CAMERA_F_EXPOSURE,    Double.toString(fCameraExp));
+		properties.put(CAMERA_F_GAIN,        Integer.toString(fCameraGain));
+		properties.put(PIXEL_WIDTH,          Double.toString(pixelWidth));
+		properties.put(STACKS_DIR,           stacksdir);
+		properties.put(LOGS_DIR,             logsdir);
+		properties.put(PROPERTIES_DIR,       propertiesdir);
+		properties.put(STATISTICS_PATH,      statisticspath);
+		properties.put(SNAPSHOT_PATH,        snapshotpath);
+		properties.put(STACKS_LINK,          stackslink);
+		properties.put(LOGS_LINK,            logslink);
+		properties.put(STATISTICS_LINK,      statisticslink);
+		properties.put(MAIL_TO,              mailto);
+		properties.put(MAIL_CC,              mailcc);
+		properties.put(MAIL_SMTP_USER,       mailuser);
+		properties.put(MAIL_SMTP_PASSWORD,   mailpassword);
+		properties.put(FAIL_WITHOUT_ARDUINO, Boolean.toString(failWithoutArduino));
+		return properties;
+	}
+
+	private void fromProperties(Properties properties) {
+		stackZStart   = Double.parseDouble(properties.getProperty(STACK_Z_START,      Double.toString(DEFAULT_STACK_ZSTART)));
+		stackZEnd     = Double.parseDouble(properties.getProperty(STACK_Z_END,        Double.toString(DEFAULT_STACK_ZEND)));
+		stackYStart   = Double.parseDouble(properties.getProperty(STACK_Y_START,      Double.toString(DEFAULT_STACK_YSTART)));
+		stackYEnd     = Double.parseDouble(properties.getProperty(STACK_Y_END,        Double.toString(DEFAULT_STACK_YEND)));
+		mirrorZ1      = Double.parseDouble(properties.getProperty(MIRROR_Z1,          Double.toString(DEFAULT_MIRROR_Z1)));
+		mirrorM1      = Double.parseDouble(properties.getProperty(MIRROR_M1,          Double.toString(DEFAULT_MIRROR_M1)));
+		mirrorZ2      = Double.parseDouble(properties.getProperty(MIRROR_Z2,          Double.toString(DEFAULT_MIRROR_Z2)));
+		mirrorM2      = Double.parseDouble(properties.getProperty(MIRROR_M2,          Double.toString(DEFAULT_MIRROR_M2)));
+		mirrorCoeffM  = Double.parseDouble(properties.getProperty(MIRROR_COEFF_M,     Double.toString(DEFAULT_MIRROR_COEFF_M)));
+		mirrorCoeffT  = Double.parseDouble(properties.getProperty(MIRROR_COEFF_T,     Double.toString(DEFAULT_MIRROR_COEFF_T)));
+		laserpower    = Double.parseDouble(properties.getProperty(LASER_POWER,        Double.toString(DEFAULT_LASER_POWER)));
+		tCameraFPS    = Double.parseDouble(properties.getProperty(CAMERA_T_FRAMERATE, Double.toString(DEFAULT_CAMERA_T_FRAMERATE)));
+		tCameraExp    = Double.parseDouble(properties.getProperty(CAMERA_T_EXPOSURE,  Double.toString(DEFAULT_CAMERA_T_EXPOSURE)));
+		tCameraGain   = Integer.parseInt(  properties.getProperty(CAMERA_T_GAIN,      Integer.toString(DEFAULT_CAMERA_T_GAIN)));
+		fCameraFPS    = Double.parseDouble(properties.getProperty(CAMERA_F_FRAMERATE, Double.toString(DEFAULT_CAMERA_F_FRAMERATE)));
+		fCameraExp    = Double.parseDouble(properties.getProperty(CAMERA_F_EXPOSURE,  Double.toString(DEFAULT_CAMERA_F_EXPOSURE)));
+		fCameraGain   = Integer.parseInt(  properties.getProperty(CAMERA_F_GAIN,      Integer.toString(DEFAULT_CAMERA_F_GAIN)));
+		pixelWidth    = Double.parseDouble(properties.getProperty(PIXEL_WIDTH,        Double.toString(DEFAULT_PIXEL_WIDHT)));
+		stacksdir     = properties.getProperty(STACKS_DIR,         DEFAULT_STACKS_DIR);
+		logsdir       = properties.getProperty(LOGS_DIR,           DEFAULT_LOGS_DIR);
+		propertiesdir = properties.getProperty(PROPERTIES_DIR,     DEFAULT_PROPERTIES_DIR);
+		statisticspath= properties.getProperty(STATISTICS_PATH,    DEFAULT_STATISTICS_PATH);
+		snapshotpath  = properties.getProperty(SNAPSHOT_PATH,      DEFAULT_SNAPSHOT_PATH);
+		stackslink    = properties.getProperty(STACKS_LINK,        DEFAULT_STACKS_LINK);
+		logslink      = properties.getProperty(LOGS_LINK,          DEFAULT_LOGS_LINK);
+		statisticslink= properties.getProperty(STATISTICS_LINK,    DEFAULT_STATISTICS_LINK);
+		mailto        = properties.getProperty(MAIL_TO,            DEFAULT_MAIL_TO);
+		mailcc        = properties.getProperty(MAIL_CC,            DEFAULT_MAIL_CC);
+		mailuser      = properties.getProperty(MAIL_SMTP_USER,     DEFAULT_MAIL_SMTP_USER);
+		mailpassword  = properties.getProperty(MAIL_SMTP_PASSWORD, DEFAULT_MAIL_SMTP_PASSWORD);
+		failWithoutArduino = Boolean.parseBoolean(properties.getProperty(FAIL_WITHOUT_ARDUINO, Boolean.toString(DEFAULT_FAIL_WITHOUT_ARDUINO)));
+	}
+
+	private void write() {
+		write(propertiesFile);
+	}
+
+	private void write(File file) {
+		File parent = file.getParentFile();
+		if(!parent.exists())
+			parent.mkdirs();
 		PrintWriter out = null;
 		try {
 			out = new PrintWriter(file);
@@ -491,71 +578,70 @@ public class Preferences {
 		}
 	}
 
-	private static void doWrite(PrintWriter out) {
-		Preferences p = getInstance();
+	private void doWrite(PrintWriter out) {
 		out.println("# Properties for EduSPIM");
 		out.println();
 		out.println("# Volume limits:");
-		out.println(STACK_Y_START + "=" + p.stackYStart);
-		out.println(STACK_Z_START + "=" + p.stackZStart);
-		out.println(STACK_Y_END   + "=" + p.stackYEnd);
-		out.println(STACK_Z_END   + "=" + p.stackZEnd);
+		out.println(STACK_Y_START + "=" + stackYStart);
+		out.println(STACK_Z_START + "=" + stackZStart);
+		out.println(STACK_Y_END   + "=" + stackYEnd);
+		out.println(STACK_Z_END   + "=" + stackZEnd);
 		out.println();
 		out.println("# Mirror calibration");
-		out.println(MIRROR_Z1 + "=" + p.mirrorZ1);
-		out.println(MIRROR_M1 + "=" + p.mirrorM1);
-		out.println(MIRROR_Z2 + "=" + p.mirrorZ2);
-		out.println(MIRROR_M2 + "=" + p.mirrorM2);
+		out.println(MIRROR_Z1 + "=" + mirrorZ1);
+		out.println(MIRROR_M1 + "=" + mirrorM1);
+		out.println(MIRROR_Z2 + "=" + mirrorZ2);
+		out.println(MIRROR_M2 + "=" + mirrorM2);
 		out.println("# Resulting offset and slope");
-		out.println(MIRROR_COEFF_T + "=" + p.mirrorCoeffT);
-		out.println(MIRROR_COEFF_M + "=" + p.mirrorCoeffM);
+		out.println(MIRROR_COEFF_T + "=" + mirrorCoeffT);
+		out.println(MIRROR_COEFF_M + "=" + mirrorCoeffM);
 		out.println();
 		out.println("# Laser power, in mW");
-		out.println(LASER_POWER + "=" + p.laserpower);
+		out.println(LASER_POWER + "=" + laserpower);
 		out.println();
 		out.println("# Settings for the fluorescence camera");
-		out.println(CAMERA_F_FRAMERATE + "=" + p.fCameraFPS);
-		out.println(CAMERA_F_EXPOSURE  + "=" + p.fCameraExp);
-		out.println(CAMERA_F_GAIN      + "=" + p.fCameraGain);
+		out.println(CAMERA_F_FRAMERATE + "=" + fCameraFPS);
+		out.println(CAMERA_F_EXPOSURE  + "=" + fCameraExp);
+		out.println(CAMERA_F_GAIN      + "=" + fCameraGain);
 		out.println();
 		out.println("# Settings for the transmission camera");
-		out.println(CAMERA_T_FRAMERATE + "=" + p.tCameraFPS);
-		out.println(CAMERA_T_EXPOSURE  + "=" + p.tCameraExp);
-		out.println(CAMERA_T_GAIN      + "=" + p.tCameraGain);
+		out.println(CAMERA_T_FRAMERATE + "=" + tCameraFPS);
+		out.println(CAMERA_T_EXPOSURE  + "=" + tCameraExp);
+		out.println(CAMERA_T_GAIN      + "=" + tCameraGain);
 		out.println();
 		out.println("# Physical width of a pixel, in mm");
-		out.println(PIXEL_WIDTH + "=" + p.pixelWidth);
+		out.println(PIXEL_WIDTH + "=" + pixelWidth);
 		out.println();
 		out.println("# Folder where stack projections are written to");
-		out.println(STACKS_DIR + "=" + escape(p.stacksdir));
+		out.println(STACKS_DIR + "=" + escape(stacksdir));
 		out.println();
 		out.println("# File to which the current snapshot is written to");
-		out.println(SNAPSHOT_PATH + "=" + escape(p.snapshotpath));
+		out.println(SNAPSHOT_PATH + "=" + escape(snapshotpath));
 		out.println();
 		out.println("# Folder where logs are written to");
-		out.println(LOGS_DIR + "=" + escape(p.logsdir));
+		out.println(LOGS_DIR + "=" + escape(logsdir));
 		out.println();
 		out.println("# Folder where properties files are written to on change");
-		out.println(PROPERTIES_DIR + "=" + escape(p.propertiesdir));
+		out.println(PROPERTIES_DIR + "=" + escape(propertiesdir));
 		out.println();
 		out.println("# Path to a statistics file");
-		out.println(STATISTICS_PATH + "=" + escape(p.statisticspath));
+		out.println(STATISTICS_PATH + "=" + escape(statisticspath));
 		out.println();
 		out.println("# Links that point a browser to shared logs/snapshots directories,");
 		out.println("# included in some emails");
-		out.println(STACKS_LINK + "=" + escape(p.stackslink));
-		out.println(LOGS_LINK + "=" + escape(p.logslink));
-		out.println(STATISTICS_LINK + "=" + escape(p.statisticslink));
+		out.println(STACKS_LINK + "=" + escape(stackslink));
+		out.println(LOGS_LINK + "=" + escape(logslink));
+		out.println(STATISTICS_LINK + "=" + escape(statisticslink));
 		out.println();
 		out.println("# Email addresses");
-		out.println(MAIL_TO + "=" + escape(p.mailto));
-		out.println(MAIL_CC + "=" + escape(p.mailcc));
-		out.println(MAIL_SMTP_USER + "=" + escape(p.mailuser));
-		out.println(MAIL_SMTP_PASSWORD + "=" + escape(p.mailpassword));
+		out.println(MAIL_TO + "=" + escape(mailto));
+		out.println(MAIL_CC + "=" + escape(mailcc));
+		out.println(MAIL_SMTP_USER + "=" + escape(mailuser));
+		out.println(MAIL_SMTP_PASSWORD + "=" + escape(mailpassword));
 		out.println();
 		out.println("# Fails if communication to the arduino cannot be established.");
 		out.println("# If false, GUI buttons will be used instead.");
-		out.println(FAIL_WITHOUT_ARDUINO + "=" + p.failWithoutArduino);
+		out.println(FAIL_WITHOUT_ARDUINO + "=" + failWithoutArduino);
 	}
 
 	private static String escape(String s) {

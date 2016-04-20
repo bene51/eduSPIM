@@ -15,7 +15,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Properties;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -39,7 +39,7 @@ public class AdminPanel extends JPanel {
 
 	private static DecimalFormat df = new DecimalFormat("0.000");
 
-	private HashMap<String, String> oldPreferences;
+	private Properties oldPreferences;
 
 	private MButton setStart, setEnd, ok, cancel;
 	private NumberField mirror1Z, mirror2Z, mirror1M, mirror2M;
@@ -739,7 +739,7 @@ public class AdminPanel extends JPanel {
 	}
 
 	public void cancel() {
-		Preferences.restore(oldPreferences);
+		Preferences.restoreAndSave(oldPreferences);
 		fireDone(true);
 	}
 
@@ -770,7 +770,7 @@ public class AdminPanel extends JPanel {
 		oldPreferences.put(Preferences.CAMERA_T_GAIN,      tCameraGain.getText());
 		oldPreferences.put(Preferences.LASER_POWER,    laserPower.getText());
 
-		Preferences.restore(oldPreferences);
+		Preferences.restoreAndSave(oldPreferences);
 		fireDone(false);
 	}
 
