@@ -51,6 +51,10 @@ public class Mail {
 			final String username,
 			final String password,
 			boolean wait) {
+		if(to == null || to.isEmpty() ||
+				username == null || username.isEmpty() ||
+				password == null || password.isEmpty())
+			return;
 		Future<?> fut = exec.submit(new Runnable() {
 			@Override
 			public void run() {
