@@ -36,6 +36,7 @@ __save_call(int ans, int id, const char *file, int line)
 		PI_TranslateError(errorCode, szError, 1024);
 		char msg[1024];
 		sprintf(msg, "Error %d (%s) in %s, line %d\n", ans, szError, file, line);
+		printf("%s\n", msg);
 		error_callback(msg, hparam);
 		return FALSE;
 	}
@@ -128,7 +129,8 @@ bool stageIsReferenceNeeded(int axis)
 
 	SAVE_CALL(PI_SVO(id, AXIS, &bFlag), id);
 	SAVE_CALL(PI_qFRF(id, AXIS, &bRefOK), id);
-	return (!bRefOK);
+	// return (!bRefOK);
+	return true;
 }
 
 void stageStopMoving(int axis)
@@ -157,28 +159,33 @@ void stageReferenceIfNeeded(int axis)
 	SAVE_CALL(PI_qFRF(id, AXIS, &bRefOK), id);
 	if (bRefOK) {
 		printf("device %d, Axis %s already referenced\n", id, AXIS);
-		return;
+		// return;
 	}
 
 	bFlag = FALSE;
 	// check whether the stage has a reference switch
-	SAVE_CALL(PI_qTRS(id, AXIS, &bFlag), id);
-	if(bFlag) { // stage has reference switch
-		// fast reference move
-		SAVE_CALL(PI_FRF(id, AXIS), id);
-		printf("device %d, Reference stage for axis %s by reference switch ", id, AXIS);
-	} else {
-		SAVE_CALL(PI_qLIM(id, AXIS, &bFlag), id);
-		if(bFlag) {
-			SAVE_CALL(!PI_FNL(id, AXIS), id);
-			printf("device %d, Reference stage for axis %s by negative limit switch ", id, AXIS);
-		} else {
-			char msg[1024];
-			sprintf(msg, "Error (Stage has no reference or limit switch) in %s, line %d\n", __FILE__, __LINE__);
-			error_callback(msg, hparam);
-			return;
-		}
+	switch(axis) {
+	case 0: SAVE_CALL(PI_FNL(id, AXIS), id); break; // objectives
+	case 1: SAVE_CALL(PI_FPL(id, AXIS), id); break; // z-motor
+	case 2: SAVE_CALL(PI_FRF(id, AXIS), id); break; // y-motor
 	}
+//	SAVE_CALL(PI_qTRS(id, AXIS, &bFlag), id);
+//	if(bFlag) { // stage has reference switch
+//		// fast reference move
+//		SAVE_CALL(PI_FRF(id, AXIS), id);
+//		printf("device %d, Reference stage for axis %s by reference switch ", id, AXIS);
+//	} else {
+//		SAVE_CALL(PI_qLIM(id, AXIS, &bFlag), id);
+//		if(bFlag) {
+//			SAVE_CALL(!PI_FNL(id, AXIS), id);
+//			printf("device %d, Reference stage for axis %s by negative limit switch ", id, AXIS);
+//		} else {
+//			char msg[1024];
+//			sprintf(msg, "Error (Stage has no reference or limit switch) in %s, line %d\n", __FILE__, __LINE__);
+//			error_callback(msg, hparam);
+//			return;
+//		}
+//	}
 
 	do {
 		Sleep(500);
