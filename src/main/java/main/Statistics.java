@@ -85,6 +85,8 @@ public class Statistics {
 	private void load() throws Exception {
 		allEntries = new ArrayList<Entry>();
 		String path = Preferences.getStatisticsPath();
+		if(path.isEmpty())
+			return;
 		File f = new File(path);
 		if(!f.exists()) {
 			Mail.send("eduSPIM statistics file not found",
@@ -108,6 +110,8 @@ public class Statistics {
 
 	private void save() {
 		String path = Preferences.getStatisticsPath();
+		if(path.isEmpty())
+			return;
 		PrintWriter out = null;
 		try {
 			out = new PrintWriter(new File(path));
