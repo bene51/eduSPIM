@@ -63,6 +63,7 @@ void stageConnect(int com_port, int baud, int nstages, const char **stages)
 	int nrDevices;
 	char szDevices[16 * 128];
 	printf("Trying to open daisy chain on port %d\n", com_port);
+	int attempts = 0;
 	while(daisyChain < 0) {
 		// daisyChain = PI_OpenRS232DaisyChain(com_port, baud, &nrDevices, szDevices, 16 * 128);
 		daisyChain = PI_OpenUSBDaisyChain(
@@ -70,6 +71,12 @@ void stageConnect(int com_port, int baud, int nstages, const char **stages)
 				&nrDevices,
 				szDevices,
 				16 * 128);
+		if(attempts++ > 100) {
+			char msg[1024];
+			sprintf(msg, "Error opening daisy chain");
+			error_callback(msg, hparam);
+			return;
+		}
 		printf("Trying again: %d\n", daisyChain);
 	}
 	printf("daisyChain = %d: %d devices\n", daisyChain, nrDevices);
