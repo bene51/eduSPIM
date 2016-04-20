@@ -6,6 +6,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+import java.awt.Toolkit;
 
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
@@ -34,13 +35,25 @@ public class DisplayFrame extends JFrame {
 		busy.setOpaque(true);
 		getContentPane().add(busy, BorderLayout.SOUTH);
 
+		int avWidth = Toolkit.getDefaultToolkit().getScreenSize().width;
+		int fontsize = 12;
+		if(avWidth > 1300)
+			fontsize = 13;
+		if(avWidth > 1500)
+			fontsize = 14;
+		if(avWidth > 1700)
+			fontsize = 15;
+		if(avWidth > 1900)
+			fontsize = 16;
+
+
 		message = new JLabel(
 				" \n" +
 				" Please note, that the sample currently needs to be exchanged" +
 				" before live view is possible again. To still provide you with" +
 				" the same user experience, data is shown that has been acquired" +
 				" previously on this system.");
-		message.setFont(new Font("Helvetica", Font.PLAIN, 16));
+		message.setFont(new Font("Helvetica", Font.PLAIN, fontsize));
 		message.setPreferredSize(new Dimension(200, 40));
 		message.setAlignmentX(JLabel.CENTER_ALIGNMENT);
 		message.setBackground(Color.BLACK);// new Color(255, 80, 60));
