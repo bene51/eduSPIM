@@ -48,9 +48,9 @@ public class Preferences {
 	public static final String FAIL_WITHOUT_ARDUINO = "fail_without_arduino";
 
 	private static final double DEFAULT_STACK_ZSTART          = IMotor.POS_MIN_Z;
-	private static final double DEFAULT_STACK_ZEND            = IMotor.POS_MAX_Z;
+	private static final double DEFAULT_STACK_ZEND            = IMotor.POS_MIN_Z + 1;
 	private static final double DEFAULT_STACK_YSTART          = IMotor.POS_MIN_Y;
-	private static final double DEFAULT_STACK_YEND            = IMotor.POS_MAX_Y;
+	private static final double DEFAULT_STACK_YEND            = IMotor.POS_MIN_Y + 5;
 	private static final double DEFAULT_MIRROR_Z1             = IMotor.POS_MIN_Z;
 	private static final double DEFAULT_MIRROR_M1             = 1;
 	private static final double DEFAULT_MIRROR_Z2             = IMotor.POS_MAX_Z;
