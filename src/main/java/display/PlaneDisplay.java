@@ -16,13 +16,9 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.IndexColorModel;
-import java.io.IOException;
-import java.io.InputStream;
 
-import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
-import main.Preferences;
 import cam.ICamera;
 
 /*
@@ -58,8 +54,6 @@ public class PlaneDisplay extends JPanel {
 	private final IndexColorModel planeColorModel, transmissionColorModel;
 	private int z = 0;
 	private double yRel = 0;
-	private final Overview3D overview;
-	private final BufferedImage buttons;
 
 	private boolean isStack = false;
 
@@ -71,28 +65,6 @@ public class PlaneDisplay extends JPanel {
 		this.stackColorModels = prepareStackColorcode(ICamera.DEPTH, lut);
 		this.planeColorModel = preparePlaneColorcode();
 		this.transmissionColorModel = prepareTransmissionColorcode();
-		Overview3D overview = null;
-		try {
-			overview = new Overview3D();
-		} catch(Exception e) {
-			e.printStackTrace();
-		}
-		this.overview = overview;
-
-		InputStream is = getClass().getResourceAsStream("/Buttons_Labels.png");
-		BufferedImage bi = null;
-		if(is != null) {
-			try {
-				bi = ImageIO.read(is);
-			} catch (IOException e) {
-				e.printStackTrace();
-			} finally {
-				try {
-					is.close();
-				} catch(Exception e) {}
-			}
-		}
-		buttons = bi == null ? null : bi;
 	}
 
 	public void setStackMode(boolean b) {
@@ -311,69 +283,6 @@ public class PlaneDisplay extends JPanel {
 		xOffs = (int)Math.round((w + imageWidth) / 2.0) + 20;
 		yOffs = (int)Math.round((h - imageHeight) / 2.0);
 
-		// draw the y-indicator
-		if(overview != null) {
-			int ow = overview.getWidth();
-			int oh = overview.getHeight();
-
-			int cw = w - xOffs - 20;
-			int ch;
-
-			if(cw > ow) {
-				xOffs = (int)Math.round((w + imageWidth) / 2.0) + (cw - ow) / 2;
-				cw = ow;
-				ch = oh;
-			} else {
-				// xOffs and cw are fine
-				ch = cw * oh / ow;
-			}
-
-			g.drawImage(overview.get(yRel, (double)z / ICamera.DEPTH), xOffs, yOffs, cw, ch, null);
-		} else {
-			// fall back to drawing it manually
-
-			g.setColor(Color.LIGHT_GRAY);
-			int cw = w - xOffs - 20;
-			if(cw > 20)
-				cw = 20;
-
-			double factor = (double) cw / ICamera.WIDTH;
-			int ch = (int)Math.round(factor * ICamera.HEIGHT);
-			int fullh = ((int)(Math.abs(Preferences.getStackYEnd() - Preferences.getStackYStart()) // motor range
-					/ Preferences.getPixelWidth() // in camera pixels
-					/ ICamera.HEIGHT              // in multiples of camera heights
-					* ch))                        // convert to drawing coords
-					+ ch;                         // additional camera height
-
-			if(fullh > imageHeight / 2) {
-				double f = imageHeight / 2.0 / fullh;
-				fullh = (int)Math.round(fullh * f);
-				ch = (int)Math.round(ch * f);
-				cw = (int)Math.round(cw * f);
-			}
-			g.fillRect(xOffs, yOffs + fullh - ch, cw, ch);
-
-			int cy = (int)Math.round(yRel * (fullh - ch));
-			g.drawRect(xOffs, yOffs + fullh - ch - cy, cw, fullh);
-		}
-
-		if(buttons != null) {
-			int ow = buttons.getWidth();
-			int oh = buttons.getHeight();
-
-			int cw = w - xOffs - 20;
-			int ch;
-
-			if(cw > ow) {
-				xOffs = (int)Math.round((w + imageWidth) / 2.0) + (cw - ow) / 2;
-				cw = ow;
-				ch = oh;
-			} else {
-				// xOffs and cw are fine
-				ch = cw * oh / ow;
-			}
-			g.drawImage(buttons, xOffs, yOffs + imageHeight - ch, cw, ch, null);
-		}
 	}
 
 	private static IndexColorModel[] prepareStackColorcode(int nlayers, IndexColorModel lut) {

@@ -7,11 +7,16 @@ import java.awt.Font;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Toolkit;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+
+import buttons.AWTButtons;
 
 @SuppressWarnings("serial")
 public class DisplayFrame extends JFrame {
@@ -22,10 +27,14 @@ public class DisplayFrame extends JFrame {
 	private final JLabel message;
 	private boolean simulated = false;
 
-	public DisplayFrame(PlaneDisplay disp, boolean fatal) {
+	private final OverviewPanel overview;
+
+	public DisplayFrame(PlaneDisplay disp, final AWTButtons buttons, boolean fatal) {
 		super("Display");
-		JPanel panel = fatal ? makeUnavailablePanel() : disp;
-		getContentPane().add(panel);
+		getContentPane().setLayout(new BorderLayout());
+
+		final JPanel panel = fatal ? makeUnavailablePanel() : disp;
+		getContentPane().add(panel, BorderLayout.CENTER);
 
 		busy = new JLabel("  ");
 		busy.setPreferredSize(new Dimension(200, 15));
@@ -34,6 +43,28 @@ public class DisplayFrame extends JFrame {
 		busy.setBackground(Color.BLACK);
 		busy.setOpaque(true);
 		getContentPane().add(busy, BorderLayout.SOUTH);
+
+		overview = new OverviewPanel(new Overview3D(), buttons);
+		int ow = panel.getPreferredSize().width / 4;
+		overview.setPreferredSize(new Dimension(ow, overview.getHeight()));
+		getContentPane().add(overview, BorderLayout.EAST);
+
+		this.addComponentListener(new ComponentListener() {
+			@Override
+			public void componentResized(ComponentEvent e) {
+				overview.setPreferredSize(new Dimension(panel.getWidth() / 4, overview.getHeight()));
+				if(buttons!= null) {
+					buttons.updatePreferredSize(panel.getWidth() / 4);
+					buttons.getPanel().revalidate();
+				}
+				overview.revalidate();
+			}
+
+			@Override public void componentMoved(ComponentEvent e) {}
+			@Override public void componentShown(ComponentEvent e) {}
+			@Override public void componentHidden(ComponentEvent e) {}
+
+		});
 
 		int avWidth = Toolkit.getDefaultToolkit().getScreenSize().width;
 		int fontsize = 12;
@@ -61,6 +92,10 @@ public class DisplayFrame extends JFrame {
 		message.setOpaque(true);
 		if(simulated)
 			getContentPane().add(message, BorderLayout.NORTH);
+	}
+
+	public void updateOverview(double yrel, double zrel) {
+		overview.setPosition(yrel, zrel);
 	}
 
 	public void showSimulatedMessage(boolean b) {
@@ -114,6 +149,7 @@ public class DisplayFrame extends JFrame {
 		else
 			setExtendedState(NORMAL);
 		this.fullscreen = fullscreen;
+		revalidate();
 		setVisible(true);
 	}
 
@@ -145,9 +181,15 @@ public class DisplayFrame extends JFrame {
 	}
 
 	public static void main(String[] args) {
-		DisplayFrame f = new DisplayFrame(null, true);
-		f.pack();
-		f.setVisible(true);
-		f.setFullscreen(true);
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				DisplayFrame f = new DisplayFrame(null, null, true);
+				f.pack();
+				f.setVisible(true);
+				f.setFullscreen(true);
+				// f.setRealFullscreen(true);
+			}
+		});
 	}
 }

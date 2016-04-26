@@ -194,7 +194,7 @@ public class Microscope implements AdminPanelListener {
 
 		if(fatal) {
 			displayPanel = null;
-			displayWindow = new DisplayFrame(null, true);
+			displayWindow = new DisplayFrame(null, null, true);
 			displayWindow.setVisible(true);
 			displayWindow.setFullscreen(true);
 			adminPanel = null;
@@ -282,15 +282,18 @@ public class Microscope implements AdminPanelListener {
 			}
 		});
 
-		displayWindow = new DisplayFrame(displayPanel, false);
-		displayWindow.showSimulatedMessage(simulated);
+		AWTButtons awtButtons = null;
 		if(buttons instanceof AWTButtons)
-			displayWindow.add(((AWTButtons)buttons).getPanel(), BorderLayout.EAST);
+			awtButtons = (AWTButtons)buttons;
+		displayWindow = new DisplayFrame(displayPanel, awtButtons, false);
+		displayWindow.showSimulatedMessage(simulated);
 		displayWindow.pack();
 		displayWindow.setVisible(true);
 		displayWindow.setFullscreen(true);
 		displayPanel.requestFocusInWindow();
 		displayPanel.display(null, null, yRel, z);
+		displayWindow.updateOverview(yRel, (float)z / ICamera.DEPTH);
+
 		try {
 			singlePreview(true, true);
 		} catch(Exception e) {
@@ -751,6 +754,7 @@ public class Microscope implements AdminPanelListener {
 			fluorescenceCamera.getNextSequenceImage(fluorescenceFrame);
 			transmissionCamera.getNextSequenceImage(transmissionFrame);
 			displayPanel.display(fluorescenceFrame, transmissionFrame, yRel, plane);
+			displayWindow.updateOverview(yRel, (float)plane / ICamera.DEPTH);
 		} while(getButtonDown() == button);
 
 		laser.setOff();
@@ -979,6 +983,7 @@ public class Microscope implements AdminPanelListener {
 				break;
 			int plane = getCurrentPlane();
 			displayPanel.display(null, null, yRel, plane);
+			displayWindow.updateOverview(yRel, (float)plane / ICamera.DEPTH);
 		}
 
 		// set the speed of the motor according to the frame rate
@@ -994,6 +999,7 @@ public class Microscope implements AdminPanelListener {
 		motor.setVelocity(MIRROR, dMirror * framerate);
 
 		displayPanel.display(null, null, yRel, ICamera.DEPTH - 1);
+		displayWindow.updateOverview(yRel, 1);
 		sleep(100); // delay to ensure rendering before changing stack mode
 		displayPanel.setStackMode(true);
 
@@ -1030,6 +1036,7 @@ public class Microscope implements AdminPanelListener {
 				transmissionStack.addSlice("", transmissionFrame.clone());
 			}
 			displayPanel.display(fluorescenceFrame, null, yRel, i);
+			displayWindow.updateOverview(yRel, (float)i / ICamera.DEPTH);
 			if(animateStack) {
 				sleep(100);
 				ImageProcessor ip = new ColorProcessor(displayPanel.getSnapshot());
@@ -1149,6 +1156,7 @@ public class Microscope implements AdminPanelListener {
 			displayPanel.display(null, transmissionFrame, yRel, z);
 		else if(fluor)
 			displayPanel.display(null, fluorescenceFrame, yRel, z);
+		displayWindow.updateOverview(yRel, (float)z / ICamera.DEPTH);
 	}
 
 	private double zposBeforeManualLaserOn;
@@ -1290,6 +1298,7 @@ public class Microscope implements AdminPanelListener {
 							transmissionCamera.getPreviewImage(transmissionFrame);
 
 						displayPanel.display(fluorescenceFrame, transmissionFrame, yRel, z);
+						displayWindow.updateOverview(yRel, (float)z / ICamera.DEPTH);
 					} while(continuousPreviewRunning);
 
 					fluorescenceCamera.stopPreview();
