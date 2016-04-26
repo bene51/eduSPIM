@@ -1,6 +1,9 @@
 package display;
 
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.net.URL;
 
 import javax.swing.ImageIcon;
@@ -25,12 +28,16 @@ public class InfoFrame extends JFrame {
 
 	private ImageIcon makeInfoIcon() {
 		URL url = getClass().getResource("/eduspim_infopage.png");
-		return new ImageIcon(url);
+		Image image = Toolkit.getDefaultToolkit().getImage(url);
+		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+		image = image.getScaledInstance(dim.width, dim.height, Image.SCALE_SMOOTH);
+		ImageIcon icon = new ImageIcon(image);
+		return icon;
 	}
 
 	public static void main(String[] args) throws InterruptedException {
 		InfoFrame f = new InfoFrame();
-		Thread.sleep(5000);
+		Thread.sleep(10000);
 		f.dispose();
 	}
 }
