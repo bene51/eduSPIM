@@ -1,5 +1,6 @@
 package stage;
 
+import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.net.URL;
 
@@ -121,8 +122,9 @@ public class SimulatedMotor implements IMotor {
 			try {
 				URL url = getClass().getResource("/MotorSound.wav");
 				InputStream stream = url.openStream();
+				BufferedInputStream buf = new BufferedInputStream(stream);
 		        clip = AudioSystem.getClip();
-		        AudioInputStream ais = AudioSystem.getAudioInputStream(stream);
+		        AudioInputStream ais = AudioSystem.getAudioInputStream(buf);
 		        clip.open(ais);
 		        clip.loop(Clip.LOOP_CONTINUOUSLY);
 		        clip.stop();
