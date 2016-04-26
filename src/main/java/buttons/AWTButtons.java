@@ -4,26 +4,29 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.GridLayout;
 import java.awt.Insets;
+import java.awt.Rectangle;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
-import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 public class AWTButtons extends AbstractButtons {
 
-	private final JPanel panel = new JPanel(new GridLayout(2,3,1,1));
+	private final int ins = 10;
 
-	private final JButton yDownButton = new MButton("y-");
-	private final JButton yUpButton   = new MButton("y+");
-	private final JButton zDownButton = new MButton("z-");
-	private final JButton zUpButton   = new MButton("z+");
-	private final JButton stackButton = new MButton("S");
-	private final JButton laserButton = new MButton("L");
-	private final JButton infoButton  = new MButton("i");
+	private final JPanel panel = new JPanel();
+
+	private final NiceButton yDownButton = new NiceButton(0);
+	private final NiceButton yUpButton   = new NiceButton(1);
+	private final NiceButton zDownButton = new NiceButton(2);
+	private final NiceButton zUpButton   = new NiceButton(3);
+	private final NiceButton stackButton = new NiceButton(4);
+	private final NiceButton laserButton = new NiceButton(5);
+	private final NiceButton infoButton  = new NiceButton(6);
 
 	public AWTButtons() {
 		GridBagLayout gridbag = new GridBagLayout();
@@ -32,38 +35,43 @@ public class AWTButtons extends AbstractButtons {
 
 		panel.setBackground(Color.BLACK);
 		panel.setForeground(Color.white);
+		panel.setOpaque(true);
 
 		c.anchor = GridBagConstraints.CENTER;
 		c.fill = GridBagConstraints.BOTH;
-		c.insets = new Insets(0, 0, 0, 0);
+		c.weightx = 1;
+		c.weighty = 1;
+		c.insets = new Insets(3 * ins / 2, ins, 3 * ins / 2, ins);
 
-		c.gridx = 1;
+		c.gridx = 0;
 		c.gridy = 0;
 		panel.add(yUpButton, c);
 
-		c.gridx = 1;
+		c.gridx = 0;
 		c.gridy = 1;
 		panel.add(yDownButton, c);
 
-		c.gridx = 0;
+		c.gridx = 1;
+		c.gridy = 0;
+		panel.add(zUpButton, c);
+
+		c.gridx = 1;
 		c.gridy = 1;
 		panel.add(zDownButton, c);
 
+		c.insets = new Insets(3 * ins / 2, 4 * ins, 3 * ins / 2, ins);
+
 		c.gridx = 2;
-		c.gridy = 1;
-		panel.add(zUpButton, c);
-
 		c.gridy = 0;
-		c.gridx = 3;
-		c.insets = new Insets(0, 7, 0, 7);
-		panel.add(stackButton, c);
-
-		c.gridy = 1;
-		c.gridx = 3;
 		panel.add(laserButton, c);
 
+		c.gridx = 2;
 		c.gridy = 1;
-		c.gridx = 4;
+		panel.add(stackButton, c);
+
+		c.insets = new Insets(3 * ins / 2, ins, 3 * ins / 2, ins);
+		c.gridy = 0;
+		c.gridx = 3;
 		panel.add(infoButton, c);
 
 		yDownButton.addMouseListener(new MouseAdapter(BUTTON_Y_DOWN));
@@ -73,6 +81,30 @@ public class AWTButtons extends AbstractButtons {
 		stackButton.addMouseListener(new MouseAdapter(BUTTON_STACK));
 		laserButton.addMouseListener(new MouseAdapter(BUTTON_LASER));
 		infoButton.addMouseListener(new MouseAdapter(BUTTON_INFO));
+
+		panel.addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentResized(ComponentEvent arg0) {
+				updatePreferredSize(panel.getWidth());
+			}
+		});
+	}
+
+	public void updatePreferredSize(int rw) {
+		float tw = ins * 11 + 4 * yDownButton.getPreferredSize().width;
+		float th = ins * 6  + 2 * yDownButton.getPreferredSize().height;
+		System.out.println("tw x th = " + tw + " x " + th);
+	    Rectangle b = panel.getBounds();
+	    // nw / nh = tw / th
+	    float hfactor = rw  / tw;
+	    float factor = hfactor; // Math.min(hfactor, vfactor);
+	    int nw = Math.round(tw * factor);
+	    int nh = Math.round(th * factor);
+	    if(nw != b.width || nh != b.height) {
+	    	System.out.println("x");
+	    	panel.setPreferredSize(new Dimension(nw, nh));
+	    	panel.revalidate();
+	    }
 	}
 
 	@Override
@@ -80,19 +112,6 @@ public class AWTButtons extends AbstractButtons {
 
 	public JPanel getPanel() {
 		return panel;
-	}
-
-	@SuppressWarnings("serial")
-	private static class MButton extends JButton {
-
-		public MButton(String s) {
-			super(s);
-			setForeground(Color.BLACK);
-			setBackground(Color.BLACK);
-			Dimension d = getPreferredSize();
-			this.setMargin(new Insets(1, 1, 1, 1));
-			setPreferredSize(new Dimension(3 * d.height / 2, d.height));
-		}
 	}
 
 	private class MouseAdapter implements MouseListener {
