@@ -75,16 +75,15 @@ public class DownloadManager extends JDialog implements Observer {
 		this.dispose();
 	}
 
-	public Download addURL(String url, String downloadPath, String convertPath) {
+	public Download addURL(String name, String url, String downloadPath, String convertPath) {
 		URL verifiedUrl = verifyUrl(url);
 		if (verifiedUrl != null) {
-			Download dl = new Download(verifiedUrl, downloadPath, convertPath);
+			Download dl = new Download(verifiedUrl, name, downloadPath, convertPath);
 			dl.addObserver(DownloadManager.this);
 			tableModel.addDownload(dl);
 			return dl;
-		} else {
-			throw new RuntimeException("Invalid Download URL");
 		}
+		throw new RuntimeException("Invalid Download URL");
 	}
 
 	// Verify download URL.
@@ -132,10 +131,12 @@ public class DownloadManager extends JDialog implements Observer {
 						if (!outdir.exists())
 							outdir.mkdirs();
 						Download fl = manager.addURL(
+								"fluorescence.avi",
 								"https://idisk-srv1.mpi-cbg.de/~bschmid/eduSPIM/fluorescence.avi",
 								new File(outdir, "fluorescence.avi").getAbsolutePath(),
 								new File(outdir, "fluorescence.tif").getAbsolutePath());
 						Download tr = manager.addURL(
+								"transmission.avi",
 								"https://idisk-srv1.mpi-cbg.de/~bschmid/eduSPIM/transmission.avi",
 								new File(outdir, "transmission.avi").getAbsolutePath(),
 								new File(outdir, "transmission.tif").getAbsolutePath());

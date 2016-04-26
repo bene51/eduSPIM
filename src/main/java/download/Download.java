@@ -41,12 +41,14 @@ public class Download extends Observable implements Runnable {
 	private int downloaded; // number of bytes downloaded
 	private int status; // current status of download
 	private ImagePlus image;
+	private String name;
 
 	// Constructor for Download.
-	public Download(URL url, String downloadPath, String convertPath) {
+	public Download(URL url, String name, String downloadPath, String convertPath) {
 		this.url = url;
 		this.downloadPath = downloadPath;
 		this.convertPath = convertPath;
+		this.name = name;
 		size = -1;
 		downloaded = 0;
 		status = DOWNLOADING;
@@ -62,6 +64,10 @@ public class Download extends Observable implements Runnable {
 	// Get this download's URL.
 	public String getUrl() {
 		return url.toString();
+	}
+
+	public String getName() {
+		return name;
 	}
 
 	// Get this download's size.

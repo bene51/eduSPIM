@@ -1431,12 +1431,14 @@ public class Microscope implements AdminPanelListener {
 		Download tr = null, fl = null;
 		if(trans == null) {
 			tr = manager.addURL(
+					"transmission.avi",
 					"https://idisk-srv1.mpi-cbg.de/~bschmid/eduSPIM/transmission.avi",
 					new File(outdir, "transmission.avi").getAbsolutePath(),
 					new File(outdir, "transmission.tif").getAbsolutePath());
 		}
 		if(fluor == null) {
 			fl = manager.addURL(
+					"fluorescence.avi",
 					"https://idisk-srv1.mpi-cbg.de/~bschmid/eduSPIM/fluorescence.avi",
 					new File(outdir, "fluorescence.avi").getAbsolutePath(),
 					new File(outdir, "fluorescence.tif").getAbsolutePath());

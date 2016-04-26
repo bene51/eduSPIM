@@ -13,11 +13,11 @@ class DownloadsTableModel extends AbstractTableModel
         implements Observer {
 
     // These are the names for the table's columns.
-    private static final String[] columnNames = {"URL", "Size",
+    private static final String[] columnNames = {"Name", "URL", "Size",
     "Progress", "Status"};
 
     // These are the classes for each column's values.
-    private static final Class[] columnClasses = {String.class,
+    private static final Class[] columnClasses = {String.class, String.class,
     String.class, JProgressBar.class, String.class};
 
     // The table's list of downloads.
@@ -78,14 +78,16 @@ class DownloadsTableModel extends AbstractTableModel
 
         Download download = (Download) downloadList.get(row);
         switch (col) {
-            case 0: // URL
+	        case 0: // name
+	        	return download.getName();
+            case 1: // URL
                 return download.getUrl();
-            case 1: // Size
+            case 2: // Size
                 int size = download.getSize();
                 return (size == -1) ? "" : Integer.toString(size);
-            case 2: // Progress
+            case 3: // Progress
                 return new Float(download.getProgress());
-            case 3: // Status
+            case 4: // Status
                 return Download.STATUSES[download.getStatus()];
         }
         return "";
