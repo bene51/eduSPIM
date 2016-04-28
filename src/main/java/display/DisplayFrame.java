@@ -11,9 +11,10 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 
 import javax.swing.BorderFactory;
+import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import buttons.AWTButtons;
@@ -26,6 +27,7 @@ public class DisplayFrame extends JFrame {
 	private final JLabel busy;
 	private final JLabel message;
 	private boolean simulated = false;
+	private PlaneDisplay planeDisplay;
 
 	private final OverviewPanel overview;
 
@@ -33,7 +35,7 @@ public class DisplayFrame extends JFrame {
 		super("Display");
 		getContentPane().setLayout(new BorderLayout());
 
-		final JPanel panel = fatal ? makeUnavailablePanel() : disp;
+		final JComponent panel = fatal ? makeUnavailablePanel() : disp;
 		getContentPane().add(panel, BorderLayout.CENTER);
 
 		busy = new JLabel("  ");
@@ -110,19 +112,27 @@ public class DisplayFrame extends JFrame {
 		simulated = b;
 	}
 
-	public JPanel makeUnavailablePanel() {
-		JPanel panel = new JPanel();
+	public JComponent makeUnavailablePanel() {
+		String text =
+				"<html>" +
+						"  <h1 style=\"font-size:30px; color: #ffcc00\">Ausser Betrieb / Unavailable</h1>" +
+						"  <p style=\"font-size:15px; color: #a0a0a0\">" +
+						"    <br><br>" +
+						"    Das Mikroskop ist zur Zeit wegen eines Hardwarefehlers ausser Betrieb und " +
+						"    wird in Kuerze gewartet.<br>" +
+						"    Wir bitten um Ihr Verstaendnis." +
+						"  </p>" +
+						"  <br><br>" +
+						"  <p style=\"font-size:15px; color: #a0a0a0\">" +
+						"    The microscope is currently unavailable due to hardware issues. It will be " +
+						"    maintained shortly.<br>" +
+						"    Please apologize this incident." +
+						"  </p>" +
+						"</html>";
+		JEditorPane panel = new JEditorPane("text/html", text);
 		panel.setBorder(BorderFactory.createEmptyBorder(200, 100, 50, 100));
 		panel.setBackground(Color.BLACK);
-		JLabel label = new JLabel();
-		label.setForeground(Color.WHITE);
-		label.setAlignmentX(JLabel.LEFT_ALIGNMENT);
-		label.setAlignmentY(JLabel.CENTER_ALIGNMENT);
-		label.setText(
-				"<html><h1 style=\"font-size:30px; color: #ffcc00\">Ausser Betrieb / Unavailable</h1>" +
-				"<p style=\"font-size:15px; color: #a0a0a0\"><br><br>Das Mikroskop ist zur Zeit wegen eines Hardwarefehlers ausser Betrieb und wird in Kuerze gewartet.<br>Wir bitten um Ihr Verstaendnis.</p><br><br>" +
-				"<p style=\"font-size:15px; color: #a0a0a0\">The microscope is currently unavailable due to hardware issues. It will be maintained shortly.<br>Please apologize this incident.</p></html>");
-		panel.add(label, BorderLayout.CENTER);
+		panel.setForeground(Color.WHITE);
 		return panel;
 	}
 
