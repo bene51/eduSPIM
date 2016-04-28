@@ -15,6 +15,7 @@ import ij.process.StackStatistics;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -229,19 +230,23 @@ public class Microscope implements AdminPanelListener {
 
 
 		displayPanel = new PlaneDisplay(depthLut);
+		final int mask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
+
 		displayPanel.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
+				if((e.getModifiers() & mask) != mask)
+					return;
 				if(busy)
 					return;
-				if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_Q) {
+				if(e.getKeyCode() == KeyEvent.VK_Q) {
 					shutdown();
-				} else if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_F) {
+				} else if(e.getKeyCode() == KeyEvent.VK_F) {
 					boolean fs = !displayWindow.isFullscreen();
 					displayWindow.setFullscreen(fs);
 					displayPanel.requestFocusInWindow();
 					displayWindow.repaint();
-				} else if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_A) {
+				} else if(e.getKeyCode() == KeyEvent.VK_A) {
 					if(mode == Mode.NORMAL) {
 						mode = Mode.ADMIN;
 						displayWindow.add(adminPanel, BorderLayout.WEST);
@@ -250,7 +255,7 @@ public class Microscope implements AdminPanelListener {
 						// displayPanel.requestFocusInWindow();
 						startContinuousPreview();
 					}
-				} else if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_B) {
+				} else if(e.getKeyCode() == KeyEvent.VK_B) {
 					if(!beanshell.isShowing()) {
 						displayWindow.add(beanshell, BorderLayout.NORTH);
 						displayWindow.validate();
@@ -260,7 +265,7 @@ public class Microscope implements AdminPanelListener {
 						displayWindow.validate();
 						displayPanel.requestFocusInWindow();
 					}
-				} else if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_V) {
+				} else if(e.getKeyCode() == KeyEvent.VK_V) {
 					toggleSimulated();
 				}
 			}
