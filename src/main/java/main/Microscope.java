@@ -147,7 +147,7 @@ public class Microscope implements AdminPanelListener {
 	private final SingleElementThreadQueue mirrorQueue;
 
 	private final PlaneDisplay displayPanel;
-	private final DisplayFrame displayWindow;
+	private DisplayFrame displayWindow;
 	private final AdminPanel adminPanel;
 	private JConsole beanshell;
 	private Interpreter beanshellInterpreter;
@@ -159,9 +159,34 @@ public class Microscope implements AdminPanelListener {
 
 	private final ExecutorService exec = Executors.newSingleThreadExecutor();
 
-	private Microscope(boolean fatal) throws IOException, MotorException {
+	private Microscope(final boolean fatal) throws IOException, MotorException {
 
 		logger.info("Initializing microscope");
+		instance = this;
+
+		try {
+			SwingUtilities.invokeAndWait(new Runnable() {
+				@Override
+				public void run() {
+					displayWindow = new DisplayFrame(fatal);
+					displayWindow.setVisible(true);
+					displayWindow.setFullscreen(true);
+				}
+			});
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+
+		if(fatal) {
+			displayPanel = null;
+			adminPanel = null;
+			mirrorQueue = null;
+			fluorescenceFrame = null;
+			transmissionFrame = null;
+			buttons = null;
+			logger.info("Initialized fatal screen");
+			return;
+		}
 
 		Timer shutdownTimer = new Timer("eduSPIM shutdown", true);
 		Calendar c = Calendar.getInstance();
@@ -193,21 +218,7 @@ public class Microscope implements AdminPanelListener {
 			}
 		}, 0, 5000);
 
-		if(fatal) {
-			displayPanel = null;
-			displayWindow = new DisplayFrame(null, null, true);
-			displayWindow.setVisible(true);
-			displayWindow.setFullscreen(true);
-			adminPanel = null;
-			mirrorQueue = null;
-			fluorescenceFrame = null;
-			transmissionFrame = null;
-			buttons = null;
-			logger.info("Initialized fatal screen");
-			return;
-		}
-
-		instance = this;
+		displayWindow.getMessages().println("Initializing hardware");
 
 		initBeanshell();
 		initHardware();
@@ -230,8 +241,9 @@ public class Microscope implements AdminPanelListener {
 
 
 		displayPanel = new PlaneDisplay(depthLut);
-		final int mask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
+		displayWindow.setPlaneDisplay(displayPanel);
 
+		final int mask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 		displayPanel.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
@@ -287,17 +299,22 @@ public class Microscope implements AdminPanelListener {
 			}
 		});
 
-		AWTButtons awtButtons = null;
-		if(buttons instanceof AWTButtons)
-			awtButtons = (AWTButtons)buttons;
-		displayWindow = new DisplayFrame(displayPanel, awtButtons, false);
-		displayWindow.showSimulatedMessage(simulated);
-		displayWindow.pack();
-		displayWindow.setVisible(true);
-		displayWindow.setFullscreen(true);
-		displayPanel.requestFocusInWindow();
-		displayPanel.display(null, null, yRel, z);
-		displayWindow.updateOverview(yRel, (float)z / ICamera.DEPTH);
+		final AWTButtons awtButtons = (buttons instanceof AWTButtons) ? (AWTButtons)buttons : null;
+		final double yRelTmp = yRel;
+		final int zTmp = z;
+
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				displayWindow.makeOverviewPanel(awtButtons);
+				// displayWindow = new DisplayFrame(displayPanel, awtButtons, false);
+				displayWindow.showSimulatedMessage(simulated);
+		// 		displayWindow.pack();
+				displayPanel.requestFocusInWindow();
+				displayPanel.display(null, null, yRelTmp, zTmp);
+				displayWindow.updateOverview(yRelTmp, (float)zTmp / ICamera.DEPTH);
+			}
+		});
 
 		try {
 			singlePreview(true, true);
@@ -379,15 +396,20 @@ public class Microscope implements AdminPanelListener {
 	}
 
 	private void initButtons() {
+		displayWindow.getMessages().print("Initializing buttons via the Arduino...   ");
 		try {
 			buttons = new ArduinoButtons("COM" + ARDUINO_COM_PORT, this);
+			displayWindow.getMessages().succeeded();
 		} catch(Throwable e) {
+			displayWindow.getMessages().failed();
 			ExceptionHandler.handleException("Error initializing buttons", e);
 			if(Preferences.getFailWithoutArduino()) {
 				// We cannot do anything without buttons
 				shutdown(EXIT_FATAL_ERROR);
 			} else {
+				displayWindow.getMessages().print("Initializign GUI buttons...   ");
 				buttons = new AWTButtons();
+				displayWindow.getMessages().succeeded();
 			}
 		}
 		keyboard = new KeyboardButtons();
@@ -402,6 +424,7 @@ public class Microscope implements AdminPanelListener {
 
 	private void initMotor() {
 		try {
+			displayWindow.getMessages().print("Connecting motors...   ");
 			motor = new NativeMotor(STAGE_COM_PORT);
 			motor.setVelocity(Y_AXIS, IMotor.VEL_MAX_Y);
 			motor.setVelocity(Z_AXIS, IMotor.VEL_MAX_Z);
@@ -433,7 +456,10 @@ public class Microscope implements AdminPanelListener {
 					break;
 				sleep(50);
 			}
+			displayWindow.getMessages().succeeded();
 		} catch(Throwable e) {
+			displayWindow.getMessages().failed();
+			displayWindow.getMessages().print("Initializing the simulating motors instead...   ");
 			ExceptionHandler.handleException("Error initializing the motors, using simulated motors instead", e);
 			motor = new SimulatedMotor();
 			try {
@@ -443,7 +469,9 @@ public class Microscope implements AdminPanelListener {
 				motor.setTarget(Z_AXIS, Preferences.getStackZStart());
 				while(motor.isMoving(Z_AXIS) || motor.isMoving(Y_AXIS))
 					sleep(50);
+				displayWindow.getMessages().succeeded();
 			} catch(Throwable ex) {
+				displayWindow.getMessages().failed();
 				ExceptionHandler.handleException("Error initializing simulated motors, exiting...", ex);
 				shutdown(EXIT_FATAL_ERROR);
 			}
@@ -454,6 +482,7 @@ public class Microscope implements AdminPanelListener {
 	private void initCameras() {
 		if(!simulated) {
 			try {
+				displayWindow.getMessages().print("Initializing cameras...   ");
 				fluorescenceCamera = new NativeCamera(0,
 						Preferences.getFCameraFramerate(),
 						Preferences.getFCameraExposure(),
@@ -468,12 +497,14 @@ public class Microscope implements AdminPanelListener {
 				Preferences.setTCameraExposure(transmissionCamera.getExposuretime());
 				Preferences.setTCameraFramerate(transmissionCamera.getFramerate());
 				Preferences.setTCameraGain(transmissionCamera.getGain());
+				displayWindow.getMessages().succeeded();
 				return;
 			} catch(Throwable e) {
 				ExceptionHandler.handleException("Error initializing the camera, using simulated camera instead instead", e);
 			}
 		}
 
+		displayWindow.getMessages().print("Loading images for simulating camera...   ");
 		simulated = true;
 		String dir = System.getProperty("user.home") + File.separator + ".eduSPIM" + File.separator + "pre-acquired" + File.separator;
 		String trpath = dir + "transmission.tif";
@@ -483,6 +514,9 @@ public class Microscope implements AdminPanelListener {
 		ImagePlus fluor = IJ.openImage(flpath);
 		System.out.println("loaded " + flpath);
 		if(trans == null || fluor == null) {
+			displayWindow.getMessages().failed();
+			displayWindow.getMessages().print("Downloading pre-acquired data");
+			sleep(1000);
 			boolean approved = IJ.showMessageWithCancel(
 					"Download example data",
 					"It seems that the hardware is not fully functional. eduSPIM tries to start in \n" +
@@ -497,15 +531,28 @@ public class Microscope implements AdminPanelListener {
 					ImagePlus[] data = downloadExampleData(trans, fluor);
 					trans = data[0];
 					fluor = data[1];
+					displayWindow.getMessages().succeeded();
 				} catch(Exception e) {
+					displayWindow.getMessages().failed();
 					ExceptionHandler.handleException("Cannot download example data", e);
 				}
+			} else {
+				displayWindow.getMessages().failed();
 			}
+		} else {
+			displayWindow.getMessages().succeeded();
 		}
-		fluorescenceCamera = fluor != null ?
-				new SimulatedCamera(fluor) : new NoopCamera();
-		transmissionCamera = trans != null ?
-				new SimulatedCamera(trans) : new NoopCamera();
+		if(fluor == null || trans == null) {
+			displayWindow.getMessages().print("Initializing fake cameras without image data...   ");
+			fluorescenceCamera = new NoopCamera();
+			transmissionCamera = new NoopCamera();
+			displayWindow.getMessages().succeeded();
+			return;
+		}
+		displayWindow.getMessages().print("Initializing simulating cameras with pre-acquired image data...   ");
+		fluorescenceCamera = new SimulatedCamera(fluor);
+		transmissionCamera = new SimulatedCamera(trans);
+		displayWindow.getMessages().succeeded();
 	}
 
 	private void toggleSimulated() {
@@ -521,12 +568,17 @@ public class Microscope implements AdminPanelListener {
 	}
 
 	private void initLaser(double power) {
+		displayWindow.getMessages().print("Initializing laser...   ");
 		try {
 			laser = new Toptica("COM" + LASER_COM_PORT, power);
 			laser.setOff();
+			displayWindow.getMessages().succeeded();
 		} catch(Throwable e) {
+			displayWindow.getMessages().failed();
 			ExceptionHandler.handleException("Error initializing laser, using simulated laser instead", e);
+			displayWindow.getMessages().print("Initializing simulating laser...   ");
 			laser = new NoopLaser();
+			displayWindow.getMessages().succeeded();
 			simulated = true;
 		}
 	}
@@ -1470,9 +1522,9 @@ public class Microscope implements AdminPanelListener {
 			ExceptionHandler.handleException("Cannot set system L&F", e);
 		}
 
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
+//		SwingUtilities.invokeLater(new Runnable() {
+//			@Override
+//			public void run() {
 				Microscope m = null;
 				try {
 					m = new Microscope(isFatal);
@@ -1480,7 +1532,7 @@ public class Microscope implements AdminPanelListener {
 					ExceptionHandler.handleException("Unexpected error during initialization", e);
 					m.shutdown(EXIT_FATAL_ERROR);
 				}
-			}
-		});
+//			}
+//		});
 	}
 }

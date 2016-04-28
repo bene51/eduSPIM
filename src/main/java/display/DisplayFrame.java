@@ -2,6 +2,7 @@ package display;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GraphicsDevice;
@@ -28,15 +29,19 @@ public class DisplayFrame extends JFrame {
 	private final JLabel message;
 	private boolean simulated = false;
 	private PlaneDisplay planeDisplay;
+	private MessagesPanel messages;
 
-	private final OverviewPanel overview;
+	private OverviewPanel overview;
 
-	public DisplayFrame(PlaneDisplay disp, final AWTButtons buttons, boolean fatal) {
+	public DisplayFrame(boolean fatal) {
 		super("Display");
 		getContentPane().setLayout(new BorderLayout());
+		setBackground(Color.BLACK);
 
-		final JComponent panel = fatal ? makeUnavailablePanel() : disp;
-		getContentPane().add(panel, BorderLayout.CENTER);
+		messages = new MessagesPanel();
+
+		getContentPane().add(
+				fatal ? makeUnavailablePanel() : messages, BorderLayout.CENTER);
 
 		busy = new JLabel("  ");
 		busy.setPreferredSize(new Dimension(200, 15));
@@ -45,28 +50,6 @@ public class DisplayFrame extends JFrame {
 		busy.setBackground(Color.BLACK);
 		busy.setOpaque(true);
 		getContentPane().add(busy, BorderLayout.SOUTH);
-
-		overview = new OverviewPanel(new Overview3D(), buttons);
-		int ow = panel.getPreferredSize().width / 4;
-		overview.setPreferredSize(new Dimension(ow, overview.getHeight()));
-		getContentPane().add(overview, BorderLayout.EAST);
-
-		this.addComponentListener(new ComponentListener() {
-			@Override
-			public void componentResized(ComponentEvent e) {
-				overview.setPreferredSize(new Dimension(panel.getWidth() / 4, overview.getHeight()));
-				if(buttons!= null) {
-					buttons.updatePreferredSize(panel.getWidth() / 4);
-					buttons.getPanel().revalidate();
-				}
-				overview.revalidate();
-			}
-
-			@Override public void componentMoved(ComponentEvent e) {}
-			@Override public void componentShown(ComponentEvent e) {}
-			@Override public void componentHidden(ComponentEvent e) {}
-
-		});
 
 		int avWidth = Toolkit.getDefaultToolkit().getScreenSize().width;
 		int fontsize = 12;
@@ -78,7 +61,6 @@ public class DisplayFrame extends JFrame {
 			fontsize = 15;
 		if(avWidth > 1900)
 			fontsize = 16;
-
 
 		message = new JLabel(
 				" \n" +
@@ -94,6 +76,54 @@ public class DisplayFrame extends JFrame {
 		message.setOpaque(true);
 		if(simulated)
 			getContentPane().add(message, BorderLayout.NORTH);
+	}
+
+	public MessagesPanel getMessages() {
+		return messages;
+	}
+
+	public void setPlaneDisplay(PlaneDisplay disp) {
+		this.planeDisplay = disp;
+		BorderLayout layout = (BorderLayout)getContentPane().getLayout();
+		getContentPane().remove(layout.getLayoutComponent(BorderLayout.CENTER));
+		getContentPane().add(planeDisplay, BorderLayout.CENTER);
+	}
+
+	public void showFatal() {
+		BorderLayout layout = (BorderLayout)getContentPane().getLayout();
+		getContentPane().remove(layout.getLayoutComponent(BorderLayout.CENTER));
+		getContentPane().add(makeUnavailablePanel(), BorderLayout.CENTER);
+	}
+
+	public void makeOverviewPanel(final AWTButtons buttons) {
+		if(overview != null) {
+			System.out.println("overview already exists");
+			return;
+		}
+		BorderLayout layout = (BorderLayout)getContentPane().getLayout();
+		final Component panel = layout.getLayoutComponent(BorderLayout.CENTER);
+
+		overview = new OverviewPanel(new Overview3D(), buttons);
+		int ow = getWidth() / 5; // panel.getPreferredSize().width / 4;
+		overview.setPreferredSize(new Dimension(ow, overview.getHeight()));
+		getContentPane().add(overview, BorderLayout.EAST);
+
+		this.addComponentListener(new ComponentListener() {
+			@Override
+			public void componentResized(ComponentEvent e) {
+				overview.setPreferredSize(new Dimension(getWidth() / 5, overview.getHeight()));
+				if(buttons!= null) {
+					buttons.updatePreferredSize(getWidth() / 5); // panel.getWidth() / 4);
+					buttons.getPanel().revalidate();
+				}
+				overview.revalidate();
+			}
+
+			@Override public void componentMoved(ComponentEvent e) {}
+			@Override public void componentShown(ComponentEvent e) {}
+			@Override public void componentHidden(ComponentEvent e) {}
+
+		});
 	}
 
 	public void updateOverview(double yrel, double zrel) {
@@ -194,10 +224,10 @@ public class DisplayFrame extends JFrame {
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				DisplayFrame f = new DisplayFrame(null, null, true);
+				DisplayFrame f = new DisplayFrame(true);
 				f.pack();
 				f.setVisible(true);
-				f.setFullscreen(true);
+				// f.setFullscreen(true);
 				// f.setRealFullscreen(true);
 			}
 		});
