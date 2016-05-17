@@ -247,7 +247,8 @@ public class Microscope implements AdminPanelListener {
 		displayPanel.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
-				if((e.getModifiers() & mask) != mask)
+				int m = e.getModifiers();
+				if(((m & mask) != mask) && !e.isControlDown())
 					return;
 				if(busy)
 					return;
@@ -277,6 +278,19 @@ public class Microscope implements AdminPanelListener {
 						displayWindow.validate();
 						displayPanel.requestFocusInWindow();
 					}
+				} else if(e.getKeyCode() == KeyEvent.VK_H) {
+					if(!e.isShiftDown() && !e.isControlDown())
+						return;
+					boolean helpVisible = displayWindow.isHelpVisible();
+					if(!helpVisible) {
+						displayWindow.showHelp();
+						displayWindow.getMessages().addKeyListener(this);
+						displayWindow.getMessages().requestFocusInWindow();
+					} else {
+						displayWindow.getMessages().removeKeyListener(this);
+						displayWindow.showPlaneDisplay();
+						displayPanel.requestFocusInWindow();
+					}
 				} else if(e.getKeyCode() == KeyEvent.VK_V) {
 					toggleSimulated();
 				}
@@ -300,21 +314,12 @@ public class Microscope implements AdminPanelListener {
 		});
 
 		final AWTButtons awtButtons = (buttons instanceof AWTButtons) ? (AWTButtons)buttons : null;
-		final double yRelTmp = yRel;
-		final int zTmp = z;
 
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				displayWindow.makeOverviewPanel(awtButtons);
-				// displayWindow = new DisplayFrame(displayPanel, awtButtons, false);
-				displayWindow.showSimulatedMessage(simulated);
-		// 		displayWindow.pack();
-				displayPanel.requestFocusInWindow();
-				displayPanel.display(null, null, yRelTmp, zTmp);
-				displayWindow.updateOverview(yRelTmp, (float)zTmp / ICamera.DEPTH);
-			}
-		});
+		displayWindow.makeOverviewPanel(awtButtons);
+		displayWindow.showSimulatedMessage(simulated);
+		displayPanel.requestFocusInWindow();
+		displayPanel.display(null, null, yRel, z);
+		displayWindow.updateOverview(yRel, (float)z / ICamera.DEPTH);
 
 		try {
 			singlePreview(true, true);
@@ -407,7 +412,7 @@ public class Microscope implements AdminPanelListener {
 				// We cannot do anything without buttons
 				shutdown(EXIT_FATAL_ERROR);
 			} else {
-				displayWindow.getMessages().print("Initializign GUI buttons...   ");
+				displayWindow.getMessages().print("Initializing GUI buttons...   ");
 				buttons = new AWTButtons();
 				displayWindow.getMessages().succeeded();
 			}
@@ -614,10 +619,14 @@ public class Microscope implements AdminPanelListener {
 
 	public void initBeanshell() {
 		beanshell = new JConsole();
+		final int mask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 		beanshell.getViewport().getView().addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
-				if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_B) {
+				int m = e.getModifiers();
+				if(((m & mask) != mask) && !e.isControlDown())
+					return;
+				if(e.getKeyCode() == KeyEvent.VK_B) {
 					if(!beanshell.isShowing()) {
 						displayWindow.add(beanshell, BorderLayout.NORTH);
 						displayWindow.validate();

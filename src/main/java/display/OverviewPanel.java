@@ -62,7 +62,6 @@ public class OverviewPanel extends JPanel {
 
 	@Override
 	public void paintComponent(Graphics g) {
-		System.out.println("OverviewPanel.paintComponent()");
 		super.paintComponent(g);
 		int x = (getWidth() - overview.getWidth()) / 2;
 		int y = 20;
@@ -84,7 +83,6 @@ public class OverviewPanel extends JPanel {
 				x = 0;
 				ch = cw * oh / ow;
 			}
-			System.out.println(x + ", " + ch + ", " + cw);
 			g.drawImage(buttonLabels, x, getHeight() - ch, cw, ch, null);
 		}
 	}

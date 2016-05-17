@@ -1,5 +1,7 @@
 package display;
 
+import ij.IJ;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
@@ -31,11 +33,55 @@ public class MessagesPanel extends JEditorPane {
 //				"</html>");
 	}
 
+	private String makeHelpText() {
+		String mod = IJ.isMacOSX() ? "Cmd" : "Ctrl";
+		StringBuilder sb = new StringBuilder();
+		sb.append("<html>");
+		sb.append("  <div style=\"font-size:15px; color: #ffffff;\">");
+		sb.append("<table cellspacing=\"8px\">");
+		sb.append("  <tr>");
+		sb.append("    <th style=\"text-align: left;\">Shortcut</th>");
+		sb.append("    <th style=\"text-align: left;\">Description</th>");
+		sb.append("  </tr>");
+		sb.append("  <tr>");
+		sb.append("    <td>" + mod + "-h</td>");
+		sb.append("    <td>Show this help</td>");
+		sb.append("  </tr>");
+		sb.append("  <tr>");
+		sb.append("    <td>" + mod + "-f</td>");
+		sb.append("    <td>Toggle fullscreen</td>");
+		sb.append("  </tr>");
+		sb.append("  <tr>");
+		sb.append("    <td>" + mod + "-q</td>");
+		sb.append("    <td>Quit the application</td>");
+		sb.append("  </tr>");
+		sb.append("  <tr>");
+		sb.append("    <td>" + mod + "-a</td>");
+		sb.append("    <td>Show the administrator panel</td>");
+		sb.append("  </tr>");
+		sb.append("  <tr>");
+		sb.append("    <td>" + mod + "-b</td>");
+		sb.append("    <td>Show the BeanShell panel</td>");
+		sb.append("  </tr>");
+		sb.append("  <tr>");
+		sb.append("    <td>" + mod + "-v</td>");
+		sb.append("    <td>Toggle simulating mode</td>");
+		sb.append("  </tr>");
+		sb.append("</table>");
+		sb.append("  </div>");
+		sb.append("</html>");
+		return sb.toString();
+	}
+
+	public void showHelp() {
+		setMessage(makeHelpText());
+	}
+
 	private String makeHTML() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("<html>");
 		for(Line  l : lines) {
-			sb.append("  <div style=\"font-size:15px; line-height: 500px; color: #a0a0a0\">");
+			sb.append("  <div style=\"font-size:15px; padding-top: 5px; color: #a0a0a0\">");
 			for(Token tok : l) {
 				sb.append("<span " + tok.style + ">");
 				sb.append(tok.s);
@@ -146,15 +192,17 @@ public class MessagesPanel extends JEditorPane {
 		frame.setSize(800, 600);
 		frame.setVisible(true);
 
-		for(int i = 0; i < 10; i++) {
-			Thread.sleep(1000);
-			mp.print("Trying to connect motors...   ");
-			Thread.sleep(1000);
-			mp.failed();
-			Thread.sleep(1000);
-			mp.print("Trying to connect camera...   ");
-			Thread.sleep(1000);
-			mp.succeeded();
-		}
+		mp.showHelp();
+
+//		for(int i = 0; i < 10; i++) {
+//			Thread.sleep(1000);
+//			mp.print("Trying to connect motors...   ");
+//			Thread.sleep(1000);
+//			mp.failed();
+//			Thread.sleep(1000);
+//			mp.print("Trying to connect camera...   ");
+//			Thread.sleep(1000);
+//			mp.succeeded();
+//		}
 	}
 }

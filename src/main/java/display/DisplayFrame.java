@@ -2,7 +2,6 @@ package display;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GraphicsDevice;
@@ -78,15 +77,37 @@ public class DisplayFrame extends JFrame {
 			getContentPane().add(message, BorderLayout.NORTH);
 	}
 
+	public boolean isHelpVisible() {
+		return messages == ((BorderLayout)getContentPane().
+				getLayout()).getLayoutComponent(BorderLayout.CENTER);
+	}
+
 	public MessagesPanel getMessages() {
 		return messages;
 	}
 
 	public void setPlaneDisplay(PlaneDisplay disp) {
 		this.planeDisplay = disp;
+		showPlaneDisplay();
+	}
+
+	public void showHelp() {
+		System.out.println("showHelp");
+		messages.showHelp();
+		BorderLayout layout = (BorderLayout)getContentPane().getLayout();
+		getContentPane().remove(layout.getLayoutComponent(BorderLayout.CENTER));
+		getContentPane().add(messages, BorderLayout.CENTER);
+		messages.invalidate();
+		messages.repaint();
+	}
+
+	public void showPlaneDisplay() {
+		System.out.println("showPlaneDisplay");
 		BorderLayout layout = (BorderLayout)getContentPane().getLayout();
 		getContentPane().remove(layout.getLayoutComponent(BorderLayout.CENTER));
 		getContentPane().add(planeDisplay, BorderLayout.CENTER);
+		planeDisplay.invalidate();
+		planeDisplay.repaint();
 	}
 
 	public void showFatal() {
@@ -100,8 +121,6 @@ public class DisplayFrame extends JFrame {
 			System.out.println("overview already exists");
 			return;
 		}
-		BorderLayout layout = (BorderLayout)getContentPane().getLayout();
-		final Component panel = layout.getLayoutComponent(BorderLayout.CENTER);
 
 		overview = new OverviewPanel(new Overview3D(), buttons);
 		int ow = getWidth() / 5; // panel.getPreferredSize().width / 4;
