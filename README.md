@@ -35,3 +35,8 @@ that shows a recent snapshot and some usage statistics for assessing the educati
 
 
 ## Installation
+* [Download](https://github.com/bene51/eduSPIM/releases/download/v1.0/eduSPIM.zip) the latest version from the [release](https://github.com/bene51/eduSPIM/releases) section
+* Unpack it to a folder of your choice.
+* On Windows: Double-click run.bat
+* On Linux/Mac OS X: Open a terminal, change to the eduSPIM folder and start the run.sh script.
+
