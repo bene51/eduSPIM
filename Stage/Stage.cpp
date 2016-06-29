@@ -167,14 +167,15 @@ void stageReferenceIfNeeded(int axis)
 	if (bRefOK) {
 		printf("device %d, Axis %s already referenced\n", id, AXIS);
 		// return;
-	}
+	} else {
 
-	bFlag = FALSE;
+//	bFlag = FALSE;
 	// check whether the stage has a reference switch
-	switch(axis) {
-	case 0: SAVE_CALL(PI_FNL(id, AXIS), id); break; // objectives
-	case 1: SAVE_CALL(PI_FPL(id, AXIS), id); break; // z-motor
-	case 2: SAVE_CALL(PI_FRF(id, AXIS), id); break; // y-motor
+		switch(axis) {
+		case 0: SAVE_CALL(PI_FNL(id, AXIS), id); break; // objectives
+		case 1: SAVE_CALL(PI_FPL(id, AXIS), id); break; // z-motor
+		case 2: SAVE_CALL(PI_FRF(id, AXIS), id); break; // y-motor
+		}
 	}
 //	SAVE_CALL(PI_qTRS(id, AXIS, &bFlag), id);
 //	if(bFlag) { // stage has reference switch
