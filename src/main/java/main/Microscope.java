@@ -239,6 +239,8 @@ public class Microscope implements AdminPanelListener {
 		adminPanel = new AdminPanel(motor.getPosition(Y_AXIS), motor.getPosition(Z_AXIS));
 		adminPanel.addAdminPanelListener(this);
 
+		displayWindow.showHelp();
+		sleep(4000);
 
 		displayPanel = new PlaneDisplay(depthLut);
 		displayWindow.setPlaneDisplay(displayPanel);
