@@ -46,6 +46,7 @@ public class Preferences {
 	public static final String MAIL_SMTP_USER       = "smtp_username";
 	public static final String MAIL_SMTP_PASSWORD   = "smtp_password";
 	public static final String FAIL_WITHOUT_ARDUINO = "fail_without_arduino";
+	public static final String SIMULATING           = "simulating";
 
 	private static final double DEFAULT_STACK_ZSTART          = IMotor.POS_MIN_Z;
 	private static final double DEFAULT_STACK_ZEND            = IMotor.POS_MIN_Z + 1;
@@ -81,6 +82,7 @@ public class Preferences {
 	private static final String DEFAULT_MAIL_SMTP_USER        = "";
 	private static final String DEFAULT_MAIL_SMTP_PASSWORD    = "";
 	private static final boolean DEFAULT_FAIL_WITHOUT_ARDUINO = false;
+	private static final boolean DEFAULT_SIMULATING           = false;
 
 
 	private static Preferences instance;
@@ -189,6 +191,7 @@ public class Preferences {
 					"button inputs. If you do not check the box, the software \n" +
 					"will still be usable using the computer keyboard");
 			gd.addCheckbox("Fail_without_Arduino", DEFAULT_FAIL_WITHOUT_ARDUINO);
+			gd.addCheckbox("Simulate normal operation using pre-acquired data", DEFAULT_SIMULATING);
 			gd.showDialog();
 			if(gd.wasCanceled())
 				return;
@@ -198,6 +201,7 @@ public class Preferences {
 			String mailuser = gd.getNextString();
 			String mailpassword = gd.getNextString();
 			boolean failWithoutArduino = gd.getNextBoolean();
+			boolean simulating = gd.getNextBoolean();
 
 			this.stacksdir = stacksdir;
 			this.logsdir = logsdir;
@@ -212,6 +216,7 @@ public class Preferences {
 			this.mailuser = mailuser;
 			this.mailpassword = mailpassword;
 			this.failWithoutArduino = failWithoutArduino;
+			this.simulating = simulating;
 		}
 	}
 
@@ -339,6 +344,10 @@ public class Preferences {
 		return getInstance().failWithoutArduino;
 	}
 
+	public static boolean isSimulating() {
+		return getInstance().simulating;
+	}
+
 	public static void setStackZStart(double stackZStart) {
 		getInstance().stackZStart = stackZStart;
 		getInstance().write();
@@ -424,6 +433,11 @@ public class Preferences {
 		getInstance().write();
 	}
 
+	public static void setSimulating(boolean simulating) {
+		getInstance().simulating = simulating;
+		getInstance().write();
+	}
+
 	public static Properties backup() {
 		return getInstance().toProperties();
 	}
@@ -458,7 +472,7 @@ public class Preferences {
 	private String stacksdir, logsdir, propertiesdir, statisticspath, snapshotpath;
 	private String logslink, stackslink, statisticslink;
 	private String mailto, mailcc, mailuser, mailpassword;
-	private boolean failWithoutArduino;
+	private boolean failWithoutArduino, simulating;
 
 	private Preferences() {
 		Properties properties = new Properties();
@@ -517,6 +531,7 @@ public class Preferences {
 		properties.put(MAIL_SMTP_USER,       mailuser);
 		properties.put(MAIL_SMTP_PASSWORD,   mailpassword);
 		properties.put(FAIL_WITHOUT_ARDUINO, Boolean.toString(failWithoutArduino));
+		properties.put(SIMULATING,           Boolean.toString(simulating));
 		return properties;
 	}
 
@@ -552,6 +567,7 @@ public class Preferences {
 		mailuser      = properties.getProperty(MAIL_SMTP_USER,     DEFAULT_MAIL_SMTP_USER);
 		mailpassword  = properties.getProperty(MAIL_SMTP_PASSWORD, DEFAULT_MAIL_SMTP_PASSWORD);
 		failWithoutArduino = Boolean.parseBoolean(properties.getProperty(FAIL_WITHOUT_ARDUINO, Boolean.toString(DEFAULT_FAIL_WITHOUT_ARDUINO)));
+		simulating    = Boolean.parseBoolean(properties.getProperty(SIMULATING, Boolean.toString(DEFAULT_SIMULATING)));
 	}
 
 	private void write() {
@@ -642,6 +658,9 @@ public class Preferences {
 		out.println("# Fails if communication to the arduino cannot be established.");
 		out.println("# If false, GUI buttons will be used instead.");
 		out.println(FAIL_WITHOUT_ARDUINO + "=" + failWithoutArduino);
+		out.println();
+		out.println("# Specify whether normal operation should be simulated using pre-acquired data");
+		out.println(SIMULATING + "=" + simulating);
 	}
 
 	private static String escape(String s) {

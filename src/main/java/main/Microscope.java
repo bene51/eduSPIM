@@ -131,8 +131,6 @@ public class Microscope implements AdminPanelListener {
 
 	private final DecimalFormat df = new DecimalFormat("0.0000");
 
-	private boolean simulated = false;
-
 	private Mode mode = Mode.NORMAL;
 
 	private boolean busy = false;
@@ -318,7 +316,7 @@ public class Microscope implements AdminPanelListener {
 		final AWTButtons awtButtons = (buttons instanceof AWTButtons) ? (AWTButtons)buttons : null;
 
 		displayWindow.makeOverviewPanel(awtButtons);
-		displayWindow.showSimulatedMessage(simulated);
+		displayWindow.showSimulatedMessage(Preferences.isSimulating());
 		displayPanel.requestFocusInWindow();
 		displayPanel.display(null, null, yRel, z);
 		displayWindow.updateOverview(yRel, (float)z / ICamera.DEPTH);
@@ -482,12 +480,12 @@ public class Microscope implements AdminPanelListener {
 				ExceptionHandler.handleException("Error initializing simulated motors, exiting...", ex);
 				shutdown(EXIT_FATAL_ERROR);
 			}
-			simulated = true;
+			Preferences.setSimulating(true);
 		}
 	}
 
 	private void initCameras() {
-		if(!simulated) {
+		if(!Preferences.isSimulating()) {
 			try {
 				displayWindow.getMessages().print("Initializing cameras...   ");
 				fluorescenceCamera = new NativeCamera(0,
@@ -512,7 +510,7 @@ public class Microscope implements AdminPanelListener {
 		}
 
 		displayWindow.getMessages().print("Loading images for simulating camera...   ");
-		simulated = true;
+		Preferences.setSimulating(true);
 		String dir = System.getProperty("user.home") + File.separator + ".eduSPIM" + File.separator + "pre-acquired" + File.separator;
 		String trpath = dir + "transmission.tif";
 		ImagePlus trans = IJ.openImage(trpath);
@@ -569,7 +567,8 @@ public class Microscope implements AdminPanelListener {
 		} catch(Exception e) {
 			ExceptionHandler.showException("Error toggling camera mode", e);
 		}
-		simulated = !simulated;
+		boolean simulated = !Preferences.isSimulating();
+		Preferences.setSimulating(simulated);
 		initCameras();
 		displayWindow.showSimulatedMessage(simulated);
 	}
@@ -586,7 +585,7 @@ public class Microscope implements AdminPanelListener {
 			displayWindow.getMessages().print("Initializing simulating laser...   ");
 			laser = new NoopLaser();
 			displayWindow.getMessages().succeeded();
-			simulated = true;
+			Preferences.setSimulating(true);
 		}
 	}
 
