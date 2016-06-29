@@ -108,6 +108,8 @@ public class DisplayFrame extends JFrame {
 		getContentPane().add(planeDisplay, BorderLayout.CENTER);
 		planeDisplay.invalidate();
 		planeDisplay.repaint();
+		this.invalidate();
+		this.validate();
 	}
 
 	public void showFatal() {
@@ -143,6 +145,8 @@ public class DisplayFrame extends JFrame {
 			@Override public void componentHidden(ComponentEvent e) {}
 
 		});
+		this.invalidate();
+		this.validate();
 	}
 
 	public void updateOverview(double yrel, double zrel) {
