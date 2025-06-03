@@ -88,6 +88,10 @@ import download.DownloadManager;
  */
 public class Microscope implements AdminPanelListener {
 
+	private static final String URL_FOR_TRANSMISSION_DATASET = "https://github.com/bene51/eduSPIM/releases/download/v1.0/transmission.avi";
+
+	private static final String URL_FOR_FLUORESCENCE_DATASET = "https://github.com/bene51/eduSPIM/releases/download/v1.0/fluorescence.avi";
+
 	private static final boolean useScanMirror = true;
 
 	private static final Logger logger;
@@ -1454,14 +1458,14 @@ public class Microscope implements AdminPanelListener {
 		if(trans == null) {
 			tr = manager.addURL(
 					"transmission.avi",
-					"https://idisk-srv1.mpi-cbg.de/~bschmid/eduSPIM/transmission.avi",
+					URL_FOR_TRANSMISSION_DATASET,
 					new File(outdir, "transmission.avi").getAbsolutePath(),
 					new File(outdir, "transmission.tif").getAbsolutePath());
 		}
 		if(fluor == null) {
 			fl = manager.addURL(
 					"fluorescence.avi",
-					"https://idisk-srv1.mpi-cbg.de/~bschmid/eduSPIM/fluorescence.avi",
+					URL_FOR_FLUORESCENCE_DATASET,
 					new File(outdir, "fluorescence.avi").getAbsolutePath(),
 					new File(outdir, "fluorescence.tif").getAbsolutePath());
 		}
