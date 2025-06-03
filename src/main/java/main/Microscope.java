@@ -977,51 +977,6 @@ public class Microscope implements AdminPanelListener {
 		timelapseRunning = false;
 	}
 
-	void acquireStitchableData() throws MotorException, CameraException, LaserException {
-		double minOverlap = 0.15;
-
-		File dir = new File(System.getProperty("user.home") + "/pre-acquired/");
-		String date = new SimpleDateFormat("yyyyMMdd").format(new Date());
-		dir = new File(dir, date);
-		if(!dir.exists())
-			dir.mkdirs();
-
-		// setup motor positions
-		double y0 = Preferences.getStackYStart();
-		double y1 = Preferences.getStackYEnd();
-		double dy = Preferences.getPixelWidth();
-
-		double yRange = y1 - y0;
-		double frameHeight = ICamera.HEIGHT * dy;
-		int n = (int)Math.ceil(yRange / (frameHeight - minOverlap * frameHeight));
-		double yDist = yRange / n;
-
-		recordStack = true;
-		for(int i = 0; i < n + 1; i++) {
-			// save as hyperstacks
-			motor.setTarget(Y_AXIS, y0 + i * yDist);
-			while(motor.isMoving(Y_AXIS))
-				; // wait
-			acquireStack();
-			ImagePlus transmission = WindowManager.getImage("transmission");
-			ImagePlus fluorescence = WindowManager.getImage("fluorescence");
-
-			int d = transmission.getStackSize();
-			for(int z = 0; z < d; z++)
-				fluorescence.getStack().addSlice("", transmission.getStack().getProcessor(z + 1));
-
-			fluorescence.setOpenAsHyperStack(true);
-			fluorescence.setDimensions(1, d, 2);
-			transmission.close();
-			String path = new File(dir, "tile" + (i + 1) + ".tif").getAbsolutePath();
-			IJ.save(fluorescence, path);
-			fluorescence.close();
-		}
-		ImagePlus stitched = Stitching.stitch(dir.getAbsolutePath(), 1, n + 1);
-		Stitching.postProcess(stitched);
-		stitched.show();
-	}
-
 	boolean recordStack = false;
 	boolean animateStack = false;
 	synchronized double acquireStack() throws MotorException, CameraException, LaserException {
