@@ -17,7 +17,7 @@ while true; do
 
 	echo "`date` Starting eduSPIM (args = $args iteration = $CNT)" >> eduSPIM_start.log
 
-	java -Xmx4g -cp target/EduSPIM-0.0.1-SNAPSHOT-jar-with-dependencies.jar main.Microscope $args
+	java -Xmx4g -cp target/EduSPIM-1.1.0-jar-with-dependencies.jar main.Microscope $args
 	ERRORLEVEL=$?
 	echo Error level:
 	echo $ERRORLEVEL
